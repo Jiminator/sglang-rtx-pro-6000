@@ -1,0 +1,42 @@
+NCCL_DEBUG=WARN \
+NCCL_SOCKET_IFNAME=enp128s4,ens4 \
+NCCL_IB_DISABLE=1 \
+NCCL_P2P_LEVEL=SYS \
+NCCL_SOCKET_NTHREADS=8 \
+NCCL_NSOCKS_PERTHREAD=8 \
+NCCL_MIN_NCHANNELS=8 \
+NCCL_ALLOC_P2P_NET_LL_BUFFERS=1 \
+OMP_NUM_THREADS=24 \
+SGLANG_SET_CPU_AFFINITY=1 \
+SAFETENSORS_FAST_GPU=1 \
+PYTORCH_ALLOC_CONF=expandable_segments:True \
+SGLANG_ENABLE_DEEP_GEMM=0 \
+SGLANG_ENABLE_JIT_DEEPGEMM=0
+
+python3 -m sglang.launch_server \
+    --model zai-org/GLM-5.1-FP8 \
+    --tensor-parallel-size 8 \
+    --pipeline-parallel-size 2 \
+    --dp-size 8 \
+    --enable-dp-attention \
+    --nnodes 2 \
+    --node-rank 0 \
+    --port 8000 \
+    --dist-init-addr 10.0.1.2:5000 \
+    --trust-remote-code \
+    --kv-cache-dtype bfloat16 \
+    --reasoning-parser glm45 \
+    --tool-call-parser glm47 \
+    --mem-fraction-static 0.90 \
+    --chunked-prefill-size 16384 \
+    --attention-backend flashinfer \
+    --max-running-requests 768 \
+    --cuda-graph-max-bs 128 \
+    --page-size 64 \
+    --host 0.0.0.0 \
+    --enable-fused-moe-sum-all-reduce \
+    --enable-dp-lm-head \
+    --tokenizer-worker-num 16 \
+    --enable-flashinfer-allreduce-fusion \
+    --disable-custom-all-reduce \
+    --disable-radix-cache
