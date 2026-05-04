@@ -1,0 +1,42 @@
+  OMP_NUM_THREADS=24                                                                                                                                                           
+  NCCL_DEBUG=INFO                                                                                                                                                              
+  NCCL_SOCKET_NTHREADS=8
+  NCCL_NSOCKS_PERTHREAD=8                                                                                                                                                      
+  NCCL_IB_DISABLE=1                                      
+  NCCL_P2P_LEVEL=SYS                                                                                                                                                           
+  NCCL_MIN_NCHANNELS=8                                   
+  NCCL_ALLOC_P2P_NET_LL_BUFFERS=1                                                                                                                                              
+  SGLANG_SET_CPU_AFFINITY=1                                                                                                                                                    
+  SAFETENSORS_FAST_GPU=1                                                                                                                                                       
+  PYTORCH_ALLOC_CONF=expandable_segments:True                                                                                                                                  
+  SGLANG_ENABLE_DEEP_GEMM=0                                                                                                                                                    
+  SGLANG_ENABLE_JIT_DEEPGEMM=0
+
+python3 -m sglang.launch_server \
+  --model-path nvidia/Kimi-K2.5-NVFP4 \
+  --trust-remote-code \
+  --quantization modelopt_fp4 \
+  --disable-shared-experts-fusion \
+  --mem-fraction-static 0.82 \
+  --schedule-policy fcfs \
+  --chunked-prefill-size 16384 \
+  --nnodes 2 \
+  --dist-init-addr 10.0.1.2:5000 \
+  --enable-dp-attention \
+  --reasoning-parser kimi_k2 \
+  --tool-call-parser kimi_k2 \
+  --kv-cache-dtype bfloat16 \
+  --dp-size 8 \
+  --enable-dp-lm-head \
+  --enable-fused-moe-sum-all-reduce \
+  --disable-radix-cache \
+  --fp4-gemm-backend flashinfer_cutlass \
+  --attention-backend flashinfer \
+  --moe-runner-backend flashinfer_cutlass \
+  --enable-flashinfer-allreduce-fusion \
+  --disable-custom-all-reduce \
+  --tp-size 8 \
+  --pp-size 2 \
+  --host 127.0.0.1 \
+  --port 8000   
+
