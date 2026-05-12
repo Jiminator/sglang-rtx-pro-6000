@@ -2,6 +2,8 @@
 
 **As of 2026-05-11.** Ship config: **4,833.78 tok/s total** (output 277.43) — see [`results/benchmark_results.md`](results/benchmark_results.md) and [`launch_node1.sh`](launch_node1.sh), [`launch_node2.sh`](launch_node2.sh).
 
+**Concurrency-scaling sweep** of this same ship config (no flag changes — only `--max-concurrency` and `--num-prompts` varied, num-prompts = 3 × concurrency): see [`concurrency_sweep/`](concurrency_sweep/) — 10 data points from conc=1 to conc=512, with per-metric figures and the full bench summary tables.
+
 ## Workload-specific context
 
 This is a **prefill-dominant** workload: each request has 16,384 input tokens and only 1,024 output tokens (16:1 ratio). Profile of the ship config:
