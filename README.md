@@ -18,6 +18,7 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 | [GLM-5.1](https://huggingface.co/lukealonso/GLM-5.1-NVFP4) | NVFP4 | 2 Nodes (16x RTX 6000) | 3075.85 | 3451.06 | 4606.00 | 141.36 |
 | [Kimi-K2.5](https://huggingface.co/moonshotai/Kimi-K2.5) | INT4* | 2 Nodes (16x RTX 6000) | 3069.15 | 3443.55 | 6889.00 | 147.45 |
 | [Kimi-K2.5](https://huggingface.co/nvidia/Kimi-K2.5-NVFP4) | NVFP4 | 2 Nodes (16x RTX 6000) | 3237.46 | 3632.39 | 5535.00 | 137.89 |
+| [Kimi-K2.6](https://huggingface.co/moonshotai/Kimi-K2.6) | FP8* | 1 Node (8x RTX 6000) | 1459.26 | 1637.28 | 850.00 | 82.43 |
 | [datalab-to/chandra-ocr-2](https://huggingface.co/datalab-to/chandra-ocr-2)** | BF16| 1 Node (1x RTX 6000)| 2600.67 | 5267.08 | 4603.00| 32.47 |
 
 
@@ -27,7 +28,7 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
  
 *Benchmarks conducted using `inf` request rate and 512 max concurrency. Tests utilized a random dataset with 1024 input tokens and 8192 output tokens (1536 total prompts). The load generator was isolated on a dedicated CPU-only node pool to ensure zero interference with GPU performance.*
 
-*\*Kimi-K2.5 uses native INT4 quantization for model weights and FP8 for the KV cache to optimize memory efficiency and inference speed.*
+*\*Kimi-K2.5 uses native INT4 quantization and Kimi-K2.6 utilizes FP8 KV cache optimization to improve memory efficiency and inference speed.*
 
 **\** datalab-to/chandra-ocr-2 is an VLM model. We have run an image benchmark different for the rest of the models **
 ## Project Structure
@@ -73,6 +74,7 @@ Detailed performance logs, including TTFT/TPOT latency distributions and through
 - [GLM-5.1 (NVFP4): models/GLM5.1/nvfp4/README.md](./models/GLM5.1/nvfp4/README.md)
 - [Kimi-K2.5 (INT4): models/KimiK2.5/results/benchmark_results.md](./models/KimiK2.5/results/benchmark_results.md)
 - [Kimi-K2.5 (NVFP4): models/KimiK2.5/nvfp4/results/benchmarks_2node.yaml](./models/KimiK2.5/nvfp4/results/benchmarks_2node.yaml)
+- [Kimi-K2.6 (FP8): models/KimiK2.6/results/benchmark_results.md](./models/KimiK2.6/results/benchmark_results.md)
 
 ## Usage
 
