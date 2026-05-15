@@ -28,7 +28,7 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
  
 *Benchmarks conducted using `inf` request rate and 512 max concurrency. Tests utilized a random dataset with 1024 input tokens and 8192 output tokens (1536 total prompts). The load generator was isolated on a dedicated CPU-only node pool to ensure zero interference with GPU performance.*
 
-*\*Kimi-K2.5 uses native INT4 quantization and Kimi-K2.6 utilizes FP8 KV cache optimization to improve memory efficiency and inference speed.*
+*\*Kimi-K2.5 and Kimi-K2.6 use native INT4 quantization and KV cache optimization to improve memory efficiency and inference speed.*
 
 **\** datalab-to/chandra-ocr-2 is an VLM model. We have run an image benchmark different for the rest of the models **
 ## Project Structure
@@ -85,3 +85,4 @@ Each model directory also contains a dedicated `README.md` with specific optimiz
 ## Contributing
 
 This repository is updated as new optimization techniques (e.g., native FP4 serving) and models are validated on the G4 architecture.
+hitecture.

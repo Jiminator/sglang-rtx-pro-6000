@@ -19,7 +19,7 @@ Kimi-K2.6 is the latest iteration of the large-scale Mixture-of-Experts (MoE) mo
 - **Model**: `moonshotai/Kimi-K2.6`
 - **Tensor Parallelism**: 8
 - **Pipeline Parallelism**: 2
-- **KV Cache**: FP8 (e5m2)
+- **KV Cache**: INT4
 - **Serving Image**: `lmsysorg/sglang:v0.5.10.post1`
 
 ## Benchmark Results
