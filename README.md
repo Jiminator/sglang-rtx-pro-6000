@@ -18,7 +18,7 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 | [GLM-5.1](https://huggingface.co/lukealonso/GLM-5.1-NVFP4) | NVFP4 | 2 Nodes (16x RTX 6000) | 3075.85 | 3451.06 | 4606.00 | 141.36 |
 | [Kimi-K2.5](https://huggingface.co/moonshotai/Kimi-K2.5) | INT4* | 2 Nodes (16x RTX 6000) | 3069.15 | 3443.55 | 6889.00 | 147.45 |
 | [Kimi-K2.5](https://huggingface.co/nvidia/Kimi-K2.5-NVFP4) | NVFP4 | 2 Nodes (16x RTX 6000) | 3237.46 | 3632.39 | 5535.00 | 137.89 |
-| [Kimi-K2.6](https://huggingface.co/moonshotai/Kimi-K2.6) | FP8* | 1 Node (8x RTX 6000) | 1459.26 | 1637.28 | 850.00 | 82.43 |
+| [Kimi-K2.6](https://huggingface.co/moonshotai/Kimi-K2.6) | INT4* | 1 Node (8x RTX 6000) | 1459.26 | 1637.28 | 850.00 | 82.43 |
 | [datalab-to/chandra-ocr-2](https://huggingface.co/datalab-to/chandra-ocr-2)** | BF16| 1 Node (1x RTX 6000)| 2600.67 | 5267.08 | 4603.00| 32.47 |
 
 
