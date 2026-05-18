@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: agentic-benchmark-job-hicahche-cpu-pool-low-load
+spec:
+  template:
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: large-cpu-pool
+      containers:
+      - name: benchmark
+        image: us-central1-docker.pkg.dev/northam-ce-mlai-tpu/shivaji-rflx-docker-repo/agentic-benchmark:low-load
+        args: ["http://10.10.0.7:30000", "--parallelism", "64", "--timeout", "1800.0"]
+      restartPolicy: Never

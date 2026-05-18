@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: metrics-pusher-sa
+  namespace: default
+  annotations:
+    iam.gke.io/gcp-service-account: sglang-metrics-pusher@northam-ce-mlai-tpu.iam.gserviceaccount.com
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: push-metrics-code
+  namespace: default
+data:
+  push_metrics.py: |
+    import time
+    import urllib.request
+    import json
+    import sys
+
+    try:
+        from google.cloud import bigtable
+    except ImportError:
+        print("Error: google-cloud-bigtable library not found.")
+        print("Please install it by running: pip install google-cloud-bigtable")
+        sys.exit(1)
+
+    # Configuration
+    PROJECT_ID = "northam-ce-mlai-tpu"
+    INSTANCE_ID = "sglang-metrics"
+    TABLE_ID = "metrics"
+    COLUMN_FAMILY_ID = "stats"
+    # Use in-cluster service DNS
+    MONITOR_URL = "http://k8s-monitor.default.svc/api/metrics?target=10.10.0.5:30000"
+    POD_NAME = "sglang-kimi-debug-no-spec-pod"
+
+    def get_metrics():
+        try:
+            with urllib.request.urlopen(MONITOR_URL) as response:
+                return json.loads(response.read().decode())
+        except Exception as e:
+            print(f"Error fetching metrics from monitor app: {e}", flush=True)
+            return None
+
+    def push_to_bigtable(metrics):
+        try:
+            # Removed admin=True to comply with bigtable.user role
+            client = bigtable.Client(project=PROJECT_ID)
+            instance = client.instance(INSTANCE_ID)
+            table = instance.table(TABLE_ID)
+            
+            micros = int(time.time() * 1000000)
+            reversed_ts = 2**63 - 1 - micros
+            
+            for key, value in metrics.items():
+                row_key = f"{POD_NAME}#{key}#{reversed_ts}".encode('utf-8')
+                row = table.direct_row(row_key)
+                
+                row.set_cell(
+                    COLUMN_FAMILY_ID,
+                    b"value",
+                    str(value).encode('utf-8')
+                )
+                row.commit()
+                print(f"Pushed {key} = {value}", flush=True)
+                
+        except Exception as e:
+            print(f"Error pushing to Bigtable: {e}", flush=True)
+
+    def main():
+        print("Starting to push metrics to Bigtable...", flush=True)
+        print(f"Target: {MONITOR_URL}", flush=True)
+        print(f"Bigtable Instance: {INSTANCE_ID}, Table: {TABLE_ID}", flush=True)
+        print("Press Ctrl+C to stop.", flush=True)
+        
+        while True:
+            metrics = get_metrics()
+            if metrics and "error" not in metrics:
+                push_to_bigtable(metrics)
+            else:
+                if metrics and "error" in metrics:
+                    print(f"Metrics API returned error: {metrics['error']}", flush=True)
+            
+            time.sleep(5)
+
+    if __name__ == "__main__":
+        main()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-pusher
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics-pusher
+  template:
+    metadata:
+      labels:
+        app: metrics-pusher
+    spec:
+      serviceAccountName: metrics-pusher-sa
+      containers:
+      - name: app
+        image: python:3.9-slim
+        command: ["sh", "-c", "pip install google-cloud-bigtable && python -u /app/push_metrics.py"]
+        workingDir: /app
+        volumeMounts:
+        - name: code
+          mountPath: /app
+      volumes:
+      - name: code
+        configMap:
+          name: push-metrics-code

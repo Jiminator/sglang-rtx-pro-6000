@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K8s Workload Monitor</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.5);
+            --text-color: #f8fafc;
+            --accent-color: #38bdf8;
+            --secondary-color: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.05);
+        }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(30, 41, 59, 0.2);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+        .cluster-name {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .nodepool-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease;
+        }
+        .nodepool-card:hover {
+            transform: translateY(-2px);
+        }
+        .nodepool-card-header {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.5rem;
+        }
+        .pod-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .pod-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            transition: background 0.2s ease;
+        }
+        .pod-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .nodepool-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-color);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+            box-shadow: 0 0 12px #10b981;
+        }
+        .loading {
+            text-align: center;
+            color: var(--secondary-color);
+            padding: 2rem;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: #1e293b;
+            margin: 5% auto;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            width: 85%;
+            max-width: 1100px;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .close {
+            color: var(--secondary-color);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: var(--text-color);
+            text-decoration: none;
+        }
+        pre {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .pod-link {
+            color: #f8fafc;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .pod-link:hover {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+        select {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.5rem;
+            border-radius: 8px;
+            width: 280px;
+            font-family: monospace;
+        }
+        selectoption {
+            background: #1e293b;
+            color: var(--text-color);
+        }
+        .btn {
+            background: var(--accent-color);
+            color: #0f172a;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: background 0.2s ease;
+        }
+        .btn:hover {
+            background: #0ea5e9;
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>K8s Workload Monitor</h1>
+        <div class="cluster-name">Cluster: shivaji-minimax-g4-384-cluster</div>
+        
+        <!-- Nodepool Cards Container -->
+        <div id="nodepools-container">
+            <div class="loading">Loading workloads...</div>
+        </div>
+
+        <!-- Metrics Section -->
+        <div class="metrics-section" style="margin-top: 2.5rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0; font-size: 1.5rem; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SGLang Server Metrics</h2>
+                <div>
+                    <select id="metrics-target" onchange="fetchMetrics()">
+                        <option value="">Select a pod...</option>
+                    </select>
+                    <button class="btn" onclick="fetchMetrics()">Refresh</button>
+                    <button class="btn btn-secondary" onclick="showNvidiaSmi()">NVIDIA SMI</button>
+                </div>
+            </div>
+            
+            <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+                <!-- Row 1 -->
+                <div class="metric-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: var(--secondary-color); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">KV Cache Usage</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--text-color); margin: 0.5rem 0;" id="kv-percent">0%</div>
+                    <div style="width: 100%; background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div id="kv-bar" style="width: 0%; background: linear-gradient(to right, #38bdf8, #818cf8); height: 100%; transition: width 0.5s ease;"></div>
+                    </div>
+                    <div style="color: var(--secondary-color); font-size: 0.75rem; margin-top: 0.5rem;" id="kv-detail">Used: 0 / Avail: 0</div>
+                </div>
+
+                <div class="metric-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: var(--secondary-color); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Throughput</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: #10b981; margin: 0.5rem 0;" id="throughput">0</div>
+                    <div style="color: var(--secondary-color); font-size: 0.75rem;">Tokens / Second</div>
+                </div>
+
+                <div class="metric-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: var(--secondary-color); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Cache Hit Rate</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: #fbbf24; margin: 0.5rem 0;" id="hit-rate">0%</div>
+                    <div style="color: var(--secondary-color); font-size: 0.75rem;">Prefix Cache Hits</div>
+                </div>
+
+                <div class="metric-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: var(--secondary-color); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">CPU Usage</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--text-color); margin: 0.5rem 0;" id="cpu-usage">0.0</div>
+                    <div style="color: var(--secondary-color); font-size: 0.75rem;">Cores</div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="metric-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: var(--secondary-color); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Memory Usage</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--text-color); margin: 0.5rem 0;" id="mem-usage">0.0</div>
+                    <div style="color: var(--secondary-color); font-size: 0.75rem;">GB</div>
+                </div>
+
+                <div class="metric-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: var(--secondary-color); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Requests</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: #f472b6; margin: 0.5rem 0;" id="requests">0 / 0</div>
+                    <div style="color: var(--secondary-color); font-size: 0.75rem;">Running / Queued</div>
+                </div>
+
+                <div class="metric-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: var(--secondary-color); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Evictable Tokens</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: #fbbf24; margin: 0.5rem 0;" id="evictable-tokens">0</div>
+                    <div style="color: var(--secondary-color); font-size: 0.75rem;">Can be freed</div>
+                </div>
+
+                <div class="metric-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: var(--secondary-color); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Spec Accept Rate</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: #818cf8; margin: 0.5rem 0;" id="spec-rate">0%</div>
+                    <div style="color: var(--secondary-color); font-size: 0.75rem;">Speculative Decoding</div>
+                </div>
+
+                <!-- Row 3: HiCache -->
+                <div class="metric-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); grid-column: span 2;">
+                    <div style="color: var(--secondary-color); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">HiCache Usage (Host)</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--accent-color); margin: 0.5rem 0;" id="hicache-percent">0%</div>
+                    <div style="width: 100%; background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div id="hicache-bar" style="width: 0%; background: linear-gradient(to right, #10b981, #38bdf8); height: 100%; transition: width 0.5s ease;"></div>
+                    </div>
+                    <div style="color: var(--secondary-color); font-size: 0.75rem; margin-top: 0.5rem;" id="hicache-detail">Used: 0 / Total: 0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benchmark Section -->
+        <div class="metrics-section" style="margin-top: 2.5rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0; font-size: 1.5rem; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Benchmark Progress / Summary</h2>
+                <div>
+                    <select id="benchmark-target" onchange="fetchBenchmarkStatus()">
+                        <option value="">Select a benchmark pod...</option>
+                    </select>
+                    <button class="btn" onclick="fetchBenchmarkStatus()">Refresh</button>
+                </div>
+            </div>
+            
+            <!-- Summary Cards -->
+            <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="metric-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: var(--secondary-color); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Steps Completed</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--text-color); margin: 0.5rem 0;" id="bench-steps">0 / 12542</div>
+                    <div style="width: 100%; background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div id="bench-steps-bar" style="width: 0%; background: linear-gradient(to right, #38bdf8, #818cf8); height: 100%; transition: width 0.5s ease;"></div>
+                    </div>
+                </div>
+
+                <div class="metric-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: var(--secondary-color); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Active Sequences</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: #10b981; margin: 0.5rem 0;" id="bench-sequences">0 / 256</div>
+                </div>
+
+                <div class="metric-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: var(--secondary-color); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Volume Processed</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: #fbbf24; margin: 0.5rem 0;" id="bench-chars">0</div>
+                </div>
+            </div>
+
+            <!-- Granular Progress or Summary -->
+            <div class="nodepool-card">
+                <div class="nodepool-card-header" id="detail-header">Detail</div>
+                <div class="pod-list" id="granular-list">
+                    <div class="loading">Select a pod to view progress</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-title" style="margin-top: 0; color: var(--accent-color);">Logs</h2>
+            <pre id="logs-content">Loading logs...</pre>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById("myModal");
+        const span = document.getElementsByClassName("close")[0];
+        let eventSource = null;
+        const podLookup = {};
+
+        span.onclick = function() {
+            modal.style.display = "none";
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+            }
+        }
+
+        function showLogs(podName) {
+            modal.style.display = "block";
+            document.getElementById("modal-title").innerText = `Logs for ${podName}`;
+            const logsContent = document.getElementById("logs-content");
+            logsContent.innerText = "Connecting...\n";
+
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            eventSource = new EventSource(`/api/logs?pod=${podName}`);
+            eventSource.onmessage = function(event) {
+                logsContent.innerText += event.data + "\n";
+                logsContent.scrollTop = logsContent.scrollHeight;
+            };
+            eventSource.onerror = function(err) {
+                console.error("EventSource failed:", err);
+                logsContent.innerText += "\n[Connection closed or error]\n";
+                eventSource.close();
+                eventSource = null;
+            };
+        }
+
+        function showNvidiaSmi() {
+            const podName = document.getElementById('metrics-target').value;
+            if (!podName) {
+                alert("Please select an SGLang pod first.");
+                return;
+            }
+            
+            modal.style.display = "block";
+            document.getElementById("modal-title").innerText = `NVIDIA SMI for ${podName}`;
+            const logsContent = document.getElementById("logs-content");
+            logsContent.innerText = "Fetching NVIDIA SMI data...\n";
+            
+            fetch(`/api/nvidia-smi?pod=${podName}`)
+                .then(response => response.text())
+                .then(data => {
+                    logsContent.innerText = data;
+                })
+                .catch(error => {
+                    logsContent.innerText = "Error: " + error;
+                });
+        }
+
+        function calculateAge(timestamp) {
+            if (!timestamp) return 'N/A';
+            const created = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - created;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+            
+            if (diffDays > 0) return `${diffDays}d`;
+            if (diffHours > 0) return `${diffHours}h`;
+            if (diffMins > 0) return `${diffMins}m`;
+            return 'Just now';
+        }
+
+        async function fetchPods() {
+            try {
+                const response = await fetch('/api/pods');
+                const data = await response.json();
+                
+                const container = document.getElementById('nodepools-container');
+                container.innerHTML = '';
+                
+                const dropdown = document.getElementById('metrics-target');
+                const currentSelection = dropdown.value;
+                dropdown.innerHTML = '';
+                
+                const benchDropdown = document.getElementById('benchmark-target');
+                const currentBenchSelection = benchDropdown.value;
+                benchDropdown.innerHTML = '<option value="">Select a benchmark pod...</option>';
+                
+                if (data.error) {
+                    container.innerHTML = `<div style="color: #ef4444; text-align: center;">Error: ${data.error}</div>`;
+                    return;
+                }
+                
+                if (data.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; color: var(--secondary-color);">No running pods found.</div>';
+                    return;
+                }
+                
+                const grouped = {};
+                data.forEach(pod => {
+                    if (!grouped[pod.nodepool]) {
+                        grouped[pod.nodepool] = [];
+                    }
+                    grouped[pod.nodepool].push(pod);
+                });
+                
+                let sglangPodFound = false;
+                
+                for (const nodepool in grouped) {
+                    const card = document.createElement('div');
+                    card.className = 'nodepool-card';
+                    
+                    const header = document.createElement('div');
+                    header.className = 'nodepool-card-header';
+                    header.innerText = nodepool;
+                    card.appendChild(header);
+                    
+                    const podList = document.createElement('div');
+                    podList.className = 'pod-list';
+                    
+                    grouped[nodepool].forEach(pod => {
+                        const podItem = document.createElement('div');
+                        podItem.className = 'pod-item';
+                        podItem.innerHTML = `
+                            <div>
+                                <span class="status-dot"></span>
+                                <a class="pod-link" onclick="showLogs('${pod.name}')">${pod.name}</a>
+                            </div>
+                            <div>
+                                <span style="color: var(--secondary-color); font-size: 0.85rem; margin-right: 1rem;">${calculateAge(pod.creationTimestamp)}</span>
+                                <span class="nodepool-badge">${pod.nodepool}</span>
+                            </div>
+                        `;
+                        podList.appendChild(podItem);
+                        
+                        if (pod.ip) {
+                            podLookup[pod.name] = pod;
+                            
+                            if (pod.name.includes('sglang')) {
+                                const option = document.createElement('option');
+                                option.value = pod.name;
+                                option.innerText = `${pod.name} (${pod.ip})`;
+                                
+                                if (!sglangPodFound && !currentSelection) {
+                                    option.selected = true;
+                                    sglangPodFound = true;
+                                }
+                                
+                                dropdown.appendChild(option);
+                            }
+                        }
+                        
+                        // Include both running and completed benchmarks in dropdown
+                        if (pod.name.includes('benchmark')) {
+                            const option = document.createElement('option');
+                            option.value = pod.name;
+                            option.innerText = `${pod.name} (${pod.status || 'Unknown'})`;
+                            option.setAttribute('data-status', pod.status);
+                            benchDropdown.appendChild(option);
+                        }
+                    });
+                    
+                    card.appendChild(podList);
+                    container.appendChild(card);
+                }
+                
+                if (currentSelection) {
+                    dropdown.value = currentSelection;
+                }
+                
+                if (currentBenchSelection) {
+                    benchDropdown.value = currentBenchSelection;
+                }
+                
+                if (dropdown.value) {
+                    fetchMetrics();
+                }
+                
+                if (benchDropdown.value) {
+                    fetchBenchmarkStatus();
+                }
+                
+            } catch (error) {
+                console.error('Error fetching pods:', error);
+                document.getElementById('nodepools-container').innerHTML = '<div style="color: #ef4444; text-align: center;">Failed to fetch data</div>';
+            }
+        }
+
+        async function fetchMetrics() {
+            const dropdown = document.getElementById('metrics-target');
+            const podName = dropdown.value;
+            if (!podName) return;
+            
+            const podInfo = podLookup[podName];
+            if (!podInfo) return;
+            
+            const target = `${podInfo.ip}:30000`;
+            
+            try {
+                const response = await fetch(`/api/metrics?target=${target}`);
+                const data = await response.json();
+                
+                if (!data.error) {
+                    const kvUsed = data.kv_used || 0;
+                    const kvAvail = data.kv_available || 0;
+                    const total = kvUsed + kvAvail;
+                    const percent = total > 0 ? Math.round((kvUsed / total) * 100) : 0;
+                    
+                    document.getElementById('kv-percent').innerText = `${percent}%`;
+                    document.getElementById('kv-bar').style.width = `${percent}%`;
+                    document.getElementById('kv-detail').innerText = `Used: ${Math.round(kvUsed)} / Avail: ${Math.round(kvAvail)}`;
+                    
+                    document.getElementById('throughput').innerText = Math.round(data.throughput || 0);
+                    document.getElementById('hit-rate').innerText = `${Math.round((data.hit_rate || 0) * 100)}%`;
+                    document.getElementById('requests').innerText = `${Math.round(data.running_reqs || 0)} / ${Math.round(data.queue_reqs || 0)}`;
+                    document.getElementById('evictable-tokens').innerText = Math.round(data.kv_evictable || 0);
+                    document.getElementById('spec-rate').innerText = `${Math.round((data.spec_rate || 0) * 100)}%`;
+                    
+                    const hicacheUsed = data.hicache_used || 0;
+                    const hicacheTotal = data.hicache_total || 0;
+                    const hicachePercent = hicacheTotal > 0 ? Math.round((hicacheUsed / hicacheTotal) * 100) : 0;
+                    
+                    document.getElementById('hicache-percent').innerText = `${hicachePercent}%`;
+                    document.getElementById('hicache-bar').style.width = `${hicachePercent}%`;
+                    document.getElementById('hicache-detail').innerText = `Used: ${Math.round(hicacheUsed)} / Total: ${Math.round(hicacheTotal)}`;
+                }
+            } catch (error) {
+                console.error('Error fetching SGLang metrics:', error);
+            }
+            
+            try {
+                const response = await fetch(`/api/host-metrics?pod=${podName}`);
+                const data = await response.json();
+                if (!data.error) {
+                    document.getElementById('cpu-usage').innerText = data.cpu.toFixed(2);
+                    document.getElementById('mem-usage').innerText = (data.memory / (1024*1024*1024)).toFixed(2);
+                }
+            } catch (error) {
+                console.error('Error fetching host metrics:', error);
+            }
+        }
+
+        async function fetchBenchmarkStatus() {
+            const dropdown = document.getElementById('benchmark-target');
+            const podName = dropdown.value;
+            if (!podName) return;
+            
+            const selectedOption = dropdown.options[dropdown.selectedIndex];
+            const status = selectedOption.getAttribute('data-status');
+            
+            document.getElementById('detail-header').innerText = `Detail for ${podName}`;
+            
+            if (status === 'Succeeded' || status === 'Completed') {
+                fetchBenchmarkSummary(podName);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/benchmark-status?pod=${podName}`);
+                const data = await response.json();
+                
+                if (!data.error) {
+                    const completed = data.total_steps_completed || 0;
+                    const total = data.total_steps_expected || 12542;
+                    const percent = Math.round((completed / total) * 100);
+                    
+                    document.getElementById('bench-steps').innerText = `${completed} / ${total}`;
+                    document.getElementById('bench-steps-bar').style.width = `${percent}%`;
+                    document.getElementById('bench-sequences').innerText = `${data.active_sequences || 0} / ${data.total_sequences_expected || 256}`;
+                    document.getElementById('bench-chars').innerText = (data.total_characters || 0).toLocaleString();
+                    
+                    const list = document.getElementById('granular-list');
+                    list.innerHTML = '';
+                    
+                    if (data.granular_progress && data.granular_progress.length > 0) {
+                        data.granular_progress.forEach(seq => {
+                            const item = document.createElement('div');
+                            item.className = 'pod-item';
+                            item.innerHTML = `
+                                <div style="flex: 1; margin-right: 1rem;">
+                                    <span style="font-family: monospace; font-size: 0.85rem;">${seq.trace_id}</span>
+                                    <div style="width: 100%; background: rgba(255,255,255,0.1); height: 4px; border-radius: 2px; overflow: hidden; margin-top: 0.25rem;">
+                                        <div style="width: ${seq.percent}%; background: var(--accent-color); height: 100%;"></div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-weight: 600; color: var(--text-color);">${seq.percent}%</span>
+                                    <div style="color: var(--secondary-color); font-size: 0.75rem;">Step ${seq.current_step} / ${seq.total_steps}</div>
+                                </div>
+                            `;
+                            list.appendChild(item);
+                        });
+                    } else {
+                        list.innerHTML = '<div style="text-align: center; color: var(--secondary-color);">No active sequences found in recent logs.</div>';
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching benchmark status:', error);
+            }
+        }
+
+        async function fetchBenchmarkSummary(podName) {
+            const list = document.getElementById('granular-list');
+            list.innerHTML = '<div class="loading">Fetching summary from logs (may take a few seconds)...</div>';
+            
+            try {
+                const response = await fetch(`/api/benchmark-summary?pod=${podName}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    list.innerHTML = `<div style="color: #ef4444; text-align: center;">Error: ${data.error}</div>`;
+                    return;
+                }
+                
+                // Render summary JSON nicely
+                list.innerHTML = `
+                    <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h3 style="color: var(--accent-color); margin-top: 0; font-size: 1rem;">Run Summary</h3>
+                        <pre style="max-height: 400px; font-size: 0.8rem;">${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+                
+                // Update summary cards if available in data
+                if (data.num_requests_completed) {
+                    document.getElementById('bench-steps').innerText = `${data.num_requests_completed} / ${data.num_requests_total || 'N/A'}`;
+                    const percent = data.num_requests_total ? Math.round((data.num_requests_completed / data.num_requests_total) * 100) : 100;
+                    document.getElementById('bench-steps-bar').style.width = `${percent}%`;
+                }
+                if (data.num_sequences) {
+                    document.getElementById('bench-sequences').innerText = `${data.num_sequences} / ${data.num_sequences}`;
+                }
+                if (data.tokens && data.tokens.total) {
+                    document.getElementById('bench-chars').innerText = data.tokens.total.toLocaleString() + " (Tokens)";
+                } else if (data.prompt_tokens && data.prompt_tokens.mean) {
+                    // Fallback if structure is different
+                    document.getElementById('bench-chars').innerText = "N/A (See JSON)";
+                }
+                
+            } catch (error) {
+                console.error('Error fetching benchmark summary:', error);
+                list.innerHTML = '<div style="color: #ef4444; text-align: center;">Failed to fetch summary</div>';
+            }
+        }
+
+        fetchPods();
+        setInterval(fetchPods, 10000);
+        setInterval(fetchMetrics, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+{
+  "started_at": "2026-05-17T18:08:16.627327+00:00",
+  "completed_at": "2026-05-18T01:23:08.083282+00:00",
+  "data_path": "/home/jimmy/data.jsonl.zst",
+  "model": "moonshotai/Kimi-K2.6",
+  "endpoints": [
+    "http://localhost:8000/v1"
+  ],
+  "request_body": {
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "max_tokens": 4096
+  },
+  "parallelism": 256,
+  "request_timeout_s": 1800.0,
+  "num_sequences": 256,
+  "num_requests_total": 12542,
+  "num_requests_completed": 12542,
+  "num_requests_failed": 0,
+  "wall_clock_seconds": 26091.45061419811,
+  "latency_seconds": {
+    "mean": 133.91837483321297,
+    "p50": 33.96096114302054,
+    "p90": 407.3509476860054,
+    "p95": 509.84317794512026,
+    "p99": 952.7870753179304
+  },
+  "prompt_tokens": {
+    "mean": 18107.965077340137,
+    "p50": 13505.0,
+    "p90": 38897.0,
+    "p95": 49806.0,
+    "p99": 73234.0
+  },
+  "completion_tokens": {
+    "mean": 457.8959496093127,
+    "p50": 133.0,
+    "p90": 1084.0,
+    "p95": 2650.0,
+    "p99": 4096.0
+  },
+  "tokens": {
+    "prompt": 227110098,
+    "completion": 5742931,
+    "total": 232853029,
+    "cached_prompt": 0,
+    "prompt_cache_hit_rate": 0.0
+  },
+  "throughput": {
+    "requests_per_second": 0.48069385583241797,
+    "prompt_tokens_per_second": 8704.3875543054,
+    "completion_tokens_per_second": 220.10776958774707,
+    "total_tokens_per_second": 8924.495323893147
+  },
+  "endpoint_summaries": [
+    {
+      "endpoint": "http://localhost:8000/v1",
+      "completed": 12542,
+      "prompt_tokens": 227110098,
+      "completion_tokens": 5742931,
+      "cached_prompt_tokens": 0,
+      "prompt_cache_hit_rate": 0.0
+    }
+  ],
+  "sample_failures": []
+}

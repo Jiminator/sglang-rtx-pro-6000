@@ -1,0 +1,66 @@
+{
+  "started_at": "2026-05-17T15:51:14.209849+00:00",
+  "completed_at": "2026-05-18T01:43:15.003013+00:00",
+  "data_path": "/workspace/data.jsonl",
+  "model": "/models",
+  "endpoints": [
+    "http://10.10.0.7:30000"
+  ],
+  "request_body": {
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "max_tokens": 4096
+  },
+  "parallelism": 64,
+  "request_timeout_s": 1800,
+  "num_sequences": 256,
+  "num_requests_total": 12542,
+  "num_requests_completed": 12542,
+  "num_requests_failed": 0,
+  "wall_clock_seconds": 35520.779568364,
+  "latency_seconds": {
+    "mean": 100.18952683824418,
+    "p50": 16.12912897700153,
+    "p90": 465.535483759988,
+    "p95": 552.9769177540002,
+    "p99": 699.4993600860034
+  },
+  "prompt_tokens": {
+    "mean": 18107.965077340137,
+    "p50": 13505,
+    "p90": 38897,
+    "p95": 49806,
+    "p99": 73234
+  },
+  "completion_tokens": {
+    "mean": 445.3618242704513,
+    "p50": 133,
+    "p90": 1034,
+    "p95": 2381,
+    "p99": 4096
+  },
+  "tokens": {
+    "prompt": 227110098,
+    "completion": 5585728,
+    "total": 232695826,
+    "cached_prompt": 184395456,
+    "prompt_cache_hit_rate": 0.8119209917297469
+  },
+  "throughput": {
+    "requests_per_second": 0.35308909749183337,
+    "prompt_tokens_per_second": 6393.725046571666,
+    "completion_tokens_per_second": 157.25240458897014,
+    "total_tokens_per_second": 6550.9774511606365
+  },
+  "endpoint_summaries": [
+    {
+      "endpoint": "http://10.10.0.7:30000",
+      "completed": 12542,
+      "prompt_tokens": 227110098,
+      "completion_tokens": 5585728,
+      "cached_prompt_tokens": 184395456,
+      "prompt_cache_hit_rate": 0.8119209917297469
+    }
+  ],
+  "sample_failures": []
+}
