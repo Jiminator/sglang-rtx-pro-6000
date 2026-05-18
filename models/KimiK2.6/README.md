@@ -27,9 +27,9 @@ Workload: **ClientAgenticBenchmark** — 12,542 multi-turn agentic requests acro
 | Metric | Result |
 |--------|--------|
 | Wall clock | **7h 14m 51s** (26,091.5 s) |
-| Total throughput | **8,924.5 tok/s** |
-| Prompt token throughput | 8,704.4 tok/s |
-| Completion token throughput | 220.1 tok/s |
+| **Output Throughput** | **220.1 tok/s** |
+| **Total Throughput** | **8,924.5 tok/s** |
+| Input Throughput | 8,704.4 tok/s |
 | Request throughput | 0.481 req/s |
 | Requests completed | **12,542 / 12,542 (100 %)** |
 | Failures | **0** |
@@ -40,16 +40,18 @@ Workload: **ClientAgenticBenchmark** — 12,542 multi-turn agentic requests acro
 | Total prompt tokens served | 227,110,098 |
 | Total completion tokens generated | 5,742,931 |
 
+> Note on output throughput: ClientAgenticBenchmark has short completions (mean 458 tokens, p99 4,096) and very long prompts (mean ~18 K, p99 73 K) — i.e. it's prefill-dominant. Output tok/s on this workload understates the cluster's decode capability vs the standard `bench_serving` random workload (which uses 8K-token outputs).
+
 ### Ablation lineage on the same workload
 
-| Run | Topology | Speculative | HiCache | Wall | tot tok/s | p99 latency | Completion | Failures |
-|-----|---|---|:-:|---:|---:|---:|---:|---:|
-| Run #2 | PP=2 + DPA + radix + dyn-chunking | none | no | 20h 36m | 3,069 | — | 97.4 % | 326 |
-| D7 | 2x SMG `power_of_two` | none | no | 17h 37m | 3,669 | 1,238 s | 99.89 % | 14 |
-| D8 | 2x SMG + HiCache + EAGLE3 (3, 4) | EAGLE3 (3, 4) | yes | 7h 22m | 8,772 | 1,363 s | 100 % | 0 |
-| **D9 (ship)** | 2x SMG + HiCache + EAGLE3 (4, 6) | **EAGLE3 (4, 6)** | yes | **7h 14m 51s** | **8,924** | **953 s** | **100 %** | **0** |
+| Run | Topology | Speculative | HiCache | Wall | Output tok/s | Total tok/s | p99 latency | Completion | Failures |
+|-----|---|---|:-:|---:|---:|---:|---:|---:|---:|
+| Run #2 | PP=2 + DPA + radix + dyn-chunking | none | no | 20h 36m | 62.3 | 3,069 | — | 97.4 % | 326 |
+| D7 | 2x SMG `power_of_two` | none | no | 17h 37m | 89.3 | 3,669 | 1,238 s | 99.89 % | 14 |
+| D8 | 2x SMG + HiCache + EAGLE3 (3, 4) | EAGLE3 (3, 4) | yes | 7h 22m | ~216 | 8,772 | 1,363 s | 100 % | 0 |
+| **D9 (ship)** | 2x SMG + HiCache + EAGLE3 (4, 6) | **EAGLE3 (4, 6)** | yes | **7h 14m 51s** | **220.1** | **8,924** | **953 s** | **100 %** | **0** |
 
-D9 over D8: −1.7 % wall, +1.7 % tot tok/s, **−30 % p99 latency**.
+D9 over D8: −1.7 % wall, +1.9 % output tok/s, +1.7 % total tok/s, **−30 % p99 latency**.
 
 ### Detailed Logs
 - [Full Results](./results/benchmark_results.md)
