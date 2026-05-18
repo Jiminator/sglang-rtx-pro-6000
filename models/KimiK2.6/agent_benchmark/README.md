@@ -25,7 +25,7 @@ Detailed results are stored in the `results/` directory.
 
 *\*Note: The 0% hit rate in the dual-node results is likely due to current limitations in how the SMG router aggregates and reports cache statistics from backend workers.*
 
-**Total Tokens per Second** for Single node is higher as the Two Node is across two nodes, which is half the single node. 
+**Total Tokens per Second** for Single node is higher as the Two Node is across two nodes. 
 
 ---
 
