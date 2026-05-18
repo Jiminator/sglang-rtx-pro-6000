@@ -86,8 +86,9 @@ There are two primary deployment configurations used in this benchmark has the f
 
 ## Architecture
 
-The Single Node
-@Todo Insert Architecture.
+The Single Node architecture with sglang and HiCache.
+
+![Single Node GKE Deployment](sglang_debug_hicache_pod_run.svg)
 
 The dual-node setup utilizes a hierarchical routing architecture to maximize throughput while maintaining speculative decoding efficiency.
 
