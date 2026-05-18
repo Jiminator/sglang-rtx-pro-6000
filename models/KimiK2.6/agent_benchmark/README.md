@@ -15,7 +15,8 @@ The agentic benchmark data has the following distribution. You can see there are
 ![Steps Distribution](steps_distribution.jpeg)
 ![Top 10 Sequences](top10_sequences.jpeg)
 
-### Key Features Used to solve this:
+---
+## Key Sglang Features Used to solve this:
 - **SGLang Hierarchical Cache (HiCache):** Optimized KV cache management for long-context and multi-turn agentic interactions.
 - **EAGLE3 Speculative Decoding:** Acceleration technique using a draft model (Kimi-K2.5-EAGLE3) to speed up inference.
 - **SMG Router:** Load balancing and request routing across multiple SGLang replicas in a multi-node environment. We plan to replace this with GKE Inference Gateway.
