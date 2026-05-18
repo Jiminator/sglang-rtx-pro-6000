@@ -69,8 +69,8 @@ Detailed results are stored in the `results/` directory.
 
 The dual-node setup utilizes a hierarchical routing architecture to maximize throughput while maintaining speculative decoding efficiency.
 
-![Architecture Diagram](results/dual_node_architecture.svg)
-*(Note: Please ensure the `dual_node_architecture.svg` file is placed in the `results/` directory to display the diagram above.)*
+![Architecture Diagram](results/kimi_k2_6_2node_smg_deployment.svg)
+*(Note: Please ensure the `kimi_k2_6_2node_smg_deployment.svg` file is placed in the `results/` directory to display the diagram above.)*
 
 ---
 
