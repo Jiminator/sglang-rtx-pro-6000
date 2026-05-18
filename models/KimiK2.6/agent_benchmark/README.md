@@ -84,8 +84,16 @@ The dual-node setup utilizes a hierarchical routing architecture to maximize thr
    python3 benchmark_scripts/agentic_benchmark_sglang_low_load.py http://<SGLANG_IP>:30000 --parallelism 64
    ```
 
-### Deploying the Monitor
-The `k8s-monitor` provides a UI for tracking progress:
+### Monitoring App
+The `k8s-monitor` provides a real-time UI for tracking the cluster status and benchmark progress.
+
+#### App Features Showcase:
+| **SGLang Metrics** | **Pod Monitoring** | **Benchmark Progress** |
+| :---: | :---: | :---: |
+| ![SGLang Monitoring](k8s-monitor/sglangmonitoring.png) | ![Pod Monitoring](k8s-monitor/podmonitoring.png) | ![Benchmark Progress](k8s-monitor/BenchmarkProgress.png) |
+| *Real-time KV Cache & Throughput* | *GKE Workload Status & Logs* | *Granular Step Tracking* |
+
+To deploy the monitor:
 ```bash
 kubectl apply -f k8s-monitor/k8s-manifests.yaml
 kubectl port-forward svc/k8s-monitor 8080:80
