@@ -13,7 +13,7 @@ The benchmark is challenging as it contains long sequences and large number of p
 
 Detailed results are stored in the `results/` directory.
 
-| Metric | Single-Node (GKE) | Dual-Node (GCE) |
+| Metric | Single-Node (GKE) | Two-Node (GCE) |
 | :--- | :---: | :---: |
 | **Requests per Second** | 0.353 | 0.481 |
 | **Total Tokens per Second** | 6,550.98 | 8,924.50 |
@@ -22,7 +22,10 @@ Detailed results are stored in the `results/` directory.
 | **P99 Latency (s)** | 699.50 | 952.79 |
 | **Prompt Cache Hit Rate** | **81.19%** | 0.00%* |
 
+
 *\*Note: The 0% hit rate in the dual-node results is likely due to current limitations in how the SMG router aggregates and reports cache statistics from backend workers.*
+
+**Total Tokens per Second** for Single node is higher as the Two Node is across two nodes, which is half the single node. 
 
 ---
 
