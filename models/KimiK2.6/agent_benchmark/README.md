@@ -9,6 +9,12 @@ The benchmark simulates real-world agentic traces from the Kimi K2.6 model. It m
 ### Challenges
 The benchmark is challenging as it contains long sequences and large number of prompts. Which has tested the KVCache management for the sglang server. We have used sgLang's **HiCache** feature for this. The other challenge is with parallelism of the benchmark. The default parallelism of 256 overwhelms a single node and causing timeouts.
 
+### Benchmark Data 
+The agentic benchmark data has the following distribution. You can see there are long tail steps and sequences.
+![Distribution of Request Length](distribution.png)
+![Steps Distribution](steps_distribution.jpeg)
+![Top 10 Sequences](top10_sequences.jpeg)
+
 ### Key Features Used to solve this:
 - **SGLang Hierarchical Cache (HiCache):** Optimized KV cache management for long-context and multi-turn agentic interactions.
 - **EAGLE3 Speculative Decoding:** Acceleration technique using a draft model (Kimi-K2.5-EAGLE3) to speed up inference.
@@ -18,7 +24,7 @@ The benchmark is challenging as it contains long sequences and large number of p
 
 ## Deployment Configurations
 
-There are two primary deployment configurations used in this benchmark:
+There are two primary deployment configurations used in this benchmark has the following distribution.
 
 ### 1. Single-Node GKE (Google Kubernetes Engine)
 - **Environment:** GKE Cluster with G4 GPUs.
