@@ -1,15 +1,18 @@
 # Kimi K2.6 Agentic Benchmark for SGLang
 
-This repository contains the configuration, scripts, and results for benchmarking the **Kimi K2.6** model using **SGLang**. The benchmark focuses on evaluating performance under agentic workloads, specifically testing features like **Hierarchical Cache (HiCache)** and **EAGLE3 Speculative Decoding**.
+This repository contains the configuration, scripts, and results for **agentic benchmarking** of the **Kimi K2.6** model using **SGLang**. The benchmark focuses on evaluating performance under agentic workloads.
 
 ## Overview
 
 The benchmark simulates real-world agentic traces from the Kimi K2.6 model. It measures key performance metrics including request throughput, token throughput, and latency percentiles (P50, P90, P95, P99).
 
-### Key Features Tested:
+### Challenges
+The benchmark is challenging as it contains long sequences and large number of prompts. Which has tested the KVCache management for the sglang server. We have used sgLang's **HiCache** feature for this. The other challenge is with parallelism of the benchmark. The default parallelism of 256 overwhelms a single node and causing timeouts.
+
+### Key Features Used to solve this:
 - **SGLang Hierarchical Cache (HiCache):** Optimized KV cache management for long-context and multi-turn agentic interactions.
 - **EAGLE3 Speculative Decoding:** Acceleration technique using a draft model (Kimi-K2.5-EAGLE3) to speed up inference.
-- **SMG Router:** Load balancing and request routing across multiple SGLang replicas in a multi-node environment.
+- **SMG Router:** Load balancing and request routing across multiple SGLang replicas in a multi-node environment. We plan to replace this with GKE Inference Gateway.
 
 ---
 
@@ -18,19 +21,23 @@ The benchmark simulates real-world agentic traces from the Kimi K2.6 model. It m
 There are two primary deployment configurations used in this benchmark:
 
 ### 1. Single-Node GKE (Google Kubernetes Engine)
-- **Environment:** GKE Cluster with NVIDIA L4/A100 GPUs.
+- **Environment:** GKE Cluster with G4 GPUs.
 - **Setup:** A single SGLang server running with TP=8.
-- **Storage:** GCS Fuse for model weights and local SSD/EmptyDir for HiCache storage.
+- **Storage:** GCS Fuse for model weights.
 - **Configuration:** Defined in `sglang-debug-hicache.yaml`.
 - **Highlights:** Demonstrates high cache hit rates (up to 81%) using HiCache in a single-node setup.
+**Note** - For this benchmark we reduce the benchmark parallelsim to 64, this can be increased to 128, but needs to be tested out.
 
+***We have also attempted to use HiCache with backend of Local File SSD and Lustre, this ends up in sglang crashes, which needs investigation***
+   
 ### 2. Dual-Node GCE (Google Compute Engine)
 - **Environment:** Two independent GCE instances, each running an SGLang server (TP=8).
 - **Setup:** A single **SMG Router** (SGLang Multi-GPU) is used to distribute traffic across both nodes.
 - **Acceleration:** EAGLE3 Speculative Decoding enabled on both nodes.
 - **Configuration:** Orchestrated via `sglang-2node-hicache-smg.sh`.
 - **Highlights:** Achieves higher overall throughput by scaling across multiple nodes, though cache hit reporting via the router may vary.
-
+**Note** - This benchmark is with parallelism of 256. We have made different sweeps of EAGLE3 settings and the current settings in our experiments gave better perf.
+  
 ---
 
 ## Benchmark Results
@@ -66,6 +73,9 @@ Detailed results are stored in the `results/` directory.
 ---
 
 ## Architecture
+
+The Single Node
+@Todo Insert Architecture.
 
 The dual-node setup utilizes a hierarchical routing architecture to maximize throughput while maintaining speculative decoding efficiency.
 
