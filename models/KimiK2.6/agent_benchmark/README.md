@@ -9,6 +9,23 @@ The benchmark simulates real-world agentic traces from the Kimi K2.6 model. It m
 ### Challenges
 The benchmark is challenging as it contains long sequences and large number of prompts. Which has tested the KVCache management for the sglang server. We have used sgLang's **HiCache** feature for this. The other challenge is with parallelism of the benchmark. The default parallelism of 256 overwhelms a single node and causing timeouts.
 
+## Benchmark Results
+
+Detailed results are stored in the `results/` directory.
+
+| Metric | Single-Node (GKE) | Dual-Node (GCE) |
+| :--- | :---: | :---: |
+| **Requests per Second** | 0.353 | 0.481 |
+| **Total Tokens per Second** | 6,550.98 | 8,924.50 |
+| **Mean Latency (s)** | 100.19 | 133.92 |
+| **P50 Latency (s)** | 16.13 | 33.96 |
+| **P99 Latency (s)** | 699.50 | 952.79 |
+| **Prompt Cache Hit Rate** | **81.19%** | 0.00%* |
+
+*\*Note: The 0% hit rate in the dual-node results is likely due to current limitations in how the SMG router aggregates and reports cache statistics from backend workers.*
+
+---
+
 ### Benchmark Data 
 The agentic benchmark data has the following distribution. You can see there are long tail steps and sequences.
 ![Distribution of Request Length](distribution.png)
@@ -47,22 +64,7 @@ There are two primary deployment configurations used in this benchmark has the f
   
 ---
 
-## Benchmark Results
 
-Detailed results are stored in the `results/` directory.
-
-| Metric | Single-Node (GKE) | Dual-Node (GCE) |
-| :--- | :---: | :---: |
-| **Requests per Second** | 0.353 | 0.481 |
-| **Total Tokens per Second** | 6,550.98 | 8,924.50 |
-| **Mean Latency (s)** | 100.19 | 133.92 |
-| **P50 Latency (s)** | 16.13 | 33.96 |
-| **P99 Latency (s)** | 699.50 | 952.79 |
-| **Prompt Cache Hit Rate** | **81.19%** | 0.00%* |
-
-*\*Note: The 0% hit rate in the dual-node results is likely due to current limitations in how the SMG router aggregates and reports cache statistics from backend workers.*
-
----
 
 ## Project Structure
 
