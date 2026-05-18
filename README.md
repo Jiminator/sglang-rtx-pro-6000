@@ -14,13 +14,23 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 | [DeepSeek-V3.2](https://huggingface.co/deepseek-ai/DeepSeek-V3.2) | FP8 | 2 Nodes (16x RTX 6000) | 2962.79 | 3324.21 | 4951.00 | 149.29 |
 | [DeepSeek-V3.2](https://huggingface.co/nvidia/DeepSeek-V3.2-NVFP4) | NVFP4 | 1 Node (8x RTX 6000) | 2675.33 | 3012.42 | 2046.00 | 106.03 |
 | [GLM-5.1](https://huggingface.co/zai-org/GLM-5.1-FP8) | FP8 | 2 Nodes (16x RTX 6000) | 2785.55 | 3125.35 | 4092.00 | 155.26 |
-| [GLM-5.1](https://huggingface.co/lukealonso/GLM-5.1-NVFP4) | NVFP4 | 1 Node (8x RTX 6000) | 1462.73 | 1641.16 | 950.00 | 107.02 |
+| [GLM-5.1](https://huggingface.co/lukealonso/GLM-5.1-NVFP4) | NVFP4 | 1 Node (8x RTX 6000) | 1490.31 | 1672.11 | 734.00 | 73.82 |
+| [GLM-5.1](https://huggingface.co/lukealonso/GLM-5.1-NVFP4) | NVFP4 | 2 Nodes (16x RTX 6000) | 3075.85 | 3451.06 | 4606.00 | 141.36 |
 | [Kimi-K2.5](https://huggingface.co/moonshotai/Kimi-K2.5) | INT4* | 2 Nodes (16x RTX 6000) | 3069.15 | 3443.55 | 6889.00 | 147.45 |
+| [Kimi-K2.5](https://huggingface.co/nvidia/Kimi-K2.5-NVFP4) | NVFP4 | 2 Nodes (16x RTX 6000) | 3237.46 | 3632.39 | 5535.00 | 137.89 |
+| [Kimi-K2.6](https://huggingface.co/moonshotai/Kimi-K2.6) | INT4* | 1 Node (8x RTX 6000) | 1459.26 | 1637.28 | 850.00 | 82.43 |
+| [datalab-to/chandra-ocr-2](https://huggingface.co/datalab-to/chandra-ocr-2)** | BF16| 1 Node (1x RTX 6000)| 2600.67 | 5267.08 | 4603.00| 32.47 |
 
+
+**[openai/whisper-large-v3](https://huggingface.co/openai/whisper-large-v3)** - The benchmark for this model can be found in this [page](https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/whisper-v3-large). Since this is ASR model, we did not apply the standard ISL/OSL of 1K/8K and concurrancy of 512.
+
+*Table last updated: May 5, 2026*
+ 
 *Benchmarks conducted using `inf` request rate and 512 max concurrency. Tests utilized a random dataset with 1024 input tokens and 8192 output tokens (1536 total prompts). The load generator was isolated on a dedicated CPU-only node pool to ensure zero interference with GPU performance.*
 
-*\*Kimi-K2.5 uses native INT4 quantization for model weights and FP8 for the KV cache to optimize memory efficiency and inference speed.*
+*\*Kimi-K2.5 and Kimi-K2.6 use native INT4 quantization and KV cache optimization to improve memory efficiency and inference speed.*
 
+**\** datalab-to/chandra-ocr-2 is an VLM model. We have run an image benchmark different for the rest of the models **
 ## Project Structure
 
 - `models/`: Model-specific SGLang job configurations and benchmarks.
@@ -39,7 +49,8 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
   - `benchmark-glm51.yaml`: Load generator config for GLM-5.1.
 - `gcp_g4_specs.md`: Detailed hardware and infrastructure specifications.
 
-## Key Updates (April 2026)
+## Key Updates (May 2026)
+- **Kimi-K2.5 NVFP4 Validation**: Successfully optimized and benchmarked Kimi-K2.5 using native NVFP4 quantization on a 2-node (16x GPU) setup, achieving significant throughput improvements.
 - **Native FP4 Support**: Successfully validated DeepSeek-V3.2 and GLM-5.1 on single-node setups using NVFP4 quantization, achieving high efficiency on Blackwell architecture.
 - **Speculative Decoding**: Integrated EAGLE for DeepSeek-V3.2 and NEXTN for GLM-5.1 NVFP4 to optimize token generation speeds.
 - **GLM-5.1 Optimization**: Completed both FP8 (2-node) and NVFP4 (1-node) serving optimizations.
@@ -60,8 +71,10 @@ Detailed performance logs, including TTFT/TPOT latency distributions and through
 - [DeepSeek-V3.2 (FP8): models/DeepSeekv3-2/fp8/results/benchmark_results.md](./models/DeepSeekv3-2/fp8/results/benchmark_results.md)
 - [DeepSeek-V3.2 (NVFP4): models/DeepSeekv3-2/nvp4/results/benchmark_results.md](./models/DeepSeekv3-2/nvp4/results/benchmark_results.md)
 - [GLM-5.1 (FP8): models/GLM5.1/results/benchmark-results.md](./models/GLM5.1/results/benchmark-results.md)
-- [GLM-5.1 (NVFP4): models/GLM5.1/nvfp4/results/benchmark_results.md](./models/GLM5.1/nvfp4/results/benchmark_results.md)
-- [Kimi-K2.5 (FP8): models/KimiK2.5/results/benchmark_results.md](./models/KimiK2.5/results/benchmark_results.md)
+- [GLM-5.1 (NVFP4): models/GLM5.1/nvfp4/README.md](./models/GLM5.1/nvfp4/README.md)
+- [Kimi-K2.5 (INT4): models/KimiK2.5/results/benchmark_results.md](./models/KimiK2.5/results/benchmark_results.md)
+- [Kimi-K2.5 (NVFP4): models/KimiK2.5/nvfp4/results/benchmarks_2node.yaml](./models/KimiK2.5/nvfp4/results/benchmarks_2node.yaml)
+- [Kimi-K2.6 (FP8): models/KimiK2.6/results/benchmark_results.md](./models/KimiK2.6/results/benchmark_results.md)
 
 ## Usage
 
@@ -72,3 +85,4 @@ Each model directory also contains a dedicated `README.md` with specific optimiz
 ## Contributing
 
 This repository is updated as new optimization techniques (e.g., native FP4 serving) and models are validated on the G4 architecture.
+hitecture.
