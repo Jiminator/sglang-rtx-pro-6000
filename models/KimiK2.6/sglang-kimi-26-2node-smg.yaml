@@ -1,0 +1,197 @@
+# Kimi-K2.6 ship config (D9, 2026-05-17). Two independent single-node TP=8 SGLang servers
+# fronted by an `sgl-mini-gateway` (SMG) router with `power_of_two` load policy. NOT a
+# distributed PP=2 instance — each pod runs its own standalone server with HiCache +
+# EAGLE3 speculative decoding.
+#
+# Bench: ClientAgenticBenchmark — 7h 14m 51s wall, 8,924 tok/s total, 12,542/12,542
+# completed, 0 failures. See models/KimiK2.6/results/benchmark_results.md.
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sglang-replica
+spec:
+  replicas: 2                     # two INDEPENDENT replicas, not 2-pod-PP=2
+  selector:
+    matchLabels:
+      app: sglang-replica
+  serviceName: sglang-replica     # headless service below; gives each pod a stable DNS name
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: sglang-replica
+    spec:
+      containers:
+      - name: sglang-container
+        image: docker.io/lmsysorg/sglang:dev-cu13
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - |
+          set -euo pipefail
+          echo "=== Installing sglang==0.5.10.post1 in dev-cu13 image ==="
+          pip install --quiet sglang==0.5.10.post1
+          python3 -c "import sglang; print('sglang:', sglang.__version__)"
+
+          exec python3 -m sglang.launch_server \
+            --model-path moonshotai/Kimi-K2.6 \
+            --tp 8 \
+            --kv-cache-dtype fp8_e4m3 \
+            --trust-remote-code \
+            --reasoning-parser kimi_k2 \
+            --tool-call-parser kimi_k2 \
+            --speculative-algorithm EAGLE3 \
+            --speculative-draft-model-path lightseekorg/kimi-k2.5-eagle3 \
+            --speculative-num-steps 4 \
+            --speculative-eagle-topk 1 \
+            --speculative-num-draft-tokens 6 \
+            --enable-hierarchical-cache \
+            --hicache-ratio 2.0 \
+            --hicache-write-policy write_through_selective \
+            --schedule-policy lpm \
+            --schedule-conservativeness 0.3 \
+            --chunked-prefill-size 16384 \
+            --enable-mixed-chunk \
+            --context-length 131072 \
+            --max-running-requests 128 \
+            --mem-fraction-static 0.85 \
+            --attention-backend flashinfer \
+            --enable-p2p-check \
+            --host 0.0.0.0 \
+            --port 30000
+        env:
+        # --- SGLang-required ---
+        - name: SGLANG_ENABLE_SPEC_V2          # required for EAGLE3 + overlap scheduler
+          value: "1"
+        - name: FLASHINFER_DISABLE_VERSION_CHECK  # dev-cu13 vs sglang 0.5.10.post1 pin
+          value: "1"
+        # --- Perf-tuning ---
+        - name: NCCL_SOCKET_NTHREADS
+          value: "8"
+        - name: NCCL_NSOCKS_PERTHREAD
+          value: "8"
+        - name: OMP_NUM_THREADS
+          value: "24"
+        - name: SGLANG_SET_CPU_AFFINITY
+          value: "1"
+        - name: SAFETENSORS_FAST_GPU
+          value: "1"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: "expandable_segments:True"
+        - name: SGLANG_ENABLE_DEEP_GEMM
+          value: "0"
+        - name: SGLANG_ENABLE_JIT_DEEPGEMM
+          value: "0"
+        # --- NCCL/GLOO socket-pinning (LOAD-BEARING on g4 + no-NVLink + no-RDMA;
+        #     omitting these costs 10-15 % throughput and +16 % TPOT) ---
+        - name: NCCL_DEBUG
+          value: "WARN"
+        - name: NCCL_SOCKET_IFNAME
+          value: "eth0,eth1"
+        - name: GLOO_SOCKET_IFNAME
+          value: "eth1"
+        - name: NCCL_IB_DISABLE
+          value: "1"
+        - name: NCCL_P2P_LEVEL
+          value: "SYS"
+        - name: NCCL_MIN_NCHANNELS
+          value: "8"
+        - name: NCCL_ALLOC_P2P_NET_LL_BUFFERS
+          value: "1"
+        - name: NCCL_NVLS_ENABLE
+          value: "0"
+        - name: NCCL_CUMEM_ENABLE
+          value: "0"
+        resources:
+          limits:
+            nvidia.com/gpu: "8"
+          requests: {}
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+        - mountPath: /root/.cache/huggingface
+          name: hf-cache
+        securityContext:
+          privileged: true
+        ports:
+        - containerPort: 30000
+          name: sglang
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      volumes:
+      - emptyDir:
+          medium: Memory
+          sizeLimit: 10Gi
+        name: dshm
+      - name: hf-cache
+        emptyDir: {}
+---
+# Headless Service: gives each pod a stable DNS name (sglang-replica-0.sglang-replica,
+# sglang-replica-1.sglang-replica) for the SMG router to target individually.
+apiVersion: v1
+kind: Service
+metadata:
+  name: sglang-replica
+spec:
+  clusterIP: None
+  selector:
+    app: sglang-replica
+  ports:
+  - name: sglang
+    port: 30000
+    targetPort: 30000
+---
+# SMG (sgl-mini-gateway) router: fans out the OpenAI-compatible endpoint to both replicas
+# using power_of_two load policy (D7 finding: outperforms cache_aware/round_robin on this
+# agentic workload by keeping both replicas active through the deep tail).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sglang-router
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sglang-router
+  template:
+    metadata:
+      labels:
+        app: sglang-router
+    spec:
+      containers:
+      - name: smg
+        image: docker.io/lmsysorg/sglang:dev-cu13
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - |
+          pip install --quiet sgl-mini-gateway
+          exec smg launch \
+            --worker-urls http://sglang-replica-0.sglang-replica:30000 http://sglang-replica-1.sglang-replica:30000 \
+            --policy power_of_two \
+            --host 0.0.0.0 \
+            --port 8000 \
+            --request-timeout-secs 1800 \
+            --max-concurrent-requests 512
+        ports:
+        - containerPort: 8000
+          name: openai
+---
+# OpenAI-compatible endpoint (single URL exposed to clients).
+apiVersion: v1
+kind: Service
+metadata:
+  name: sglang-router-endpoint
+spec:
+  type: NodePort
+  selector:
+    app: sglang-router
+  ports:
+  - name: openai
+    port: 8000
+    targetPort: 8000
