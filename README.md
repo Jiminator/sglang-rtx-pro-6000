@@ -16,10 +16,13 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 | [GLM-5.1](https://huggingface.co/zai-org/GLM-5.1-FP8) | FP8 | 2 Nodes (16x RTX 6000) | 2785.55 | 3125.35 | 4092.00 | 155.26 |
 | [GLM-5.1](https://huggingface.co/lukealonso/GLM-5.1-NVFP4) | NVFP4 | 1 Node (8x RTX 6000) | 1462.73 | 1641.16 | 950.00 | 107.02 |
 | [Kimi-K2.5](https://huggingface.co/moonshotai/Kimi-K2.5) | INT4* | 2 Nodes (16x RTX 6000) | 3069.15 | 3443.55 | 6889.00 | 147.45 |
+| [Qwen3.5-397B-A17B](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) | FP8 | 2 Nodes (16x RTX 6000)† | 654.45 | 14182.22 | 1500.00 | 56.46 |
 
 *Benchmarks conducted using `inf` request rate and 512 max concurrency. Tests utilized a random dataset with 1024 input tokens and 8192 output tokens (1536 total prompts). The load generator was isolated on a dedicated CPU-only node pool to ensure zero interference with GPU performance.*
 
 *\*Kimi-K2.5 uses native INT4 quantization for model weights and FP8 for the KV cache to optimize memory efficiency and inference speed.*
+
+*†Qwen3.5 was tuned for **TTFT** rather than steady-state throughput, using a different workload (200 prompts × max-concurrency 40 × ISL target 20K / OSL target 1K, random-range-ratio 0.0 → variable lengths). Result: **median TTFT 1180 ms, mean TTFT 2256 ms**. Throughput numbers in this row reflect that workload and are not directly comparable to the other entries' steady-state numbers. Topology is 2× single-node TP=8 replicas behind an `sglang-router` (SMG fan-out), not cross-node PP. See [`models/Qwen3.5/fp8/TUNING_REPORT.md`](./models/Qwen3.5/fp8/TUNING_REPORT.md).*
 
 ## Project Structure
 
@@ -31,6 +34,8 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
     - `fp8/`: 2-node FP8 serving optimization.
     - `nvfp4/`: 1-node native FP4 serving with NEXTN speculative decoding.
   - `KimiK2.5/`: Configurations for Kimi-K2.5.
+  - `Qwen3.5/`: TTFT-focused tuning for Qwen3.5-397B-A17B.
+    - `fp8/`: 2× SMG TP=8 with fused QK-norm-RoPE and fused MoE-sum-allreduce; NCCL_NCHANNELS=16. Mean TTFT 2.26 s.
 - `gkecluster/`: Infrastructure-as-Code for GKE provisioning.
   - `createCluster_template.sh`: Automated script to provision VPC, networking, and GKE clusters optimized for Blackwell G4.
   - `createCluster_README.md`: Detailed setup and usage instructions for the GKE template.
@@ -62,6 +67,7 @@ Detailed performance logs, including TTFT/TPOT latency distributions and through
 - [GLM-5.1 (FP8): models/GLM5.1/results/benchmark-results.md](./models/GLM5.1/results/benchmark-results.md)
 - [GLM-5.1 (NVFP4): models/GLM5.1/nvfp4/results/benchmark_results.md](./models/GLM5.1/nvfp4/results/benchmark_results.md)
 - [Kimi-K2.5 (FP8): models/KimiK2.5/results/benchmark_results.md](./models/KimiK2.5/results/benchmark_results.md)
+- [Qwen3.5-397B-A17B (FP8, TTFT-focused): models/Qwen3.5/fp8/results/benchmark_results.md](./models/Qwen3.5/fp8/results/benchmark_results.md)
 
 ## Usage
 
