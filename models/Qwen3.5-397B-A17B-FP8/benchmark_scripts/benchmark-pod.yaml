@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sglang-qwen-benchmark-7
+spec:
+  nodeSelector:
+    cloud.google.com/gke-nodepool: large-cpu-pool
+  restartPolicy: Never
+  containers:
+  - name: benchmark
+    image: docker.io/lmsysorg/sglang:dev-cu13
+    command:
+    - /bin/bash
+    - -c
+    args:
+    - |
+      echo "Starting SGLang Benchmark for Qwen..."
+      
+      # Assuming the service created earlier is named sglang-qwen-service
+      API_URL="http://10.10.15.225:30000"
+      MODEL_NAME="Qwen/Qwen3.5-397B-A17B-FP8"
+      INPUT_LEN=20000
+      OUTPUT_LEN=1000
+      CONCURRENCY=40
+      NUM_PROMPTS=2000
+
+      python3 -m sglang.bench_serving \
+          --backend sglang-oai \
+          --base-url "$API_URL" \
+          --model "$MODEL_NAME" \
+          --dataset-name random \
+          --random-input-len "$INPUT_LEN" \
+          --random-output-len "$OUTPUT_LEN" \
+          --num-prompts "$NUM_PROMPTS" \
+          --max-concurrency "$CONCURRENCY" \
+          --apply-chat-template \
+          --output-file /tmp/results.json
+
+      echo "Benchmark complete! Results saved to /tmp/results.json"
+      echo "Sleeping so you can extract the results manually using:"
+      echo "kubectl cp sglang-qwen-benchmark:/tmp/results.json results.json"
+      
+      sleep infinity
