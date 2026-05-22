@@ -36,7 +36,9 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 Evaluates performance under real-world agentic traces with long sequences and high prompt volume. This benchmark uses non-standard traffic profiles and SGLang features like **HiCache** and **EAGLE3 Speculative Decoding** to evaluate performance on complex workloads.
 
 ### Benchmark Settings
-- **Traffic Profile:** Simulated real-world agentic traces.
+- **Traffic Profile:** Simulated real-world agentic traces (Replay).
+  - **Request Configuration:** Temperature=0.6, Top_P=0.95, Max Tokens=4096.
+  - **Dataset:** Kimi K2.6 real-world agentic trace replay (Long-tail steps and sequences).
 - **Parallelism:** 64 (Single-Node), 256 (Two-Node).
 - **SGLang Features:** HiCache, EAGLE3 Speculative Decoding, SMG Router (Dual-node).
 - **Environment:** TP=8 per node, GKE (Single-node), GCE (Dual-node).
