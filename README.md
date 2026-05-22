@@ -92,7 +92,12 @@ Focuses on latency characteristics of an ultra-large MoE model, comparing perfor
 - **Native FP4 Support**: Successfully validated DeepSeek-V3.2 and GLM-5.1 on single-node setups using NVFP4 quantization.
 
 ## GKE Infrastructure Setup
-... (rest of the section) ...
+
+The `gkecluster` directory contains a comprehensive template for provisioning a GKE environment optimized for SGLang:
+- **Custom VPC**: High MTU (8896) for optimized multi-node traffic.
+- **Multi-Networking**: Specialized network interfaces for distributed inference.
+- **Blackwell Node Pools**: Automated creation of `g4-standard-384` pools with 8x RTX PRO 6000 Blackwell GPUs.
+- **Benchmarking Isolation**: Dedicated node pools for load generators to ensure clean performance metrics.
 
 ## Viewing Detailed Benchmark Results
 
