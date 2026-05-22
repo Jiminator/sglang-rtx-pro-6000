@@ -56,7 +56,11 @@ Evaluates performance under real-world agentic traces with long sequences and hi
 Focuses on latency characteristics of an ultra-large MoE model, comparing performance with and without **SGLang HiCache**. This benchmark evaluates the model's performance under ultra-large workload scenarios.
 
 ### Benchmark Settings
-- **Traffic Profile:** 2000 total requests, Max Concurrency = 40.
+- **Traffic Profile:**
+  - **Input Length:** 20,000 tokens
+  - **Output Length:** 1,000 tokens
+  - **Concurrency:** 40
+  - **Number of Prompts:** 2,000
 - **Total Tokens:** ~19.7M Input, ~986K Generated.
 - **Server Configuration:** TP=8, Chunked Prefill (4096), Max Prefill (32768), Mixed Chunk Enabled.
 - **HiCache Config:** `--enable-hierarchical-cache --hicache-ratio=2.0 --hicache-io-backend=kernel`.
