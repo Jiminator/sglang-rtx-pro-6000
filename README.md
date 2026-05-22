@@ -35,6 +35,12 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 
 Evaluates performance under real-world agentic traces with long sequences and high prompt volume. This benchmark uses non-standard traffic profiles and SGLang features like **HiCache** and **EAGLE3 Speculative Decoding** to evaluate performance on complex workloads.
 
+### Benchmark Settings
+- **Traffic Profile:** Simulated real-world agentic traces.
+- **Parallelism:** 64 (Single-Node), 256 (Two-Node).
+- **SGLang Features:** HiCache, EAGLE3 Speculative Decoding, SMG Router (Dual-node).
+- **Environment:** TP=8 per node, GKE (Single-node), GCE (Dual-node).
+
 | Metric | Single-Node (GKE) | Two-Node (GCE) |
 | :--- | :---: | :---: |
 | **Requests per Second** | 0.353 | 0.481 |
@@ -48,6 +54,12 @@ Evaluates performance under real-world agentic traces with long sequences and hi
 ## Qwen3.5-397B-A17B-FP8 Latency Benchmark
 
 Focuses on latency characteristics of an ultra-large MoE model, comparing performance with and without **SGLang HiCache**. This benchmark evaluates the model's performance under ultra-large workload scenarios.
+
+### Benchmark Settings
+- **Traffic Profile:** 2000 total requests, Max Concurrency = 40.
+- **Total Tokens:** ~19.7M Input, ~986K Generated.
+- **Server Configuration:** TP=8, Chunked Prefill (4096), Max Prefill (32768), Mixed Chunk Enabled.
+- **HiCache Config:** `--enable-hierarchical-cache --hicache-ratio=2.0 --hicache-io-backend=kernel`.
 
 | Metric | HiCache (Enabled) | No Radix Cache |
 | :--- | :---: | :---: |
