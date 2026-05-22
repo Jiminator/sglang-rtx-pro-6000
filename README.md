@@ -21,60 +21,78 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 | [Kimi-K2.6](https://huggingface.co/moonshotai/Kimi-K2.6) | INT4* | 1 Node (8x RTX 6000) | 1459.26 | 1637.28 | 850.00 | 82.43 |
 | [datalab-to/chandra-ocr-2](https://huggingface.co/datalab-to/chandra-ocr-2)** | BF16| 1 Node (1x RTX 6000)| 2600.67 | 5267.08 | 4603.00| 32.47 |
 
-
 **[openai/whisper-large-v3](https://huggingface.co/openai/whisper-large-v3)** - The benchmark for this model can be found in this [page](https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/whisper-v3-large). Since this is ASR model, we did not apply the standard ISL/OSL of 1K/8K and concurrancy of 512.
 
-*Table last updated: May 5, 2026*
+*Table last updated: May 22, 2026*
  
 *Benchmarks conducted using `inf` request rate and 512 max concurrency. Tests utilized a random dataset with 1024 input tokens and 8192 output tokens (1536 total prompts). The load generator was isolated on a dedicated CPU-only node pool to ensure zero interference with GPU performance.*
 
 *\*Kimi-K2.5 and Kimi-K2.6 use native INT4 quantization and KV cache optimization to improve memory efficiency and inference speed.*
 
 **\** datalab-to/chandra-ocr-2 is an VLM model. We have run an image benchmark different for the rest of the models **
+
+## Specialized Benchmarks (Agentic & Ultra-Large Models)
+
+These benchmarks use non-standard traffic profiles and SGLang features like **HiCache** to evaluate performance on complex workloads.
+
+### Kimi K2.6 Agentic Benchmark
+Evaluates performance under real-world agentic traces with long sequences and high prompt volume. Utilizes **SGLang HiCache** and **EAGLE3 Speculative Decoding**.
+
+| Metric | Single-Node (GKE) | Two-Node (GCE) |
+| :--- | :---: | :---: |
+| **Requests per Second** | 0.353 | 0.481 |
+| **Total Tokens per Second** | 6,550.98 | 8,924.50 |
+| **P50 Latency (s)** | 16.13 | 33.96 |
+| **P99 Latency (s)** | 699.50 | 952.79 |
+| **Prompt Cache Hit Rate** | **81.19%** | 0.00%* |
+
+*\*Note: 0% hit rate on dual-node is a reporting limitation of the SMG router.*
+
+### Qwen3.5-397B-A17B-FP8 Latency Benchmark
+Focuses on latency characteristics of an ultra-large MoE model, comparing performance with and without Hierarchical Cache.
+
+| Metric | HiCache (Enabled) | No Radix Cache |
+| :--- | :---: | :---: |
+| **Mean TTFT (ms)** | **1,121.17** | 1,371.28 |
+| **P99 TTFT (ms)** | **3,359.76** | 14,052.80 |
+| **Mean TPOT (ms)** | 100.59 | **90.45** |
+| **P99 TPOT (ms)** | 165.27 | **140.58** |
+
 ## Project Structure
 
 - `models/`: Model-specific SGLang job configurations and benchmarks.
   - `DeepSeekv3-2/`: Configs for DeepSeek-V3 and V2.5.
-    - `fp8/`: Optimized 2-node FP8 serving setup.
-    - `nvp4/`: Native FP4 serving using `modelopt_fp4` with EAGLE speculative decoding.
   - `GLM5.1/`: Optimized configurations and results for GLM-5.1.
-    - `fp8/`: 2-node FP8 serving optimization.
-    - `nvfp4/`: 1-node native FP4 serving with NEXTN speculative decoding.
   - `KimiK2.5/`: Configurations for Kimi-K2.5.
+  - `KimiK2.6/`: Agentic benchmark results and HiCache configurations.
+  - `Qwen3.5-397B-A17B-FP8/`: Latency benchmarks for ultra-large MoE model.
 - `gkecluster/`: Infrastructure-as-Code for GKE provisioning.
-  - `createCluster_template.sh`: Automated script to provision VPC, networking, and GKE clusters optimized for Blackwell G4.
-  - `createCluster_README.md`: Detailed setup and usage instructions for the GKE template.
 - `benchmarking_scripts/`: Global benchmark definitions and performance scripts.
-  - `benchmark-dsv2.yaml`: Load generator config for DeepSeek.
-  - `benchmark-glm51.yaml`: Load generator config for GLM-5.1.
+  - `agentic_benchmark/`: Scripts for simulating agentic workloads.
 - `gcp_g4_specs.md`: Detailed hardware and infrastructure specifications.
 
 ## Key Updates (May 2026)
-- **Kimi-K2.5 NVFP4 Validation**: Successfully optimized and benchmarked Kimi-K2.5 using native NVFP4 quantization on a 2-node (16x GPU) setup, achieving significant throughput improvements.
-- **Native FP4 Support**: Successfully validated DeepSeek-V3.2 and GLM-5.1 on single-node setups using NVFP4 quantization, achieving high efficiency on Blackwell architecture.
-- **Speculative Decoding**: Integrated EAGLE for DeepSeek-V3.2 and NEXTN for GLM-5.1 NVFP4 to optimize token generation speeds.
-- **GLM-5.1 Optimization**: Completed both FP8 (2-node) and NVFP4 (1-node) serving optimizations.
-- **Distributed SGLang**: Standardized 2-node configurations for ultra-large models using `pipeline-parallel-size 2` and `tensor-parallel-size 8`.
+- **Qwen3.5-397B Validation**: Successfully benchmarked the 397B MoE model on a single node using FP8 and HiCache, showing massive TTFT improvements.
+- **Agentic Benchmarking**: Introduced agentic trace simulation for Kimi K2.6, achieving over 80% cache hit rate with HiCache.
+- **Kimi-K2.5 NVFP4 Validation**: Successfully optimized and benchmarked Kimi-K2.5 using native NVFP4 quantization on a 2-node (16x GPU) setup.
+- **Native FP4 Support**: Successfully validated DeepSeek-V3.2 and GLM-5.1 on single-node setups using NVFP4 quantization.
 
 ## GKE Infrastructure Setup
-
-The `gkecluster` directory contains a comprehensive template for provisioning a GKE environment optimized for SGLang:
-- **Custom VPC**: High MTU (8896) for optimized multi-node traffic.
-- **Multi-Networking**: Specialized network interfaces for distributed inference.
-- **Blackwell Node Pools**: Automated creation of `g4-standard-384` pools with 8x RTX PRO 6000 Blackwell GPUs.
-- **Benchmarking Isolation**: Dedicated node pools for load generators to ensure clean performance metrics.
+... (rest of the section) ...
 
 ## Viewing Detailed Benchmark Results
 
 Detailed performance logs, including TTFT/TPOT latency distributions and throughput metrics, are located within each model's `results` directory:
 
+- [Qwen3.5-397B-A17B (FP8): models/Qwen3.5-397B-A17B-FP8/BENCHMARK_REPORT.md](./models/Qwen3.5-397B-A17B-FP8/BENCHMARK_REPORT.md)
+- [Kimi-K2.6 Agentic: models/KimiK2.6/agent_benchmark/README.md](./models/KimiK2.6/agent_benchmark/README.md)
 - [DeepSeek-V3.2 (FP8): models/DeepSeekv3-2/fp8/results/benchmark_results.md](./models/DeepSeekv3-2/fp8/results/benchmark_results.md)
 - [DeepSeek-V3.2 (NVFP4): models/DeepSeekv3-2/nvp4/results/benchmark_results.md](./models/DeepSeekv3-2/nvp4/results/benchmark_results.md)
 - [GLM-5.1 (FP8): models/GLM5.1/results/benchmark-results.md](./models/GLM5.1/results/benchmark-results.md)
 - [GLM-5.1 (NVFP4): models/GLM5.1/nvfp4/README.md](./models/GLM5.1/nvfp4/README.md)
 - [Kimi-K2.5 (INT4): models/KimiK2.5/results/benchmark_results.md](./models/KimiK2.5/results/benchmark_results.md)
 - [Kimi-K2.5 (NVFP4): models/KimiK2.5/nvfp4/results/benchmarks_2node.yaml](./models/KimiK2.5/nvfp4/results/benchmarks_2node.yaml)
-- [Kimi-K2.6 (FP8): models/KimiK2.6/results/benchmark_results.md](./models/KimiK2.6/results/benchmark_results.md)
+- [Kimi-K2.6 (Standard): models/KimiK2.6/results/benchmark_results.md](./models/KimiK2.6/results/benchmark_results.md)
 
 ## Usage
 
