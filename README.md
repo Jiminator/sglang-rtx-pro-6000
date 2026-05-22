@@ -31,12 +31,9 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 
 **\** datalab-to/chandra-ocr-2 is an VLM model. We have run an image benchmark different for the rest of the models **
 
-## Specialized Benchmarks (Agentic & Ultra-Large Models)
+## Kimi K2.6 Agentic Benchmark
 
-These benchmarks use non-standard traffic profiles and SGLang features like **HiCache** to evaluate performance on complex workloads.
-
-### Kimi K2.6 Agentic Benchmark
-Evaluates performance under real-world agentic traces with long sequences and high prompt volume. Utilizes **SGLang HiCache** and **EAGLE3 Speculative Decoding**.
+Evaluates performance under real-world agentic traces with long sequences and high prompt volume. This benchmark uses non-standard traffic profiles and SGLang features like **HiCache** and **EAGLE3 Speculative Decoding** to evaluate performance on complex workloads.
 
 | Metric | Single-Node (GKE) | Two-Node (GCE) |
 | :--- | :---: | :---: |
@@ -48,8 +45,9 @@ Evaluates performance under real-world agentic traces with long sequences and hi
 
 *\*Note: 0% hit rate on dual-node is a reporting limitation of the SMG router.*
 
-### Qwen3.5-397B-A17B-FP8 Latency Benchmark
-Focuses on latency characteristics of an ultra-large MoE model, comparing performance with and without Hierarchical Cache.
+## Qwen3.5-397B-A17B-FP8 Latency Benchmark
+
+Focuses on latency characteristics of an ultra-large MoE model, comparing performance with and without **SGLang HiCache**. This benchmark evaluates the model's performance under ultra-large workload scenarios.
 
 | Metric | HiCache (Enabled) | No Radix Cache |
 | :--- | :---: | :---: |
