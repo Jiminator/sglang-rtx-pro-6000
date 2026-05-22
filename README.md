@@ -68,9 +68,9 @@ Focuses on latency characteristics of an ultra-large MoE model, comparing perfor
 | Metric | HiCache (Enabled) | No Radix Cache |
 | :--- | :---: | :---: |
 | **Median TTFT (ms)** | **1,054.01** | 1,128.88 |
-| **P99 TTFT (ms)** | **3,359.76** | 14,052.80 |
+| **Mean TTFT (ms)** | **1,121.17** | 1,371.28 |
 | **Median TPOT (ms)** | 101.18 | **90.41** |
-| **P99 TPOT (ms)** | 165.27 | **140.58** |
+| **Mean TPOT (ms)** | 100.59 | **90.45** |
 
 ## Project Structure
 
