@@ -1,6 +1,8 @@
 # Qwen3.5-397B-A17B-FP8 — Tuning Report
 
-**As of 2026-05-18.** Ship config: **v38** — 2× SMG TP=8 + fused QK-norm-RoPE + fused MoE sum allreduce + NCCL_NCHANNELS=16. Median TTFT **1180 ms**, mean **2256 ms**, P99 **14320 ms**, total throughput **14,182 tok/s**. See [`results/benchmark_results.md`](results/benchmark_results.md) and [`launch_worker.sh`](launch_worker.sh).
+**As of 2026-05-18.** Ship config: **v38** — 2× SMG TP=8 + fused QK-norm-RoPE + fused MoE sum allreduce + NCCL_NCHANNELS=16. Median TTFT **1180 ms**, mean **2256 ms**, P99 **14320 ms**, total throughput **14,182 tok/s** (at `--random-range-ratio 0.0`, variable ISL). See [`results/benchmark_results.md`](results/benchmark_results.md) and [`launch_worker.sh`](launch_worker.sh).
+
+**2026-05-24 addendum**: v38 also passes the < 2,000 ms median-TTFT SLO under `--random-range-ratio 1.0` (fixed ISL=20K). Paired 3-seed result on `S_panel = {1, 2, 3}`: per-seed medians `{1827.5, 1721.7, 1923.4}` ms, median-of-medians **1,827.5 ms**, cross-seed std-dev 100.9 ms, output_throughput 706.4 tok/s. See [`results/benchmark_results_range1_2026-05-24.md`](results/benchmark_results_range1_2026-05-24.md). No ship config change — v38 is the SLO-compliant configuration on both workloads.
 
 ## Model context
 
@@ -32,7 +34,7 @@ This workload **differs from the throughput-focused workload** used by the other
 | sglang version | `0.0.0.dev1+gedb1b3f8f` (image-bundled, no pip pin) |
 | `FLASHINFER_DISABLE_VERSION_CHECK` | `1` |
 | Parallelism (ship) | **2× single-node TP=8 replicas + SMG router** |
-| `--enable-flashinfer-allreduce-fusion` | on (best intra-node AR path) |
+| `--enable-flashinfer-allreduce-fusion` | on (~~best intra-node AR path~~ — accepted by ServerArgs but **silently no-op on Blackwell SM120**; dispatcher gates SM90/SM100 only at `layers/communicator.py:158-169`; actual AR is NCCL ring. Source-verified 2026-05-24 — see [closed findings](#new-closed-findings-2026-05-24).) |
 | `--enforce-piecewise-cuda-graph` | on (captures decode steps as cuda graphs) |
 | Mandatory env vars | full NCCL/GLOO set + **`NCCL_NCHANNELS=16`** |
 
@@ -63,6 +65,8 @@ Per 20K-token prefill (5 chunks of 4K with mixed-chunk):
 
 The **656 ms NCCL allreduce is the hardware floor** on PCIe-only Blackwell. PCIe-oneshot AR is broken on g4 + SM120 per `project_pcie_oneshot_ar_broken_on_g4`; NVLS needs NVLink; symm_mem conflicts with FI AR fusion.
 
+**2026-05-24 correction**: NCCL ring is not a "fallback below FI fusion" — it is the realized AR path on this hardware regardless of the `--enable-flashinfer-allreduce-fusion` flag. The dispatcher in `layers/communicator.py:158-169` gates FI AR fusion to SM90/SM100; SM120 always takes the NCCL ring path. The 656 ms AR floor is the actual operating point. Future tuning aimed at the AR floor needs to look at NCCL primitives or hardware (NVLink, RDMA), not at FlashInfer AR fusion.
+
 ## Closed dimensions — do NOT rerun without new source-code reason
 
 | Lever | Result | Root cause |
@@ -85,6 +89,15 @@ The **656 ms NCCL allreduce is the hardware floor** on PCIe-only Blackwell. PCIe
 | PD-Disaggregation (mooncake) | watchdog timeout | cross-node mooncake KV transfer hangs at 20K-ISL on gVNIC TCP |
 | PD-Disaggregation (NIXL/UCX + tmpfs staging) | 222 s mean TTFT | functional but bandwidth-bound at this workload |
 | PP=2 + `--enforce-piecewise-cuda-graph` | small-bench OK, full-bench mean +500 % | piecewise CG breaks PP send/recv at concurrency |
+
+### New closed findings (2026-05-24)
+
+Source-verified pre-sweep during the range=1.0 hill-climb (`_raw/qwen35-hillclimb-2026-05-24/CLOSED_DIMENSIONS_ADDENDUM.md`):
+
+| Lever | Result | Root cause |
+|---|---|---|
+| `--enable-single-batch-overlap` | **closed inert on Qwen3.5** | SBO's runtime hookup is DeepSeek-MoE-only. `models/deepseek_v2.py:1028` is the only call site; Qwen3.5's MoE forward at `models/qwen2_moe.py:461` never tests it. Setting the flag has zero effect. |
+| `--enable-flashinfer-allreduce-fusion` (on this hardware) | **accepted-but-no-op on SM120** | Dispatcher predicate at `layers/communicator.py:158-169` is `(is_sm90_supported() or is_sm100_supported())`; SM120 is a separate capability bucket (`utils/common.py:254-267`). The flag is honored at ServerArgs parse time and even in `server_args.py:2416-2443`'s Qwen3.5 allow-list, but the runtime AR call falls through to NCCL ring. v38's launch script carries the flag for historical reasons; the realized AR path is NCCL ring + `NCCL_NCHANNELS=16` + the load-bearing NCCL env block. **No throughput loss expected from removing the flag**; can be cleaned up in a future ship-script revision if desired. |
 
 ## Promising but unmeasured / hardware-blocked
 
@@ -117,7 +130,7 @@ Two non-trivial errors were discovered mid-investigation:
 
 ## Suggested next-session experiments
 
-1. **Re-test under `--random-range-ratio 1.0` (fixed ISL=20K)** — confirms behavior under a deterministic workload; informs production sizing.
+1. ~~**Re-test under `--random-range-ratio 1.0` (fixed ISL=20K)**~~ — **DONE 2026-05-24**. Paired 3-seed result on `S_panel = {1, 2, 3}` lands at median-of-medians 1,827.5 ms (172.5 ms margin under the 2,000 ms TTFT SLO). See [`results/benchmark_results_range1_2026-05-24.md`](results/benchmark_results_range1_2026-05-24.md) and bundle `_raw/qwen35-hillclimb-2026-05-24/`.
 2. **Wait for sglang upstream PCIe-oneshot AR fix** — would directly halve the 656 ms AR floor when available.
 3. **`--enable-prefill-context-parallel` on a 3-node cluster** if available — sharding the sequence dim across more ranks reduces per-rank attention work.
 4. **Try EAGLE3 spec with reduced draft tokens** — NEXTN/NGRAM both hurt TTFT; EAGLE3 with `--speculative-num-draft-tokens 1-2` might be the smallest-blast-radius spec.
