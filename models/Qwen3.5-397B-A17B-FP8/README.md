@@ -1,9 +1,10 @@
 # Qwen3.5-397B-A17B-FP8 Benchmarks
 
 Latency oriented benchmarks for the **Qwen3.5-397B-A17B-FP8** model. These benchmarks focus on Time to First Token (TTFT) and Inter-Token Latency (ITL) rather than raw throughput.
-ISL -  20K
-OSL - 1K
-Concurrency - 40
+
+ - ISL -  20K
+ - OSL - 1K
+ - Concurrency - 40
 
 ## Benchmark Results (Qwen3.5-397B-A17B-FP8)
 
