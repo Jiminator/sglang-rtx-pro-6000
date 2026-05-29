@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nccl-allreduce-v10
+  labels:
+    app: nccl-allreduce-v10
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nccl-allreduce-v10
+  template:
+    metadata:
+      labels:
+        app: nccl-allreduce-v10
+    spec:
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cloud.google.com/gke-nodepool
+                operator: In
+                values:
+                - chavoshi-v10-pool
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - nccl-allreduce-v10
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: nccl-tester
+        image: docker.io/lmsysorg/sglang:v0.5.12-cu130
+        env:
+        - name: NCCL_IB_DISABLE
+          value: "1"
+        - name: NCCL_P2P_LEVEL
+          value: "SYS"
+        - name: NCCL_SOCKET_FAMILY
+          value: "AF_INET"
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN", "IPC_LOCK", "SYS_PTRACE"]
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          ip link set eth1 mtu 8896
+          ip link set eth2 mtu 8896
+          sleep 3600
+        resources:
+          limits:
+            nvidia.com/gpu: "8"
+          requests:
+            nvidia.com/gpu: "8"
+          claims:
+          - name: netdev-claim
+      resourceClaims:
+      - name: netdev-claim
+        resourceClaimTemplateName: netdev-claim-template

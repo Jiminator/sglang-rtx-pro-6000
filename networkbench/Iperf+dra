@@ -1,0 +1,80 @@
+
+### **4\. Deploy the 8896-MTU Patched Workload Manifest**
+
+\[\!NOTE\] Workload Pods using the DRA API bypass the GKE multi-network controller's MTU injection phase. To successfully unblock the 8896 MTU Jumbo Frame ceiling, applications must inject the **`NET_ADMIN`** capability and tune their internal Linux link MTUs in their container entrypoint.
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iperf-dranet-v10
+  labels:
+    app: iperf-dranet-v10
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: iperf-dranet-v10
+  template:
+    metadata:
+      labels:
+        app: iperf-dranet-v10
+    spec:
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cloud.google.com/gke-nodepool
+                operator: In
+                values:
+                - chavoshi-v10-pool
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - iperf-dranet-v10
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: net-tester
+        image: ubuntu:latest
+        securityContext:
+          capabilities:
+            add: ["NET_ADMIN"]
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          apt update && apt install -y iperf3 iproute2 net-tools iputils-ping
+          ip link set eth1 mtu 8896
+          ip link set eth2 mtu 8896
+          iperf3 -s -D
+          sleep 3600
+        resources:
+          claims:
+          - name: netdev-claim
+      resourceClaims:
+      - name: netdev-claim
+        resourceClaimTemplateName: netdev-claim-template
+```
+
+---
+
+## **Part 2: Section 1 \- Benchmarking Validations & Measured Logs**
+
+### **1\. Iperf3 8-Way Parallel Aggregate Test Log**
+
+```
+Connecting to host 10.30.0.3, port 5201
+[ ID] Interval           Transfer     Bitrate         Retr
+[SUM]   0.00-5.00   sec   111 GBytes   191 Gbits/sec   42             sender
+[SUM]   0.00-5.00   sec   111 GBytes   191 Gbits/sec                  receiver
+
+iperf Done.
+```

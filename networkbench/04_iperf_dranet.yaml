@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iperf-dranet-v10
+  labels:
+    app: iperf-dranet-v10
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: iperf-dranet-v10
+  template:
+    metadata:
+      labels:
+        app: iperf-dranet-v10
+    spec:
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cloud.google.com/gke-nodepool
+                operator: In
+                values:
+                - chavoshi-v10-pool
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - iperf-dranet-v10
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: net-tester
+        image: ubuntu:latest
+        securityContext:
+          capabilities:
+            add: ["NET_ADMIN"]
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          apt update && apt install -y iperf3 iproute2 net-tools iputils-ping
+          ip link set eth1 mtu 8896
+          ip link set eth2 mtu 8896
+          iperf3 -s -D
+          sleep 3600
+        resources:
+          claims:
+          - name: netdev-claim
+      resourceClaims:
+      - name: netdev-claim
+        resourceClaimTemplateName: netdev-claim-template

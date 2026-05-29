@@ -1,0 +1,163 @@
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata:
+  name: netdev-claim-template
+spec:
+  spec:
+    devices:
+      requests:
+      - name: netdev-request
+        exactly:
+          deviceClassName: netdev.google.com
+          allocationMode: ExactCount
+          count: 2 # Allocate both physical 200G Diorite SmartNICs
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nccl-golden-script
+data:
+  dist_test.py: |
+    import torch
+    import torch.distributed as dist
+    import os
+    import time
+
+    def main():
+        # Explicitly bind NCCL to both physical interfaces for 400G aggregate bandwidth
+        os.environ["NCCL_SOCKET_IFNAME"] = "eth1,eth2"
+        os.environ["NCCL_DEBUG"] = "INFO"
+        os.environ["NCCL_CROSS_NIC"] = "1"
+
+        dist.init_process_group(backend="nccl")
+        rank = dist.get_rank()
+        
+        device_index = rank % torch.cuda.device_count()
+        device = torch.device(f"cuda:{device_index}")
+        
+        elements = 128 * 1024 * 1024
+        tensor = torch.ones(elements, dtype=torch.float32, device=device) * (rank + 1)
+        
+        # Warmup
+        for _ in range(5):
+            dist.all_reduce(tensor)
+            torch.cuda.synchronize()
+            
+        # Benchmark
+        start = time.time()
+        for _ in range(30):
+            dist.all_reduce(tensor)
+            torch.cuda.synchronize()
+        end = time.time()
+        
+        duration = end - start
+        avg_time_us = (duration / 30) * 1e6
+        bytes_transferred = elements * 4 * 2
+        algbw_gbps = (bytes_transferred / (avg_time_us / 1e6)) / 1e9
+        
+        if rank == 0:
+            print(f"=== TRUE CROSS-NODE NCCL ALLREDUCE RESULTS ===")
+            print(f"Payload Size: {elements * 4 / 1024 / 1024} MB")
+            print(f"Duration per AllReduce: {avg_time_us:.2f} us")
+            print(f"Measured Aggregate AlgBW: {algbw_gbps:.2f} GB/s")
+            print(f"==============================================")
+            
+        dist.destroy_process_group()
+
+    if __name__ == "__main__":
+        main()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nccl-golden-custom
+  labels:
+    app: nccl-golden-custom
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nccl-golden-custom
+  template:
+    metadata:
+      labels:
+        app: nccl-golden-custom
+    spec:
+      # Pods are network-isolated (hostNetwork: false)
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cloud.google.com/gke-nodepool
+                operator: In
+                values:
+                - chavoshi-v10-pool # Targets G4 node pool
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - nccl-golden-custom
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: nccl-chamber
+        image: docker.io/lmsysorg/sglang:v0.5.12-cu130
+        env:
+        - name: NCCL_IB_DISABLE
+          value: "1"
+        - name: NCCL_SOCKET_FAMILY
+          value: "AF_INET"
+        - name: NCCL_MIN_NCHANNELS
+          value: "8"
+        - name: NCCL_SOCKET_NTHREADS
+          value: "8"
+        - name: NCCL_NSOCKS_PERTHREAD
+          value: "4"
+        - name: NCCL_P2P_LEVEL
+          value: "SYS"
+        - name: NCCL_SOCKET_RCVBUF
+          value: "8388608"
+        - name: NCCL_SOCKET_SNDBUF
+          value: "8388608"
+        - name: NCCL_BUFFSIZE
+          value: "16777216"
+        - name: NCCL_PROTO
+          value: "Simple"
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN", "IPC_LOCK", "SYS_PTRACE"]
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          apt update && apt install -y iproute2 net-tools
+          sleep 3600
+        resources:
+          limits:
+            nvidia.com/gpu: "1"
+          requests:
+            nvidia.com/gpu: "1"
+          claims:
+          - name: netdev-claim # Claim 2 SmartNIC interfaces
+        volumeMounts:
+        - name: script-volume
+          mountPath: /root
+        - name: dshm
+          mountPath: /dev/shm
+      resourceClaims:
+      - name: netdev-claim
+        resourceClaimTemplateName: netdev-claim-template
+      volumes:
+      - name: script-volume
+        configMap:
+          name: nccl-golden-script
+      - name: dshm
+        hostPath:
+          path: /dev/shm
