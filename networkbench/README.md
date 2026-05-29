@@ -72,16 +72,12 @@ To run the optimized multi-NIC NCCL benchmark:
 -   **Receive (RX)**: **190 Gbits/sec** (consistent across 10 runs)
 -   *Note: This test saturated a single 200 Gbps NIC in full-duplex mode.*
 
-### 2. NCCL AllReduce (Single NIC)
--   **Payload Size**: 512.0 MB
--   **Measured Aggregate AlgBW**: **25.42 GB/s** (~203 Gbits/sec)
-
-### 3. NCCL AllReduce (Multi-NIC Golden Setup)
+### 2. NCCL AllReduce (Multi-NIC Golden Setup)
 -   **Payload Size**: 512.0 MB
 -   **Median Measured Aggregate AlgBW**: **37.925 GB/s** (~303 Gbits/sec) over 10 runs.
 -   *Note: This setup successfully utilized both `eth1` and `eth2` interfaces for higher aggregate bandwidth.*
 
-### 4. NCCL AllReduce (Multiple Sizes, Multi-NIC)
+### 3. NCCL AllReduce (Multiple Sizes, Multi-NIC)
 Testing scaling with different payload sizes:
 
 | Size (MB) | Time (us) | AlgBW (GB/s) | Approx. Bitrate (Gbps) |
