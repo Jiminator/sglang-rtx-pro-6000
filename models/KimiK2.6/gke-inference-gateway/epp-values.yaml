@@ -1,0 +1,96 @@
+router:
+  tokenizer:
+    enabled: true
+    volumeMounts:
+      - name: tokenizer-patch-volume
+        mountPath: /app/tokenizer_service/tokenizer.py
+        subPath: tokenizer.py
+
+  epp:
+    replicas: 2  # Active-Active HA for index convergence
+    flags:
+      ha-enable-leader-election: false  # Ensures both EPP nodes keep fresh cache state
+    env:
+      - name: HF_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hf-secret
+            key: HF_TOKEN
+    volumes:
+      - name: tokenizer-patch-volume
+        configMap:
+          name: tokenizer-patch-configmap
+
+    pluginsConfigFile: "precise-prefix-cache-routing-plugins.yaml"
+    pluginsCustomConfig:
+      precise-prefix-cache-routing-plugins.yaml: |
+        apiVersion: llm-d.ai/v1alpha1
+        kind: EndpointPickerConfig
+        plugins:
+          - type: tokenizer
+            parameters:
+              modelName: moonshotai/Kimi-K2.6
+              udsTokenizerConfig:
+                socketFile: /tmp/tokenizer/tokenizer-uds.socket
+          - type: endpoint-notification-source
+          - type: metrics-data-source
+          - type: core-metrics-extractor
+          - type: single-profile-handler
+          - type: decode-filter
+          - type: precise-prefix-cache-scorer
+            parameters:
+              tokenProcessorConfig:
+                blockSize: 64           # Matches vLLM --block-size
+              speculativeIndexing: true
+              indexerConfig:
+                tokenizersPoolConfig:
+                  modelName: moonshotai/Kimi-K2.6
+                  workersCount: 24
+                  uds:
+                    socketFile: /tmp/tokenizer/tokenizer-uds.socket
+                kvBlockIndexConfig:
+                  enableMetrics: true
+              kvEventsConfig:
+                topicFilter: "kv@"
+                concurrency: 8
+                discoverPods: true
+                podDiscoveryConfig:
+                  socketPort: 5556
+          - type: kv-cache-utilization-scorer
+          - type: queue-scorer
+          - type: no-hit-lru-scorer
+          - type: max-score-picker
+        dataLayer:
+          sources:
+            - pluginRef: metrics-data-source
+              extractors:
+                - pluginRef: core-metrics-extractor
+            - pluginRef: endpoint-notification-source
+              extractors:
+                - pluginRef: precise-prefix-cache-scorer
+        schedulingProfiles:
+          - name: default
+            plugins:
+              - pluginRef: decode-filter
+              - pluginRef: kv-cache-utilization-scorer
+                weight: 2.0
+              - pluginRef: queue-scorer
+                weight: 2.0
+              - pluginRef: precise-prefix-cache-scorer
+                weight: 3.0
+              - pluginRef: no-hit-lru-scorer
+                weight: 2.0
+              - pluginRef: max-score-picker
+
+  extraServicePorts:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 30000
+
+  modelServers:
+    type: vllm
+    targetPorts:
+      - number: 30000
+    matchLabels:
+      app: vllm-kimi

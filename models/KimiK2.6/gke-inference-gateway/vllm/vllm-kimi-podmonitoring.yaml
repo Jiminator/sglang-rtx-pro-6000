@@ -1,0 +1,13 @@
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  name: vllm-kimi-metrics-monitor
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: vllm-kimi
+  endpoints:
+  - port: 30000
+    path: /metrics
+    interval: 15s

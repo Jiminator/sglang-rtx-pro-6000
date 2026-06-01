@@ -1,0 +1,174 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sglang-sa
+  namespace: default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-kimi-service
+  namespace: default
+  labels:
+    app: vllm-kimi
+spec:
+  clusterIP: None
+  selector:
+    app: vllm-kimi
+  ports:
+  - name: http-inference
+    port: 30000
+    targetPort: 30000
+  - name: kv-events
+    port: 5556
+    targetPort: 5556
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vllm-kimi-g4
+  namespace: default
+  labels:
+    app: vllm-kimi
+spec:
+  serviceName: vllm-kimi-service
+  replicas: 2
+  selector:
+    matchLabels:
+      app: vllm-kimi
+  template:
+    metadata:
+      labels:
+        app: vllm-kimi
+      annotations:
+        gke-gcsfuse/volumes: "true"
+        gke-gcsfuse/cpu-limit: "12"
+        gke-gcsfuse/memory-limit: "32Gi"
+    spec:
+      serviceAccountName: sglang-sa
+      hostNetwork: true
+      hostIPC: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        cloud.google.com/gke-nodepool: reflection-8x-rtx6000-2nic-pool
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      # CRITICAL: Force replicas to schedule on separate physical nodes to prevent hostNetwork port collision!
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - vllm-kimi
+            topologyKey: kubernetes.io/hostname
+      initContainers:
+      - name: check-weights
+        image: busybox:1.36
+        command:
+        - sh
+        - -c
+        - |
+          set -e
+          echo "Listing /models:"
+          ls -la /models/ | head -20
+          test -f /models/config.json || { echo "ERROR: config.json missing"; exit 1; }
+          SHARDS=$(ls /models/*.safetensors 2>/dev/null | wc -l)
+          echo "Found $SHARDS safetensors shards"
+          test "$SHARDS" -gt 0 || { echo "ERROR: no safetensors found"; exit 1; }
+        volumeMounts:
+        - { name: models, mountPath: /models, readOnly: true }
+      containers:
+      - name: vllm-container
+        image: vllm/vllm-openai:v0.19.1-x86_64-cu130
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["IPC_LOCK", "SYS_PTRACE"]
+        ports:
+        - containerPort: 30000
+          name: http-inference
+        - containerPort: 5556
+          name: kv-events
+          protocol: TCP
+        env:
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: HF_TOKEN
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NCCL_DEBUG
+          value: INFO
+        - name: NCCL_SOCKET_IFNAME
+          value: "eth0,eth1"
+        - name: NCCL_IB_DISABLE
+          value: "1"
+        - name: NCCL_P2P_LEVEL
+          value: "SYS"
+        - name: NCCL_SOCKET_NTHREADS
+          value: "8"
+        - name: NCCL_NSOCKS_PERTHREAD
+          value: "8"
+        - name: NCCL_MIN_NCHANNELS
+          value: "8"
+        - name: NCCL_ALLOC_P2P_NET_LL_BUFFERS
+          value: "1"
+        - name: OMP_NUM_THREADS
+          value: "24"
+        - name: SAFETENSORS_FAST_GPU
+          value: "1"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: "expandable_segments:True"
+        - name: VLLM_USE_DEEP_GEMM
+          value: "0"
+        command: ["vllm", "serve"]
+        args:
+        - /models
+        - --tensor-parallel-size=8
+        - --kv-cache-dtype=fp8_e4m3
+        - --trust-remote-code
+        - --reasoning-parser=kimi_k2
+        - --tool-call-parser=kimi_k2
+        - --enable-prefix-caching
+        - --block-size=64
+        - --max-num-seqs=128
+        - --gpu-memory-utilization=0.88
+        - --max-model-len=131072
+        - --enable-chunked-prefill
+        - --max-num-batched-tokens=16384
+        - --host=0.0.0.0
+        - --port=30000
+        - --kv-events-config
+        - '{"enable_kv_cache_events":true,"publisher":"zmq","endpoint":"tcp://*:5556","topic":"kv@$(POD_IP):30000@/models"}'
+        resources:
+          limits:
+            nvidia.com/gpu: "8"
+        volumeMounts:
+        - { name: models,         mountPath: /models, readOnly: true }
+        - { name: dshm,           mountPath: /dev/shm }
+        - { name: hf-cache,       mountPath: /root/.cache/huggingface }
+      volumes:
+      - name: models
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          readOnly: true
+          volumeAttributes:
+            bucketName: shivaji-sglang-kimi-cache
+            mountOptions: "implicit-dirs,only-dir=kimi-k2.6,file-cache:max-size-mb:900000,file-cache:enable-parallel-downloads:true,file-cache:parallel-downloads-per-file:16,file-cache:max-parallel-downloads:-1,file-cache:download-chunk-size-mb:50,file-cache:cache-file-for-range-read:true,metadata-cache:ttl-secs:-1,metadata-cache:stat-cache-max-size-mb:-1,metadata-cache:type-cache-max-size-mb:-1"
+      - name: dshm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 100Gi
+      - name: hf-cache
+        hostPath:
+          path: /tmp/huggingface
+          type: DirectoryOrCreate

@@ -1,0 +1,144 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vllm-chat-app-config
+  namespace: default
+data:
+  app.py: |
+    import os
+    import sys
+    import time
+    from openai import OpenAI
+
+    VLLM_API_URL = os.getenv("VLLM_API_URL", "http://10.0.0.16:30000/v1")
+
+    client = OpenAI(
+        base_url=VLLM_API_URL,
+        api_key="token-not-required"
+    )
+
+    def test_connection():
+        print("=" * 60)
+        print(f"Connecting to vLLM server at: {VLLM_API_URL}")
+        print("Waiting for server to start up and load weights...")
+        print("=" * 60)
+        
+        max_attempts = 60
+        attempt = 0
+        while attempt < max_attempts:
+            attempt += 1
+            try:
+                response = client.chat.completions.create(
+                    model="/models",
+                    messages=[{"role": "user", "content": "Hello! Tell me a one-sentence joke to verify connection."}],
+                    stream=True,
+                    max_tokens=100,
+                )
+                sys.stdout.write("Kimi: ")
+                sys.stdout.flush()
+                for chunk in response:
+                    if chunk.choices[0].delta.content:
+                        sys.stdout.write(chunk.choices[0].delta.content)
+                        sys.stdout.flush()
+                print("\n" + "=" * 60)
+                print("Connection test successful!")
+                print("=" * 60)
+                return
+            except Exception as e:
+                print(f"Attempt {attempt}/{max_attempts}: vLLM server not ready yet ({e}). Retrying in 15 seconds...")
+                time.sleep(15)
+                
+        print(f"\n[ERROR] Failed to connect to vLLM server after {max_attempts} attempts.", file=sys.stderr)
+        sys.exit(1)
+
+    def interactive_chat():
+        print("\nStarting Interactive Chat Session. Type 'exit' or 'quit' to end.")
+        print("=" * 60)
+        history = []
+        while True:
+            try:
+                user_input = input("\nYou: ").strip()
+                if not user_input:
+                    continue
+                if user_input.lower() in ["exit", "quit"]:
+                    print("Exiting chat session. Goodbye!")
+                    break
+                
+                history.append({"role": "user", "content": user_input})
+                
+                sys.stdout.write("Kimi: ")
+                sys.stdout.flush()
+                
+                response = client.chat.completions.create(
+                    model="/models",
+                    messages=history,
+                    stream=True,
+                    max_tokens=2048,
+                    temperature=0.7
+                )
+                
+                full_reply = ""
+                for chunk in response:
+                    content = chunk.choices[0].delta.content
+                    if content:
+                        sys.stdout.write(content)
+                        sys.stdout.flush()
+                        full_reply += content
+                
+                print()  # Newline at the end of response
+                history.append({"role": "assistant", "content": full_reply})
+            except KeyboardInterrupt:
+                print("\nChat interrupted by user. Exiting.")
+                break
+            except Exception as e:
+                print(f"\nError: {e}")
+
+    if __name__ == "__main__":
+        # Run verification query
+        test_connection()
+        
+        # Check if stdin is interactive (a TTY)
+        if sys.stdin.isatty():
+            interactive_chat()
+        else:
+            print("\nThis container is running in non-interactive mode.")
+            print("To start an interactive chat session with the model, run:")
+            print("  kubectl exec -it vllm-chat-app-pod -- python3 /app/app.py")
+            print("\nKeeping the pod running...")
+            try:
+                while True:
+                    time.sleep(3600)
+            except KeyboardInterrupt:
+                print("\nExiting.")
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vllm-chat-app-pod
+  namespace: default
+  labels:
+    app: vllm-chat-app
+spec:
+  restartPolicy: Never
+  nodeSelector:
+    cloud.google.com/gke-nodepool: chippy-benchmark-client-pool
+  containers:
+  - name: chat-app-container
+    image: python:3.11-slim
+    command: ["/bin/sh", "-c"]
+    args:
+    - |
+      pip install --no-cache-dir openai && python3 -u /app/app.py
+    env:
+    - name: VLLM_API_URL
+      value: "http://10.0.0.17/v1"
+    - name: PYTHONUNBUFFERED
+      value: "1"
+    volumeMounts:
+    - name: app-code
+      mountPath: /app/app.py
+      subPath: app.py
+  volumes:
+  - name: app-code
+    configMap:
+      name: vllm-chat-app-config
