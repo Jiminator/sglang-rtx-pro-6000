@@ -10,6 +10,9 @@ This repository contains the configuration files and test scripts to set up and 
 *   `inference-objective.yaml`: InferenceObjective resource for routing priority.
 *   `tokenizer-patch-configmap.yaml`: Hotfix ConfigMap for custom tokenizers for KimiK2.6.
 *   `vllm/`: vLLM deployment manifests for KimiK2.6 model servers.
+*   `vllm-chat-app.yaml`: Deployment file for a lightweight Python CLI chat client.
+*   `tokenizer-patch-configmap.yaml`: Hotfix ConfigMap for custom tokenizers (like Kimi).
+*   `kimik2.6/`: vLLM deployment manifests for KimiK2.6 model servers.
     *   `vllm-kimi-g4.yaml`: StatefulSet manifest for vLLM replicas (configured for 2 replicas).
     *   `vllm-kimi-podmonitoring.yaml`: PodMonitoring resource for metrics.
 *   `tests/`:
@@ -28,7 +31,7 @@ This repository contains the configuration files and test scripts to set up and 
     ```bash
     kubectl create secret generic hf-secret --from-literal=HF_TOKEN=<your_token>
     ```
-3.  **Model Weights**: A GCS bucket containing the KimiK2.6 model weights, referenced in `vllm/vllm-kimi-g4.yaml` (or update the manifest to use your storage source).
+3.  **Model Weights**: A GCS bucket containing the KimiK2.6 model weights, referenced in `kimik2.6/vllm-kimi-g4.yaml` (or update the manifest to use your storage source).
 4.  **InferenceExtension CRDs**: If your cluster version does not have them installed by default, install them manually:
     ```bash
     kubectl apply -f https://github.com/kubernetes-sigs/gateway-api-inference-extension/raw/v1.4.0/config/crd/bases/inference.networking.k8s.io_inferencepools.yaml
@@ -83,14 +86,14 @@ Ensure your cluster can access the model weights via GCS Fuse:
    gcloud storage ls gs://<YOUR_BUCKET_NAME>/kimi-k2.6/
    ```
 
-3. **Update Manifest**: Open `vllm/vllm-kimi-g4.yaml` and update the `bucketName` field under the `models` volume to match your bucket.
+3. **Update Manifest**: Open `kimik2.6/vllm-kimi-g4.yaml` and update the `bucketName` field under the `models` volume to match your bucket.
 
 ### 4. Deploy vLLM Pods
 Deploy the vLLM replicas configured for KimiK2.6 with ZeroMQ event streaming enabled:
 
 ```bash
-kubectl apply -f vllm/vllm-kimi-g4.yaml
-kubectl apply -f vllm/vllm-kimi-podmonitoring.yaml
+kubectl apply -f kimik2.6/vllm-kimi-g4.yaml
+kubectl apply -f kimik2.6/vllm-kimi-podmonitoring.yaml
 ```
 
 ### 5. Apply Tokenizer Patch (Required for Kimi models)

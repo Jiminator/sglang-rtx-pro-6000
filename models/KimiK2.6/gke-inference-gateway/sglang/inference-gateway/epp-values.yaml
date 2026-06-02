@@ -1,0 +1,57 @@
+inferenceExtension:
+  replicas: 2
+  env:
+    - name: HF_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: hf-secret
+          key: HF_TOKEN
+  flags:
+    v: 1
+    refresh-metrics-interval: "2s"
+  pluginsConfigFile: "tiered-prefix-cache-plugins.yaml"
+  pluginsCustomConfig:
+    tiered-prefix-cache-plugins.yaml: |
+      apiVersion: inference.networking.x-k8s.io/v1alpha1
+      kind: EndpointPickerConfig
+      plugins:
+        - type: queue-scorer
+        - type: kv-cache-utilization-scorer
+        - type: prefix-cache-scorer
+          name: gpu-prefix-cache-scorer
+          parameters:
+            autoTune: false
+            lruCapacityPerServer: 4798
+        - type: prefix-cache-scorer
+          name: cpu-prefix-cache-scorer
+          parameters:
+            autoTune: false
+            lruCapacityPerServer: 9597
+      schedulingProfiles:
+        - name: default
+          plugins:
+            - pluginRef: queue-scorer
+              weight: 2.0
+            - pluginRef: kv-cache-utilization-scorer
+              weight: 2.0
+            - pluginRef: gpu-prefix-cache-scorer
+              weight: 2.0
+            - pluginRef: cpu-prefix-cache-scorer
+              weight: 1.0
+
+  extraServicePorts:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 30000
+
+inferencePool:
+  modelServerType: vllm
+  modelServers:
+    matchLabels:
+      app: sglang-kimi
+  targetPorts:
+    - number: 30000
+
+provider:
+  name: gke
