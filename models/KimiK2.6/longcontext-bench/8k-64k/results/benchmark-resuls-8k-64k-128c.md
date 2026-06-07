@@ -1,3 +1,4 @@
+```
 ============ Serving Benchmark Result ============
 Backend:                                 vllm      
 Traffic request rate:                    inf       
@@ -35,3 +36,5 @@ P95 ITL (ms):                            345.41
 P99 ITL (ms):                            1280.70   
 Max ITL (ms):                            2930392.83
 ==================================================
+```
+
