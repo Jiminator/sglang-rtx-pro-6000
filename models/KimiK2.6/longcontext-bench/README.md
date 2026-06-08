@@ -2,7 +2,20 @@
 
 Summary of benchmark results for the **64k-8k** and **8k-64k** configurations across various concurrency levels.
 
-**Machine Type:** Single Node
+**Machine Type:** Single Node (8x NVIDIA GPUs)
+
+### vLLM Server Configuration
+The benchmarks were conducted against a vLLM server with the following configuration:
+*   **Model:** Kimi-K2.6
+*   **Tensor Parallel (TP):** 8
+*   **Decode Context Parallel:** 8
+*   **Max Model Length:** 262,144 (256k)
+*   **KV Cache Dtype:** fp8
+*   **Attention Backend:** TRITON_MLA
+*   **Speculative Decoding:** Eagle3 (3 speculative tokens)
+    *   **Draft Model:** `lightseekorg/kimi-k2.5-eagle3-mla`
+*   **Features:** Chunked Prefill, Prefix Caching, Async Scheduling enabled.
+*   **Image:** `voipmonitor/vllm:kimi-k26-mtp-upstream-stack-pcie-env-test-20260424`
 
 ### 64k-8k Benchmark Results
 | Config | inp | out | concurrency | num prompts | Input Throughput (tok/s) | Output Throughput (tok/s) | Total Throughput (tok/s) | Mean E2E Latency (s) |
