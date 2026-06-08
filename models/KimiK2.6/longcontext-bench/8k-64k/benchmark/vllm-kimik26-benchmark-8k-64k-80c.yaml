@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vllm-kimi-benchmark-8k-64k-80c
+  namespace: default
+spec:
+  serviceAccountName: sglang-benchmark-ksa
+  nodeSelector:
+    cloud.google.com/gke-nodepool: g4-384-np-1
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule
+  restartPolicy: Never
+  volumes:
+  - name: workspace-volume
+    emptyDir: {}
+  containers:
+  - name: benchmark
+    image: docker.io/lmsysorg/sglang:v0.5.10.post1
+    env:
+    - name: HF_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: hf-secret
+          key: HF_TOKEN
+    volumeMounts:
+    - name: workspace-volume
+      mountPath: /workspace
+    command:
+    - /bin/bash
+    - -c
+    args:
+    - |
+      echo "🚀 Starting vLLM Serving Benchmark: 8K Input / 64K Output / 128 Concurrency..."
+      
+      API_URL="http://vllm-kimi-g4-0.vllm-kimi-service-g4.default.svc.cluster.local:5002"
+      MODEL_NAME="Kimi-K2.6"
+      CONCURRENCY=80
+      INPUT_LEN=8192
+      OUTPUT_LEN=65536
+      NUM_PROMPTS=320
+
+      python3 -m sglang.bench_serving \
+          --backend vllm \
+          --base-url $API_URL \
+          --model $MODEL_NAME \
+          --tokenizer moonshotai/Kimi-K2.6 \
+          --dataset-name random \
+          --random-input-len $INPUT_LEN \
+          --random-output-len $OUTPUT_LEN \
+          --num-prompts $NUM_PROMPTS \
+          --max-concurrency $CONCURRENCY \
+          --output-file /workspace/results_vllm_8k_64k_128c.json \
+          --apply-chat-template \
+          --seed 42 \
+          --request-rate inf
+
+      echo "✅ Benchmark complete! Printing JSON report:"
+      cat /workspace/results_vllm_8k_64k_128c.json
+      
+      echo "Sleeping so results are preserved..."
+      sleep infinity
+
