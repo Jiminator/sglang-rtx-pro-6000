@@ -261,7 +261,7 @@ ul.plain li{margin-bottom:6px;max-width:68ch}
       <tr><td><span class="modelname">GLM-5.1</span><span class="qtag fp8">FP8</span></td><td>2 nodes · 16×GPU</td><td class="num">2785.55</td><td class="num">174.1</td><td><div class="bar" style="width:52%"></div></td><td class="num">3125.35</td><td class="num">4092</td><td class="num">155.26</td></tr>
       <tr><td><span class="modelname">GLM-5.1</span><span class="qtag">NVFP4</span></td><td>1 node · 8×GPU</td><td class="num">1490.31</td><td class="num">186.3</td><td><div class="bar" style="width:56%"></div></td><td class="num">1672.11</td><td class="num">734</td><td class="num">73.82</td></tr>
       <tr><td><span class="modelname">GLM-5.1</span><span class="qtag">NVFP4</span></td><td>2 nodes · 16×GPU</td><td class="num">3075.85</td><td class="num">192.2</td><td><div class="bar" style="width:57%"></div></td><td class="num">3451.06</td><td class="num">4606</td><td class="num">141.36</td></tr>
-      <tr><td><span class="modelname">Kimi-K2.5</span><span class="qtag int4">INT4</span></td><td>2 nodes · 16×GPU</td><td class="num">3069.15</td><td class="num">191.8</td><td><div class="bar" style="width:57%"></div></td><td class="num">3443.55</td><td class="num">6889</td><td class="num">147.45</td></tr>
+      <tr><td><span class="modelname">Kimi-K2.5</span><span class="qtag int4">INT4</span></td><td>2 nodes · 16×GPU</td><td class="num">3152.79</td><td class="num">197.0</td><td><div class="bar" style="width:59%"></div></td><td class="num">3537.39</td><td class="num">4793</td><td class="num">136.52</td></tr>
       <tr><td><span class="modelname">Kimi-K2.5</span><span class="qtag">NVFP4</span></td><td>2 nodes · 16×GPU</td><td class="num"><span class="best">3237.46</span></td><td class="num">202.3</td><td><div class="bar" style="width:61%"></div></td><td class="num"><span class="best">3632.39</span></td><td class="num">5535</td><td class="num">137.89</td></tr>
       <tr><td><span class="modelname">Kimi-K2.6</span><span class="qtag int4">INT4</span></td><td>1 node · 8×GPU</td><td class="num">1459.26</td><td class="num">182.4</td><td><div class="bar" style="width:55%"></div></td><td class="num">1637.28</td><td class="num">850</td><td class="num">82.43</td></tr>
       <tr><td><span class="modelname">Chandra-OCR-2</span><span class="qtag int4">BF16 · VLM</span></td><td>1 GPU</td><td class="num">2600.67</td><td class="num">—</td><td><span class="barlabel">n/a — image workload</span></td><td class="num">5267.08</td><td class="num">4603</td><td class="num"><span class="best">32.47</span></td></tr>
@@ -876,13 +876,13 @@ FLASHINFER_DISABLE_VERSION_CHECK=1</pre></div>
   <div class="tblwrap"><table>
     <thead><tr><th>Metric</th><th class="num">Native INT4</th><th class="num">NVFP4</th></tr></thead>
     <tbody>
-      <tr><td>Output throughput</td><td class="num">3069.15 tok/s</td><td class="num"><span class="best">3237.46 tok/s</span></td></tr>
-      <tr><td>Total throughput</td><td class="num">3443.55 tok/s</td><td class="num"><span class="best">3632.39 tok/s</span></td></tr>
-      <tr><td>Peak output</td><td class="num"><span class="best">6889 tok/s</span></td><td class="num">5535 tok/s</td></tr>
-      <tr><td>Mean TPOT</td><td class="num">147.45 ms</td><td class="num"><span class="best">137.89 ms</span></td></tr>
-      <tr><td>Median TTFT</td><td class="num"><span class="best">249.73 ms</span></td><td class="num">304.01 ms</td></tr>
-      <tr><td>Mean E2E latency</td><td class="num">587.5 s</td><td class="num"><span class="best">537.9 s</span></td></tr>
-      <tr><td>Benchmark duration</td><td class="num">2096.6 s</td><td class="num"><span class="best">1987.6 s</span></td></tr>
+      <tr><td>Output throughput</td><td class="num">3152.79 tok/s</td><td class="num"><span class="best">3237.46 tok/s</span></td></tr>
+      <tr><td>Total throughput</td><td class="num">3537.39 tok/s</td><td class="num"><span class="best">3632.39 tok/s</span></td></tr>
+      <tr><td>Peak output</td><td class="num">4793 tok/s</td><td class="num"><span class="best">5535 tok/s</span></td></tr>
+      <tr><td>Mean TPOT</td><td class="num"><span class="best">136.52 ms</span></td><td class="num">137.89 ms</td></tr>
+      <tr><td>Median TTFT</td><td class="num"><span class="best">300.83 ms</span></td><td class="num">304.01 ms</td></tr>
+      <tr><td>Mean E2E latency</td><td class="num">543.2 s</td><td class="num"><span class="best">537.9 s</span></td></tr>
+      <tr><td>Benchmark duration</td><td class="num">2041.0 s</td><td class="num"><span class="best">1987.6 s</span></td></tr>
     </tbody>
   </table></div>
   <p>NVFP4 finishes the same 1536-prompt workload ~5% faster with better steady-state pacing; native INT4 hits a higher instantaneous peak and slightly lower median TTFT. Attribution: final numbers and tuning by <b>Karim Roukoz</b>.</p>

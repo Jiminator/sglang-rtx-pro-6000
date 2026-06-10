@@ -29,11 +29,11 @@ The following benchmarks were conducted on a cluster of 2x `g4-standard-384` ins
 
 | Metric | Native INT4 (2-node) | NVFP4 (2-node) |
 |--------|----------------------|----------------|
-| Output Throughput | 3069.15 tok/s | 3237.46 tok/s |
-| Total Throughput | 3443.55 tok/s | 3632.39 tok/s |
-| Peak Output Throughput | 6889.00 tok/s | 5535.00 tok/s |
-| Mean TPOT | 147.45 ms | 137.89 ms |
-| Median TTFT | 249.73 ms | 304.01 ms |
+| Output Throughput | 3152.79 tok/s | 3237.46 tok/s |
+| Total Throughput | 3537.39 tok/s | 3632.39 tok/s |
+| Peak Output Throughput | 4793.00 tok/s | 5535.00 tok/s |
+| Mean TPOT | 136.52 ms | 137.89 ms |
+| Median TTFT | 300.83 ms | 304.01 ms |
 
 **Attribution**: Final benchmark numbers and optimization tuning provided by **Karim Roukoz**.
 
