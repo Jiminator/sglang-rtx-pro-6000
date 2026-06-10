@@ -1,6 +1,9 @@
 # OSS Model Benchmarks on GCP G4
 
-Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances using SGLang.
+📖 **[Documentation & Benchmarks](https://shivajid.github.io/sglang-rtx-pro-6000/)** — serving recipes, measured results, hardware reference, and deep dives.
+
+
+Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances.
 
 ## Infrastructure
 - **GPU**: NVIDIA RTX PRO 6000 Blackwell (SM120)
