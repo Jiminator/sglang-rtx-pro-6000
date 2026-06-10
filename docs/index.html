@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SOTA Benchmarks on Google Cloud G4 — RTX PRO 6000 Recipes</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="%231F2937"/><g fill="%23E5E7EB"><rect x="6" y="8" width="4.6" height="4.6" rx="1"/><rect x="13.7" y="8" width="4.6" height="4.6" rx="1"/><rect x="21.4" y="8" width="4.6" height="4.6" rx="1"/><rect x="6" y="19.4" width="4.6" height="4.6" rx="1"/><rect x="13.7" y="19.4" width="4.6" height="4.6" rx="1"/></g><rect x="21.4" y="19.4" width="4.6" height="4.6" rx="1" fill="%233B82F6"/></svg>'>
 <style>
 :root{
   --bg:#FFFFFF; --side:#FAFBFC; --ink:#1F2328; --soft:#57606A; --faint:#848D97;
@@ -74,6 +75,8 @@ td.num,th.num{text-align:right;font-family:var(--mono);font-size:12.5px;white-sp
 
 /* code */
 .codeblock{margin:12px 0 22px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.chead a{color:inherit;text-decoration:underline;text-decoration-color:#D4DAE0;text-underline-offset:2px}
+.chead a:hover{color:var(--accent)}
 .codeblock .chead{display:flex;justify-content:space-between;align-items:center;background:#FCFCFB;border-bottom:1px solid var(--line);padding:5px 12px;font-family:var(--mono);font-size:11px;color:var(--faint)}
 .copybtn{font-family:var(--sans);font-size:11px;font-weight:550;background:#fff;color:var(--soft);border:1px solid var(--line);border-radius:5px;padding:2px 9px;cursor:pointer}
 .copybtn:hover{color:var(--accent);border-color:var(--accent)}
@@ -128,9 +131,12 @@ ul.plain li{margin-bottom:5px;max-width:66ch}
 <button class="menubtn" id="menubtn" aria-label="Toggle navigation">Menu</button>
 
 <aside class="sidebar" id="sidebar">
-  <div class="brand">
-    <h1>SGLang on GCP G4</h1>
-    <div class="sub">RTX PRO 6000 · BLACKWELL</div>
+  <div class="brand" style="display:flex;gap:11px;align-items:center">
+    <svg width="34" height="34" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="flex:none"><rect width="32" height="32" rx="7" fill="#1F2937"/><g fill="#E5E7EB"><rect x="6" y="8" width="4.6" height="4.6" rx="1"/><rect x="13.7" y="8" width="4.6" height="4.6" rx="1"/><rect x="21.4" y="8" width="4.6" height="4.6" rx="1"/><rect x="6" y="19.4" width="4.6" height="4.6" rx="1"/><rect x="13.7" y="19.4" width="4.6" height="4.6" rx="1"/></g><rect x="21.4" y="19.4" width="4.6" height="4.6" rx="1" fill="#3B82F6"/></svg>
+    <div>
+      <h1>SGLang on GCP G4</h1>
+      <div class="sub">RTX PRO 6000 · BLACKWELL</div>
+    </div>
   </div>
   <div class="searchwrap">
     <input type="search" id="search" placeholder="Search…" autocomplete="off">
@@ -349,6 +355,7 @@ ul.plain li{margin-bottom:5px;max-width:66ch}
 <!-- CLUSTER -->
 <section class="page" id="page-cluster">
   <h1 class="pagetitle">Cluster setup</h1>
+  <div class="meta"><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/gkecluster" target="_blank" rel="noopener" style="text-decoration:none">gkecluster/ on GitHub ↗</a></span></div>
   <p class="lede"><code class="inline">gkecluster/createCluster_template.sh</code> provisions everything: 8896-MTU VPC, multi-networking, private GKE cluster, Blackwell GPU pool, NAT, Artifact Registry, and an isolated benchmark-client pool.</p>
 
   <ol class="steps">
@@ -382,6 +389,7 @@ export GCLOUD_PATH=$(which gcloud)   <span class="c"># template hardcodes the au
 <!-- BENCHMARKING -->
 <section class="page" id="page-benchmarking">
   <h1 class="pagetitle">Benchmarking</h1>
+  <div class="meta"><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/benchmarking_scripts" target="_blank" rel="noopener" style="text-decoration:none">benchmarking_scripts/ on GitHub ↗</a></span></div>
   <p class="lede">Deploy the server, run an isolated load generator, copy out the JSON. Standard profile: 1024 in / 8192 out at 512 concurrency.</p>
 
   <ol class="steps">
@@ -389,7 +397,7 @@ export GCLOUD_PATH=$(which gcloud)   <span class="c"># template hardcodes the au
       <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">Copy</button></div><pre>kubectl apply -f models/DeepSeekv3-2/nvp4/sglang-ds32-job-v2.yaml   <span class="c"># single node</span>
 kubectl apply -f models/GLM5.1/sglang-glm51-v1-04232026.yaml        <span class="c"># 2-node StatefulSet</span></pre></div></li>
     <li><b>Run the client</b> — pinned to the CPU pool so it never contends with GPUs.
-      <div class="codeblock"><div class="chead"><span>benchmarking_scripts/benchmark-dsv2.yaml (core)</span><button class="copybtn">Copy</button></div><pre>nodeSelector: { workload: benchmark-client }
+      <div class="codeblock"><div class="chead"><span><a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/benchmarking_scripts/benchmark-dsv2.yaml" target="_blank" rel="noopener">benchmarking_scripts/benchmark-dsv2.yaml</a> (core)</span><button class="copybtn">Copy</button></div><pre>nodeSelector: { workload: benchmark-client }
 ...
 python3 -m sglang.bench_serving \
     --backend sglang-oai \
@@ -425,8 +433,8 @@ python3 -m sglang.bench_serving \
   <p class="lede">Two configs: single-node NVFP4 with EAGLE speculation, or distributed FP8 for peak throughput.</p>
 
   <h3 id="ds-nvfp4">NVFP4 · single node</h3>
-  <div class="meta"><span class="chip">nvidia/DeepSeek-V3.2-NVFP4</span><span class="chip"><b>8× GPU</b></span><span class="chip">TP8 · DP8</span><span class="chip">EAGLE 3/4</span><span class="chip">kv bf16 · mem 0.85</span></div>
-  <div class="codeblock"><div class="chead"><span>models/DeepSeekv3-2/nvp4/sglang-ds32-job-v2.yaml</span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
+  <div class="meta"><span class="chip">nvidia/DeepSeek-V3.2-NVFP4</span><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/DeepSeekv3-2" target="_blank" rel="noopener" style="text-decoration:none">files on GitHub ↗</a></span><span class="chip"><b>8× GPU</b></span><span class="chip">TP8 · DP8</span><span class="chip">EAGLE 3/4</span><span class="chip">kv bf16 · mem 0.85</span></div>
+  <div class="codeblock"><div class="chead"><span><a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/DeepSeekv3-2/nvp4/sglang-ds32-job-v2.yaml" target="_blank" rel="noopener">models/DeepSeekv3-2/nvp4/sglang-ds32-job-v2.yaml</a></span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
   --model-path nvidia/DeepSeek-V3.2-NVFP4 --trust-remote-code \
   --tp-size 8 --dp-size 8 --enable-dp-attention \
   --quantization <span class="f">modelopt_fp4</span> \
@@ -445,7 +453,7 @@ python3 -m sglang.bench_serving \
   <h3 id="ds-fp8">FP8 · 2 nodes</h3>
   <div class="meta"><span class="chip">deepseek-ai/DeepSeek-V3.2</span><span class="chip"><b>16× GPU</b></span><span class="chip">TP8 · PP2 · DP8</span><span class="chip">NSA tilelang</span><span class="chip">kv bf16 · mem 0.88</span></div>
   <p>2-replica StatefulSet; <code class="inline">$POD_INDEX</code> → <code class="inline">--node-rank</code>, headless service for rendezvous, NodePort on the master.</p>
-  <div class="codeblock"><div class="chead"><span>models/DeepSeekv3-2/fp8/sglang-2node-setup-optimized.yaml</span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
+  <div class="codeblock"><div class="chead"><span><a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/DeepSeekv3-2/fp8/sglang-2node-setup-optimized.yaml" target="_blank" rel="noopener">models/DeepSeekv3-2/fp8/sglang-2node-setup-optimized.yaml</a></span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
   --model deepseek-ai/DeepSeek-V3.2 \
   --tensor-parallel-size 8 --pipeline-parallel-size 2 --dp-size 8 --enable-dp-attention \
   --nnodes 2 --node-rank $POD_INDEX --dist-init-addr sglang-master-pod-opt:5000 \
@@ -477,8 +485,8 @@ python3 -m sglang.bench_serving \
   <p class="lede">Three configs: distributed FP8, single-node NVFP4 with NEXTN speculation, and distributed NVFP4.</p>
 
   <h3 id="glm-fp8">FP8 · 2 nodes</h3>
-  <div class="meta"><span class="chip">zai-org/GLM-5.1-FP8</span><span class="chip"><b>16× GPU</b></span><span class="chip">TP8 · PP2 · DP8</span><span class="chip">kv bf16 · mem 0.90</span></div>
-  <div class="codeblock"><div class="chead"><span>models/GLM5.1/sglang-glm51-v1-04232026.yaml</span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
+  <div class="meta"><span class="chip">zai-org/GLM-5.1-FP8</span><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/GLM5.1" target="_blank" rel="noopener" style="text-decoration:none">files on GitHub ↗</a></span><span class="chip"><b>16× GPU</b></span><span class="chip">TP8 · PP2 · DP8</span><span class="chip">kv bf16 · mem 0.90</span></div>
+  <div class="codeblock"><div class="chead"><span><a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/GLM5.1/sglang-glm51-v1-04232026.yaml" target="_blank" rel="noopener">models/GLM5.1/sglang-glm51-v1-04232026.yaml</a></span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
   --model zai-org/GLM-5.1-FP8 \
   --tensor-parallel-size 8 --pipeline-parallel-size 2 --dp-size 8 --enable-dp-attention \
   --nnodes 2 --node-rank $POD_INDEX --dist-init-addr sglang-master-pod:5000 \
@@ -490,7 +498,7 @@ python3 -m sglang.bench_serving \
 
   <h3 id="glm-nvfp4-1">NVFP4 · single node (NEXTN)</h3>
   <div class="meta"><span class="chip">lukealonso/GLM-5.1-NVFP4</span><span class="chip"><b>8× GPU</b></span><span class="chip">NEXTN 3/4</span><span class="chip">voipmonitor/sglang:cu130</span><span class="chip">mem 0.88</span></div>
-  <div class="codeblock"><div class="chead"><span>models/GLM5.1/nvfp4/sglang-glm51-nvfp4-1node.yaml</span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
+  <div class="codeblock"><div class="chead"><span><a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/GLM5.1/nvfp4/sglang-glm51-nvfp4-1node.yaml" target="_blank" rel="noopener">models/GLM5.1/nvfp4/sglang-glm51-nvfp4-1node.yaml</a></span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
   --model-path lukealonso/GLM-5.1-NVFP4 --served-model-name GLM-5.1 \
   --reasoning-parser glm45 --tool-call-parser glm47 --tp-size 8 --trust-remote-code \
   --quantization <span class="f">modelopt_fp4</span> --kv-cache-dtype bf16 \
@@ -504,7 +512,7 @@ python3 -m sglang.bench_serving \
   --speculative-algorithm <span class="f">NEXTN</span> --speculative-num-steps 3 \
   --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 \
   --schedule-conservativeness 1.3 --host 0.0.0.0 --port 30000</pre></div>
-  <p>The 2-node NVFP4 variant (<code class="inline">sglang-glm51-nvfp4-2node.yaml</code>) reuses the FP8 topology — TP8 · PP2 · DP8, mem 0.90 — with <code class="inline">modelopt_fp4</code>.</p>
+  <p>The 2-node NVFP4 variant (<a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/GLM5.1/nvfp4/sglang-glm51-nvfp4-2node.yaml" target="_blank" rel="noopener"><code class="inline">sglang-glm51-nvfp4-2node.yaml</code></a>) reuses the FP8 topology — TP8 · PP2 · DP8, mem 0.90 — with <code class="inline">modelopt_fp4</code>.</p>
 
   <h3 id="glm-results">Results</h3>
   <div class="tblwrap"><table>
@@ -527,8 +535,8 @@ python3 -m sglang.bench_serving \
   <p class="lede">Native INT4 vs NVFP4 head-to-head on 16 GPUs. NVFP4 holds the repo's best standard-profile throughput.</p>
 
   <h3 id="k25-int4">Native INT4 · 2 nodes</h3>
-  <div class="meta"><span class="chip">moonshotai/Kimi-K2.5</span><span class="chip"><b>16× GPU</b></span><span class="chip">TP8 · PP2 · DP8</span><span class="chip">kv fp8_e5m2</span><span class="chip">sglang:v0.5.10.post1</span></div>
-  <div class="codeblock"><div class="chead"><span>models/KimiK2.5/sglang-kimik2.5-2node.yaml</span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
+  <div class="meta"><span class="chip">moonshotai/Kimi-K2.5</span><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.5" target="_blank" rel="noopener" style="text-decoration:none">files on GitHub ↗</a></span><span class="chip"><b>16× GPU</b></span><span class="chip">TP8 · PP2 · DP8</span><span class="chip">kv fp8_e5m2</span><span class="chip">sglang:v0.5.10.post1</span></div>
+  <div class="codeblock"><div class="chead"><span><a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/KimiK2.5/sglang-kimik2.5-2node.yaml" target="_blank" rel="noopener">models/KimiK2.5/sglang-kimik2.5-2node.yaml</a></span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
   --model-path moonshotai/Kimi-K2.5 \
   --tensor-parallel-size 8 --pipeline-parallel-size 2 \
   --dp-size 8 --enable-dp-attention \
@@ -540,7 +548,7 @@ python3 -m sglang.bench_serving \
   --disable-shared-experts-fusion --disable-custom-all-reduce \
   --enable-dp-lm-head --enable-fused-moe-sum-all-reduce \
   --port 8000 --host 0.0.0.0</pre></div>
-  <p>NVFP4 variant: <code class="inline">nvfp4/sglang-kimi-nvfp4-2node_v2.yaml</code> — <code class="inline">nvidia/Kimi-K2.5-NVFP4</code>, TP8 · PP2 · DP8, kv bf16, image dev-cu13.</p>
+  <p>NVFP4 variant: <a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/KimiK2.5/nvfp4/sglang-kimi-nvfp4-2node_v2.yaml" target="_blank" rel="noopener"><code class="inline">nvfp4/sglang-kimi-nvfp4-2node_v2.yaml</code></a> — <code class="inline">nvidia/Kimi-K2.5-NVFP4</code>, TP8 · PP2 · DP8, kv bf16, image dev-cu13.</p>
 
   <h3 id="k25-results">Results</h3>
   <div class="tblwrap"><table>
@@ -562,8 +570,8 @@ python3 -m sglang.bench_serving \
   <p class="lede">The most feature-rich recipe: EAGLE3 speculation, HiCache, GCS Fuse weights — plus a 2-node variant.</p>
 
   <h3 id="k26-1node">Single node · EAGLE3 + HiCache</h3>
-  <div class="meta"><span class="chip">moonshotai/Kimi-K2.6</span><span class="chip"><b>8× GPU</b></span><span class="chip">EAGLE3 · k2.5-eagle3</span><span class="chip">HiCache 2.0</span><span class="chip">kv fp8_e4m3</span><span class="chip">GCS Fuse</span></div>
-  <div class="codeblock"><div class="chead"><span>models/KimiK2.6/sglang-kimi-26-1node.yaml</span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
+  <div class="meta"><span class="chip">moonshotai/Kimi-K2.6</span><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.6" target="_blank" rel="noopener" style="text-decoration:none">files on GitHub ↗</a></span><span class="chip"><b>8× GPU</b></span><span class="chip">EAGLE3 · k2.5-eagle3</span><span class="chip">HiCache 2.0</span><span class="chip">kv fp8_e4m3</span><span class="chip">GCS Fuse</span></div>
+  <div class="codeblock"><div class="chead"><span><a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/KimiK2.6/sglang-kimi-26-1node.yaml" target="_blank" rel="noopener">models/KimiK2.6/sglang-kimi-26-1node.yaml</a></span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
   --model-path /models \  <span class="c"># GCS Fuse CSI mount, parallel-download tuned</span>
   --tp 8 --kv-cache-dtype fp8_e4m3 --trust-remote-code \
   --reasoning-parser kimi_k2 --tool-call-parser kimi_k2 \
@@ -576,7 +584,7 @@ python3 -m sglang.bench_serving \
   --chunked-prefill-size 16384 --enable-mixed-chunk --context-length 131072 \
   --max-running-requests 128 --mem-fraction-static 0.85 \
   --attention-backend flashinfer --enable-p2p-check --host 0.0.0.0 --port 30000</pre></div>
-  <p>An init container validates <code class="inline">config.json</code> and the safetensors shards before launch. 2-node variant (<code class="inline">sglang-kimi-26-2nd.yaml</code>): TP8 · PP2, kv fp8_e5m2, image v0.5.10.post1.</p>
+  <p>An init container validates <code class="inline">config.json</code> and the safetensors shards before launch. 2-node variant (<a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/KimiK2.6/sglang-kimi-26-2nd.yaml" target="_blank" rel="noopener"><code class="inline">sglang-kimi-26-2nd.yaml</code></a>): TP8 · PP2, kv fp8_e5m2, image v0.5.10.post1.</p>
 
   <h3 id="k26-results">Results — single node, standard profile</h3>
   <div class="tblwrap"><table>
@@ -595,7 +603,7 @@ python3 -m sglang.bench_serving \
 <section class="page" id="page-qwen">
   <h1 class="pagetitle">Qwen3.5-397B-A17B-FP8</h1>
   <p class="lede">Latency study: 20K-token prompts, 1K outputs, concurrency 40, 2000 requests — HiCache on vs radix cache off.</p>
-  <div class="meta"><span class="chip">Qwen/Qwen3.5-397B-A17B-FP8</span><span class="chip"><b>8× GPU</b> · TP8</span><span class="chip">~19.7M input tokens</span><span class="chip">dev-cu13</span></div>
+  <div class="meta"><span class="chip">Qwen/Qwen3.5-397B-A17B-FP8</span><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/Qwen3.5-397B-A17B-FP8" target="_blank" rel="noopener" style="text-decoration:none">files on GitHub ↗</a></span><span class="chip"><b>8× GPU</b> · TP8</span><span class="chip">~19.7M input tokens</span><span class="chip">dev-cu13</span></div>
 
   <div class="codeblock"><div class="chead"><span>common flags + variants</span><button class="copybtn">Copy</button></div><pre>--tp 8 --chunked-prefill-size 4096 --max-prefill-tokens 32768 --enable-mixed-chunk \
 --enable-fused-qk-norm-rope --enable-fused-moe-sum-all-reduce \
@@ -625,7 +633,7 @@ python3 -m sglang.bench_serving \
 <section class="page" id="page-whisper">
   <h1 class="pagetitle">Whisper-large-v3</h1>
   <p class="lede">ASR with data parallelism: eight replicas, one per GPU. Three API styles benchmarked on 512 earnings-call samples at concurrency 256.</p>
-  <div class="meta"><span class="chip">openai/whisper-large-v3</span><span class="chip">TP1 · <b>DP8</b></span><span class="chip">float16</span><span class="chip">sglang:latest</span></div>
+  <div class="meta"><span class="chip">openai/whisper-large-v3</span><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/whisper-v3-large" target="_blank" rel="noopener" style="text-decoration:none">files on GitHub ↗</a></span><span class="chip">TP1 · <b>DP8</b></span><span class="chip">float16</span><span class="chip">sglang:latest</span></div>
 
   <div class="codeblock"><div class="chead"><span>launch</span><button class="copybtn">Copy</button></div><pre>sglang serve --model-path openai/whisper-large-v3 \
     --tp-size 1 --dp-size 8 --trust-remote-code \
@@ -650,7 +658,7 @@ python3 -m sglang.bench_serving \
 <section class="page" id="page-ocr">
   <h1 class="pagetitle">Chandra-OCR-2</h1>
   <p class="lede">Qwen3.5-based 9B OCR model on a single 96 GB GPU. Image workload, 200 requests at concurrency 96, run on GCE.</p>
-  <div class="meta"><span class="chip">datalab-to/chandra-ocr-2</span><span class="chip"><b>1× GPU</b></span><span class="chip">BF16</span><span class="chip">98% vision input tokens</span></div>
+  <div class="meta"><span class="chip">datalab-to/chandra-ocr-2</span><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/datalab2-ocr" target="_blank" rel="noopener" style="text-decoration:none">files on GitHub ↗</a></span><span class="chip"><b>1× GPU</b></span><span class="chip">BF16</span><span class="chip">98% vision input tokens</span></div>
 
   <h3 id="ocr-results">Results</h3>
   <div class="tblwrap"><table>
@@ -661,13 +669,14 @@ python3 -m sglang.bench_serving \
       <tr><td>Peak output</td><td class="num">4,603 tok/s</td></tr>
     </tbody>
   </table></div>
-  <p>Scripts: <code class="inline">single_gpu_rtxpr6k_dtlv2ocr.sh</code> (server) and <code class="inline">benchmark_script.sh</code> (load). Not directly comparable to the text profile.</p>
+  <p>Scripts: <a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/datalab2-ocr/single_gpu_rtxpr6k_dtlv2ocr.sh" target="_blank" rel="noopener"><code class="inline">single_gpu_rtxpr6k_dtlv2ocr.sh</code></a> (server) and <code class="inline">benchmark_script.sh</code> (load). Not directly comparable to the text profile.</p>
   <div class="pagenav"><a href="#qwen">← Qwen3.5-397B</a><a href="#ocr">Chandra-OCR-2 →</a></div>
 </section>
 
 <!-- AGENTIC -->
 <section class="page" id="page-agentic">
   <h1 class="pagetitle">Agentic benchmark — Kimi-K2.6</h1>
+  <div class="meta"><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.6/agent_benchmark" target="_blank" rel="noopener" style="text-decoration:none">models/KimiK2.6/agent_benchmark/ on GitHub ↗</a></span></div>
   <p class="lede">Replays real agentic traces (long sequences, shared prefixes, long-tail steps) instead of random tokens. Temperature 0.6, top_p 0.95, 4096 max tokens per step.</p>
 
   <h3 id="ag-results">Results</h3>
@@ -726,6 +735,7 @@ smg launch --worker-urls http://&lt;N1&gt;:30000 http://&lt;N2&gt;:30000 \
 <!-- LONG CONTEXT -->
 <section class="page" id="page-longcontext">
   <h1 class="pagetitle">Long context — Kimi-K2.6 on vLLM</h1>
+  <div class="meta"><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.6/longcontext-bench" target="_blank" rel="noopener" style="text-decoration:none">models/KimiK2.6/longcontext-bench/ on GitHub ↗</a></span></div>
   <p class="lede">64K prompts and 64K generations on one node with a 256K window, Eagle3, and decode context parallelism.</p>
   <div class="meta"><span class="chip">vLLM kimi-k26-mtp stack</span><span class="chip">TP8 + <b>DCP8</b></span><span class="chip">max len 262,144</span><span class="chip">kv fp8 · TRITON_MLA</span><span class="chip">Eagle3 · 3 tok · MLA draft</span></div>
   <p>Chunked prefill, prefix caching, async scheduling enabled. Manifests under <code class="inline">models/KimiK2.6/longcontext-bench/</code>.</p>
@@ -753,6 +763,7 @@ smg launch --worker-urls http://&lt;N1&gt;:30000 http://&lt;N2&gt;:30000 \
 <!-- GATEWAY -->
 <section class="page" id="page-gateway">
   <h1 class="pagetitle">GKE Inference Gateway</h1>
+  <div class="meta"><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.6/gke-inference-gateway" target="_blank" rel="noopener" style="text-decoration:none">models/KimiK2.6/gke-inference-gateway/ on GitHub ↗</a></span></div>
   <p class="lede">Prefix-cache-aware routing: requests sharing a prompt prefix land on the replica that already holds it in KV cache — maximizing reuse, minimizing TTFT. Shipped for both SGLang and vLLM backends.</p>
 
 <div class="fig">
@@ -878,6 +889,7 @@ kubectl logs &lt;SGLANG_POD&gt; -c sglang-container -f | grep -v -E "/metrics|/h
 <!-- NETWORK -->
 <section class="page" id="page-network">
   <h1 class="pagetitle">Network &amp; NCCL</h1>
+  <div class="meta"><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/networkbench" target="_blank" rel="noopener" style="text-decoration:none">networkbench/ on GitHub ↗</a></span></div>
   <p class="lede">G4 nodes carry two 200 Gbps Diorite SmartNICs. DRANET (8896-MTU VPC + Dynamic Resource Allocation) exposes both to pods — and the benchmarks confirm the aggregate bandwidth is real.</p>
   <div class="meta"><span class="chip">iperf3 <b>190/190 Gbps</b> duplex</span><span class="chip">NCCL <b>37.9 GB/s</b> ≈ 303 Gbps</span></div>
 
