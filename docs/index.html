@@ -3,423 +3,295 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SGLang on GCP G4 — RTX PRO 6000 Blackwell Recipes</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,450;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<title>SGLang on GCP G4 — RTX PRO 6000 Recipes</title>
 <style>
 :root{
-  --paper:#F8FAF7;
-  --panel:#FFFFFF;
-  --spruce:#0D1F18;
-  --spruce-2:#13291F;
-  --ink:#202B26;
-  --ink-soft:#56635D;
-  --line:#DFE7E1;
-  --emerald:#0F8A5F;
-  --emerald-deep:#0B6B4A;
-  --emerald-tint:#E8F4EE;
-  --amber:#C07A1C;
-  --amber-tint:#FBF2E2;
-  --code-bg:#0E1A15;
-  --code-ink:#D7E6DD;
-  --code-accent:#7FD8AE;
-  --code-str:#E9C46A;
-  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
-  --sans:'IBM Plex Sans',system-ui,sans-serif;
-  --disp:'Space Grotesk',var(--sans);
-  --sidebar-w:292px;
+  --bg:#FFFFFF; --side:#FAFBFC; --ink:#1F2328; --soft:#57606A; --faint:#848D97;
+  --line:#E4E7EB; --accent:#1A56DB; --accent-soft:#EFF4FF; --amber:#92610F; --amber-soft:#FBF4E4;
+  --codebg:#F6F8FA; --codeink:#24292F;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;
+  --sw:250px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
-body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:15.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:15.5px;line-height:1.7;-webkit-font-smoothing:antialiased}
 
-/* ---------- Sidebar ---------- */
-.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--spruce);color:#C8D6CE;overflow-y:auto;z-index:40;display:flex;flex-direction:column}
-.sidebar::-webkit-scrollbar{width:8px}
-.sidebar::-webkit-scrollbar-thumb{background:#2A4438;border-radius:4px}
-.brand{padding:22px 22px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
-.brand h1{font-family:var(--disp);font-size:17px;font-weight:700;letter-spacing:.01em;color:#fff;line-height:1.25}
-.brand h1 .gpu{color:var(--code-accent)}
-.brand .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#7E978B;margin-top:6px}
-.searchwrap{padding:14px 18px 6px}
-.searchwrap input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:8px 12px;color:#E8F0EB;font-family:var(--mono);font-size:12.5px;outline:none}
-.searchwrap input::placeholder{color:#6E8479}
-.searchwrap input:focus{border-color:var(--code-accent)}
-nav{padding:10px 0 28px;flex:1}
-.navgroup{margin-top:14px}
-.navgroup>.glabel{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#6E8479;padding:6px 22px 4px}
-nav a{display:block;padding:6px 22px;color:#B9CBC1;text-decoration:none;font-size:13.8px;font-weight:450;border-left:3px solid transparent;line-height:1.4}
-nav a:hover{color:#fff;background:rgba(255,255,255,.05)}
-nav a.active{color:#fff;background:rgba(127,216,174,.10);border-left-color:var(--code-accent)}
-nav a .tag{font-family:var(--mono);font-size:9.5px;background:rgba(127,216,174,.16);color:var(--code-accent);padding:1px 6px;border-radius:4px;margin-left:7px;vertical-align:1px;letter-spacing:.05em}
-nav a .tag.amber{background:rgba(233,196,106,.16);color:#E9C46A}
-.sidefoot{padding:16px 22px;border-top:1px solid rgba(255,255,255,.08);font-size:11.5px;color:#7E978B;font-family:var(--mono)}
-.sidefoot a{color:var(--code-accent);text-decoration:none}
+/* sidebar */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sw);background:var(--side);border-right:1px solid var(--line);overflow-y:auto;z-index:40;padding:22px 0 16px}
+.brand{padding:0 20px 14px}
+.brand h1{font-size:14.5px;font-weight:650;letter-spacing:-.01em;line-height:1.35}
+.brand .sub{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px;letter-spacing:.06em}
+.searchwrap{padding:0 16px 8px;position:relative}
+.searchwrap input{width:100%;border:1px solid var(--line);background:#fff;border-radius:6px;padding:6px 10px;font-size:12.5px;font-family:var(--sans);outline:none;color:var(--ink)}
+.searchwrap input:focus{border-color:var(--accent)}
+nav{padding-bottom:20px}
+.glabel{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);padding:16px 20px 4px}
+nav a{display:block;padding:4.5px 20px;color:var(--soft);text-decoration:none;font-size:13.5px;border-left:2px solid transparent}
+nav a:hover{color:var(--ink)}
+nav a.active{color:var(--ink);border-left-color:var(--accent);font-weight:600;background:transparent}
+.sidefoot{padding:12px 20px;border-top:1px solid var(--line);font-size:11px;color:var(--faint)}
+.sidefoot a{color:var(--accent);text-decoration:none}
+#searchresults{position:absolute;left:16px;right:16px;top:38px;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(20,30,25,.08);z-index:60;max-height:280px;overflow-y:auto;display:none}
+#searchresults a{display:block;padding:7px 11px;font-size:12px;color:var(--soft);text-decoration:none;border-bottom:1px solid var(--line)}
+#searchresults a:last-child{border-bottom:0}
+#searchresults a:hover{background:var(--accent-soft);color:var(--ink)}
+#searchresults .sr-page{font-size:11px;font-weight:600;color:var(--accent)}
 
-/* ---------- Main ---------- */
-.main{margin-left:var(--sidebar-w);min-height:100vh}
-.topbar{position:sticky;top:0;background:rgba(248,250,247,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 44px;font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);z-index:30;display:flex;justify-content:space-between;align-items:center}
-.topbar .crumb b{color:var(--emerald-deep);font-weight:600}
-.topbar .meta{letter-spacing:.04em}
-.content{max-width:920px;padding:42px 44px 110px}
+/* main */
+.main{margin-left:var(--sw)}
+.content{max-width:800px;padding:48px 48px 100px}
 .page{display:none}
-.page.visible{display:block;animation:fadein .22s ease}
-@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page.visible{display:block}
 
-/* typography */
-.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--emerald);margin-bottom:10px}
-h2.pagetitle{font-family:var(--disp);font-size:34px;font-weight:700;letter-spacing:-.015em;line-height:1.12;margin-bottom:14px;color:var(--spruce)}
-.lede{font-size:17px;color:var(--ink-soft);max-width:64ch;margin-bottom:30px}
-h3{font-family:var(--disp);font-size:21px;font-weight:600;letter-spacing:-.01em;margin:42px 0 12px;color:var(--spruce);scroll-margin-top:70px}
-h4{font-family:var(--disp);font-size:16px;font-weight:600;margin:26px 0 8px;color:var(--spruce)}
-p{margin:0 0 14px;max-width:70ch}
-.content a{color:var(--emerald-deep);text-decoration:underline;text-decoration-color:#A9D4C0;text-underline-offset:3px}
-.content a:hover{text-decoration-color:var(--emerald-deep)}
-code.inline{font-family:var(--mono);font-size:.86em;background:var(--emerald-tint);color:var(--emerald-deep);padding:1.5px 6px;border-radius:5px;white-space:nowrap}
-hr.sep{border:0;border-top:1px solid var(--line);margin:38px 0}
+h1.pagetitle{font-size:27px;font-weight:650;letter-spacing:-.015em;line-height:1.2;margin-bottom:8px}
+.lede{font-size:15.5px;color:var(--soft);margin-bottom:26px;max-width:62ch}
+h3{font-size:18px;font-weight:650;letter-spacing:-.01em;margin:38px 0 10px;scroll-margin-top:24px}
+h4{font-size:14.5px;font-weight:650;margin:24px 0 6px;color:var(--ink)}
+p{margin:0 0 12px;max-width:68ch}
+.content a{color:var(--accent);text-decoration:none}
+.content a:hover{text-decoration:underline}
+code.inline{font-family:var(--mono);font-size:.84em;background:var(--codebg);border:1px solid var(--line);padding:1px 5px;border-radius:5px;color:var(--codeink);white-space:nowrap}
 
-/* spec nameplate — signature element */
-.nameplate{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));border:1.5px solid var(--spruce);border-radius:10px;overflow:hidden;margin:22px 0 30px;background:var(--panel)}
-.nameplate .cell{padding:12px 16px;border-right:1px dashed var(--line)}
-.nameplate .cell:last-child{border-right:0}
-.nameplate .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft)}
-.nameplate .v{font-family:var(--disp);font-size:16.5px;font-weight:600;color:var(--spruce);margin-top:2px;line-height:1.25}
-.nameplate .v small{font-size:11.5px;font-weight:500;color:var(--ink-soft)}
+/* meta chips */
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
+.chip{font-family:var(--mono);font-size:11.5px;background:var(--codebg);border:1px solid var(--line);color:var(--codeink);padding:3px 9px;border-radius:6px}
+.chip b{color:var(--accent);font-weight:600}
 
 /* tables */
-.tblwrap{overflow-x:auto;margin:18px 0 26px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.tblwrap{overflow-x:auto;margin:14px 0 22px;border:1px solid var(--line);border-radius:8px}
 table{border-collapse:collapse;width:100%;font-size:13.5px}
-th{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;text-align:left;color:var(--ink-soft);background:#F1F5F1;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
-td{padding:9px 14px;border-bottom:1px solid #ECF1EC;vertical-align:top}
+th{font-size:12px;font-weight:600;text-align:left;color:var(--soft);padding:8px 12px;border-bottom:1px solid var(--line);background:#FCFCFB;white-space:nowrap}
+td{padding:7px 12px;border-bottom:1px solid #F0F2F0;vertical-align:top}
 tr:last-child td{border-bottom:0}
-td.num,th.num{text-align:right;font-family:var(--mono);font-size:12.8px;white-space:nowrap}
-td .best{color:var(--emerald-deep);font-weight:600}
-td .modelname{font-weight:600;color:var(--spruce)}
-td .qtag{display:inline-block;font-family:var(--mono);font-size:10px;padding:1px 7px;border-radius:5px;background:var(--emerald-tint);color:var(--emerald-deep);letter-spacing:.04em;margin-left:6px}
-td .qtag.fp8{background:#E7F0FA;color:#23527C}
-td .qtag.int4{background:var(--amber-tint);color:var(--amber)}
+td.num,th.num{text-align:right;font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+.best{color:var(--accent);font-weight:600}
+.q{display:inline-block;font-family:var(--mono);font-size:10px;padding:0 6px;border-radius:4px;background:#F0F2F5;color:#454C54;border:1px solid var(--line);margin-left:6px;vertical-align:1px}
+.q.b{background:#EFF4FF;color:#1A56DB;border-color:#D3E0F8}
+.q.a{background:#FBF4E4;color:#92610F;border-color:#F0E1BC}
+.rd{font-size:10.5px;color:var(--faint);margin-top:1px}
+.bar{height:6px;border-radius:3px;background:#7CA4F0;opacity:1;min-width:3px;margin-top:6px}
 
-/* throughput bars */
-.bar{height:7px;border-radius:4px;background:linear-gradient(90deg,var(--emerald),#39B98A);min-width:3px;margin-top:5px}
-.barlabel{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
+/* code */
+.codeblock{margin:12px 0 22px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.codeblock .chead{display:flex;justify-content:space-between;align-items:center;background:#FCFCFB;border-bottom:1px solid var(--line);padding:5px 12px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.copybtn{font-family:var(--sans);font-size:11px;font-weight:550;background:#fff;color:var(--soft);border:1px solid var(--line);border-radius:5px;padding:2px 9px;cursor:pointer}
+.copybtn:hover{color:var(--accent);border-color:var(--accent)}
+.codeblock pre{background:var(--codebg);color:var(--codeink);padding:13px 15px;overflow-x:auto;font-family:var(--mono);font-size:12.3px;line-height:1.6}
+.codeblock pre .c{color:var(--faint)}
+.codeblock pre .f{color:var(--accent);font-weight:600}
+.codeblock pre .s{color:var(--amber)}
 
-/* code blocks */
-.codeblock{position:relative;margin:16px 0 26px;border-radius:10px;overflow:hidden;border:1px solid #1E3328}
-.codeblock .chead{display:flex;justify-content:space-between;align-items:center;background:#122620;padding:7px 14px;font-family:var(--mono);font-size:11px;color:#85A294;letter-spacing:.06em}
-.codeblock .copybtn{font-family:var(--mono);font-size:10.5px;background:rgba(127,216,174,.12);color:var(--code-accent);border:1px solid rgba(127,216,174,.3);border-radius:5px;padding:3px 10px;cursor:pointer;letter-spacing:.05em}
-.codeblock .copybtn:hover{background:rgba(127,216,174,.22)}
-.codeblock pre{background:var(--code-bg);color:var(--code-ink);padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.6px;line-height:1.62;tab-size:2}
-.codeblock pre .c{color:#6F8B7C}
-.codeblock pre .f{color:var(--code-accent)}
-.codeblock pre .s{color:var(--code-str)}
-
-/* callouts */
-.callout{border-radius:10px;padding:14px 18px;margin:18px 0 24px;font-size:14px;border:1px solid;max-width:none}
+/* callout */
+.callout{border-left:3px solid #B6CCF5;background:transparent;border-radius:0;padding:2px 0 2px 14px;margin:14px 0 20px;font-size:13.5px;color:#2B3A55}
+.callout.warn{border-left-color:#E3C173;background:transparent;color:#5F4509}
 .callout p{margin:0;max-width:none}
-.callout.note{background:var(--emerald-tint);border-color:#C4E2D3;color:#11543C}
-.callout.warn{background:var(--amber-tint);border-color:#EDD6A8;color:#7A4E10}
-.callout b{font-family:var(--disp)}
-
-/* cards on home */
-.cardgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:20px 0 8px}
-.card{display:block;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:18px;text-decoration:none!important;transition:border-color .15s,transform .15s}
-.card:hover{border-color:var(--emerald);transform:translateY(-2px)}
-.card .ct{font-family:var(--disp);font-weight:600;font-size:15.5px;color:var(--spruce)}
-.card .cd{font-size:12.8px;color:var(--ink-soft);margin-top:5px;line-height:1.5}
-.card .cm{font-family:var(--mono);font-size:10.5px;color:var(--emerald-deep);margin-top:10px;letter-spacing:.08em}
-
-/* metric duos */
-.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:18px 0 26px}
-.duo .stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
-.duo .stat .sv{font-family:var(--disp);font-size:24px;font-weight:700;color:var(--spruce)}
-.duo .stat .sv em{font-style:normal;font-size:13px;color:var(--ink-soft);font-weight:500}
-.duo .stat .sk{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px}
-.duo .stat.good{border-color:#BBE0CE;background:var(--emerald-tint)}
-.duo .stat.good .sv{color:var(--emerald-deep)}
 
 /* steps */
-ol.steps{counter-reset:s;list-style:none;margin:14px 0 26px}
-ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 46px}
-ol.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;width:28px;height:28px;border-radius:8px;background:var(--spruce);color:var(--code-accent);font-family:var(--mono);font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center}
-ol.steps>li::after{content:"";position:absolute;left:13.5px;top:32px;bottom:2px;width:1.5px;background:var(--line)}
-ol.steps>li:last-child::after{display:none}
-ol.steps>li>b{font-family:var(--disp);font-size:15px;color:var(--spruce)}
-ul.plain{margin:0 0 16px 20px}
-ul.plain li{margin-bottom:6px;max-width:68ch}
+ol.steps{counter-reset:s;list-style:none;margin:10px 0 22px}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 14px 36px}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:2px;width:22px;height:22px;border-radius:6px;background:#F0F2F5;color:#454C54;font-size:12px;font-weight:650;display:flex;align-items:center;justify-content:center}
+ol.steps>li>b{font-size:14px}
+ul.plain{margin:0 0 14px 18px}
+ul.plain li{margin-bottom:5px;max-width:66ch}
 
-/* prev/next */
-.pagenav{display:flex;justify-content:space-between;gap:14px;margin-top:60px;border-top:1px solid var(--line);padding-top:22px}
-.pagenav a{flex:1;border:1px solid var(--line);border-radius:10px;padding:13px 16px;text-decoration:none!important;background:var(--panel)}
-.pagenav a:hover{border-color:var(--emerald)}
-.pagenav .dir{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft)}
-.pagenav .pt{font-family:var(--disp);font-weight:600;color:var(--spruce);margin-top:2px;font-size:14.5px}
-.pagenav a.next{text-align:right}
+/* recipe index */
+.idx{margin:10px 0 20px;border-top:1px solid var(--line)}
+.idx a{display:flex;gap:14px;align-items:baseline;padding:9px 2px;border-bottom:1px solid var(--line);text-decoration:none}
+.idx a:hover{background:#FCFCFB;text-decoration:none}
+.idx .it{font-weight:600;color:var(--ink);min-width:170px;font-size:14px}
+.idx .id{color:var(--soft);font-size:13px}
+.idx a:hover .it{color:var(--accent)}
 
-/* hero */
-.hero{background:var(--spruce);color:#DDE9E2;border-radius:14px;padding:34px 36px 30px;margin-bottom:38px;position:relative;overflow:hidden}
-.hero::after{content:"SM120";position:absolute;right:-14px;bottom:-34px;font-family:var(--disp);font-weight:700;font-size:124px;color:rgba(127,216,174,.07);letter-spacing:-.04em;pointer-events:none}
-.hero .eyebrow{color:var(--code-accent)}
-.hero h2{font-family:var(--disp);font-size:31px;font-weight:700;color:#fff;letter-spacing:-.015em;line-height:1.15;margin-bottom:12px;max-width:21ch}
-.hero p{color:#A9BFB3;max-width:62ch;font-size:15px}
-.hero .heromono{font-family:var(--mono);font-size:11.5px;color:#7E978B;margin-top:18px;display:flex;gap:20px;flex-wrap:wrap}
-.hero .heromono span b{color:var(--code-accent);font-weight:500}
+/* pagenav */
+.pagenav{display:flex;justify-content:space-between;margin-top:54px;border-top:1px solid var(--line);padding-top:16px;font-size:13.5px}
+.pagenav a{text-decoration:none;color:var(--soft)}
+.pagenav a:hover{color:var(--accent)}
 
-/* search results dropdown */
-#searchresults{position:absolute;left:18px;right:18px;top:96px;background:#0B1812;border:1px solid #2A4438;border-radius:8px;z-index:60;max-height:300px;overflow-y:auto;display:none}
-#searchresults a{display:block;padding:8px 12px;font-size:12.5px;color:#C8D6CE;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.05)}
-#searchresults a:hover{background:rgba(127,216,174,.1);color:#fff}
-#searchresults .sr-page{font-family:var(--mono);font-size:9.5px;color:var(--code-accent);letter-spacing:.1em;text-transform:uppercase}
+/* figure */
+.fig{border:1px solid var(--line);border-radius:10px;padding:10px;margin:14px 0 8px;overflow-x:auto;background:#fff}
+.figcap{font-size:12px;color:var(--faint);margin:6px 2px 20px}
 
-/* mobile */
-.menubtn{display:none;position:fixed;top:12px;left:12px;z-index:50;background:var(--spruce);color:var(--code-accent);border:0;border-radius:8px;padding:8px 12px;font-family:var(--mono);font-size:12px;cursor:pointer}
-@media(max-width:900px){
-  .sidebar{transform:translateX(-100%);transition:transform .2s}
-  .sidebar.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.4)}
+.menubtn{display:none;position:fixed;top:10px;left:10px;z-index:50;background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 11px;font-size:12.5px;cursor:pointer;color:var(--ink)}
+@media(max-width:880px){
+  .sidebar{transform:translateX(-100%);transition:transform .18s}
+  .sidebar.open{transform:none;box-shadow:0 0 30px rgba(0,0,0,.18)}
   .menubtn{display:block}
   .main{margin-left:0}
-  .content{padding:30px 20px 90px}
-  .topbar{padding:10px 20px 10px 64px}
-  h2.pagetitle{font-size:27px}
-  .hero{padding:26px 22px}
+  .content{padding:56px 20px 80px}
+  h1.pagetitle{font-size:23px}
 }
-:focus-visible{outline:2px solid var(--emerald);outline-offset:2px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </style>
 </head>
 <body>
-<button class="menubtn" id="menubtn" aria-label="Toggle navigation">☰ MENU</button>
+<button class="menubtn" id="menubtn" aria-label="Toggle navigation">Menu</button>
 
 <aside class="sidebar" id="sidebar">
   <div class="brand">
-    <h1>SGLang on <span class="gpu">GCP G4</span><br>Serving Recipes</h1>
-    <div class="sub">RTX PRO 6000 · Blackwell SM120</div>
+    <h1>SGLang on GCP G4</h1>
+    <div class="sub">RTX PRO 6000 · BLACKWELL</div>
   </div>
-  <div class="searchwrap" style="position:relative">
-    <input type="search" id="search" placeholder="Search docs… (e.g. hicache, nvfp4)" autocomplete="off">
+  <div class="searchwrap">
+    <input type="search" id="search" placeholder="Search…" autocomplete="off">
     <div id="searchresults"></div>
   </div>
   <nav id="nav">
-    <div class="navgroup">
-      <div class="glabel">Start here</div>
-      <a href="#overview" data-page="overview">Overview &amp; results</a>
-      <a href="#hardware" data-page="hardware">G4 hardware reference</a>
-      <a href="#cluster" data-page="cluster">GKE cluster setup</a>
-      <a href="#benchmarking" data-page="benchmarking">Benchmarking guide</a>
-    </div>
-    <div class="navgroup">
-      <div class="glabel">Model recipes</div>
-      <a href="#deepseek" data-page="deepseek">DeepSeek-V3.2 <span class="tag">FP8·NVFP4</span></a>
-      <a href="#glm" data-page="glm">GLM-5.1 <span class="tag">FP8·NVFP4</span></a>
-      <a href="#kimi25" data-page="kimi25">Kimi-K2.5 <span class="tag amber">INT4·NVFP4</span></a>
-      <a href="#kimi26" data-page="kimi26">Kimi-K2.6 <span class="tag">EAGLE3</span></a>
-      <a href="#qwen" data-page="qwen">Qwen3.5-397B <span class="tag">HiCache</span></a>
-      <a href="#whisper" data-page="whisper">Whisper-large-v3 <span class="tag amber">ASR</span></a>
-      <a href="#ocr" data-page="ocr">Chandra-OCR-2 <span class="tag amber">VLM</span></a>
-    </div>
-    <div class="navgroup">
-      <div class="glabel">Deep dives</div>
-      <a href="#agentic" data-page="agentic">Agentic benchmark (K2.6)</a>
-      <a href="#longcontext" data-page="longcontext">Long-context (vLLM)</a>
-      <a href="#gateway" data-page="gateway">GKE Inference Gateway</a>
-      <a href="#network" data-page="network">Network &amp; NCCL bench</a>
-    </div>
+    <div class="glabel">Start here</div>
+    <a href="#overview" data-page="overview">Overview &amp; benchmarks</a>
+    <a href="#hardware" data-page="hardware">Hardware</a>
+    <a href="#cluster" data-page="cluster">Cluster setup</a>
+    <a href="#benchmarking" data-page="benchmarking">Benchmarking</a>
+    <div class="glabel">Recipes</div>
+    <a href="#kimi25" data-page="kimi25">Kimi-K2.5</a>
+    <a href="#kimi26" data-page="kimi26">Kimi-K2.6</a>
+    <a href="#deepseek" data-page="deepseek">DeepSeek-V3.2</a>
+    <a href="#glm" data-page="glm">GLM-5.1</a>
+    <a href="#qwen" data-page="qwen">Qwen3.5-397B</a>
+    <a href="#whisper" data-page="whisper">Whisper-large-v3</a>
+    <a href="#ocr" data-page="ocr">Chandra-OCR-2</a>
+    <div class="glabel">Deep dives</div>
+    <a href="#agentic" data-page="agentic">Agentic benchmark</a>
+    <a href="#longcontext" data-page="longcontext">Long context</a>
+    <a href="#gateway" data-page="gateway">Inference Gateway</a>
+    <a href="#network" data-page="network">Network &amp; NCCL</a>
   </nav>
   <div class="sidefoot">
-    src: <a href="https://github.com/shivajid/sglang-rtx-pro-6000" target="_blank" rel="noopener">shivajid/sglang-rtx-pro-6000</a><br>
-    benchmarks as of May 2026
+    <a href="https://github.com/shivajid/sglang-rtx-pro-6000" target="_blank" rel="noopener">GitHub repo</a> · May 2026
   </div>
 </aside>
 
-<div class="main">
-  <div class="topbar">
-    <div class="crumb">docs / <b id="crumb">overview</b></div>
-    <div class="meta">sglang dev-cu13 · v0.5.10.post1</div>
-  </div>
-  <div class="content" id="content">
+<div class="main"><div class="content" id="content">
 
-<!-- ================= OVERVIEW ================= -->
+<!-- OVERVIEW -->
 <section class="page" id="page-overview">
-  <div class="hero">
-    <div class="eyebrow">GCP G4 · NVIDIA RTX PRO 6000</div>
-    <h2>Open-model serving recipes</h2>
-    <p>Deploy-ready SGLang configs and measured benchmarks for GKE on Blackwell GPUs. Copy a manifest, apply it, reproduce the numbers.</p>
-    <div class="heromono">
-      <span>GPU <b>RTX PRO 6000 · 96GB</b></span>
-      <span>Node <b>g4-standard-384 · 8×GPU</b></span>
-      <span>SGLang <b>dev-cu13 / 0.5.10.post1</b></span>
-    </div>
-  </div>
-  <div class="callout note" style="display:flex;gap:10px;align-items:center"><p><b>New to G4?</b> Start with the <a href="#hardware">GCP G4 / RTX PRO 6000 hardware reference</a> — GPU specs plus a dual-NUMA node topology infographic.</p></div>
-
-  <h3 id="ov-results">Headline throughput benchmarks</h3>
-  <p>Standard profile: <code class="inline">inf</code> request rate, <b>512 max concurrency</b>, random dataset with <b>1024 input / 8192 output</b> tokens. Most runs use 1536 prompts; the DeepSeek NVFP4 run used 512<sup>†</sup>. The load generator runs on a dedicated CPU-only node pool so it never steals cycles from the GPUs. Because setups mix 1-node (8&nbsp;GPU) and 2-node (16&nbsp;GPU) configs, the bars show <b>output throughput per GPU</b>, scaled against the best per-GPU result, for a hardware-normalized comparison.</p>
-  <div class="tblwrap"><table>
-    <thead><tr><th>Model</th><th>Setup</th><th class="num">Output tok/s</th><th class="num">tok/s / GPU</th><th style="min-width:130px">Per-GPU efficiency</th><th class="num">Total tok/s</th><th class="num">Peak tok/s</th><th class="num">Mean TPOT ms</th></tr></thead>
-    <tbody>
-      <tr><td><span class="modelname">DeepSeek-V3.2</span><span class="qtag fp8">FP8</span></td><td>2 nodes · 16×GPU</td><td class="num">2962.79</td><td class="num">185.2</td><td><div class="bar" style="width:55%"></div></td><td class="num">3324.21</td><td class="num">4951</td><td class="num">149.29</td></tr>
-      <tr><td><span class="modelname">DeepSeek-V3.2</span><span class="qtag">NVFP4</span><sup>†</sup></td><td>1 node · 8×GPU</td><td class="num">2675.33</td><td class="num"><span class="best">334.4</span></td><td><div class="bar" style="width:100%"></div></td><td class="num">3012.42</td><td class="num">2046</td><td class="num">106.03</td></tr>
-      <tr><td><span class="modelname">GLM-5.1</span><span class="qtag fp8">FP8</span></td><td>2 nodes · 16×GPU</td><td class="num">2785.55</td><td class="num">174.1</td><td><div class="bar" style="width:52%"></div></td><td class="num">3125.35</td><td class="num">4092</td><td class="num">155.26</td></tr>
-      <tr><td><span class="modelname">GLM-5.1</span><span class="qtag">NVFP4</span></td><td>1 node · 8×GPU</td><td class="num">1490.31</td><td class="num">186.3</td><td><div class="bar" style="width:56%"></div></td><td class="num">1672.11</td><td class="num">734</td><td class="num">73.82</td></tr>
-      <tr><td><span class="modelname">GLM-5.1</span><span class="qtag">NVFP4</span></td><td>2 nodes · 16×GPU</td><td class="num">3075.85</td><td class="num">192.2</td><td><div class="bar" style="width:57%"></div></td><td class="num">3451.06</td><td class="num">4606</td><td class="num">141.36</td></tr>
-      <tr><td><span class="modelname">Kimi-K2.5</span><span class="qtag int4">INT4</span></td><td>2 nodes · 16×GPU</td><td class="num">3152.79</td><td class="num">197.0</td><td><div class="bar" style="width:59%"></div></td><td class="num">3537.39</td><td class="num">4793</td><td class="num">136.52</td></tr>
-      <tr><td><span class="modelname">Kimi-K2.5</span><span class="qtag">NVFP4</span></td><td>2 nodes · 16×GPU</td><td class="num"><span class="best">3237.46</span></td><td class="num">202.3</td><td><div class="bar" style="width:61%"></div></td><td class="num"><span class="best">3632.39</span></td><td class="num">5535</td><td class="num">137.89</td></tr>
-      <tr><td><span class="modelname">Kimi-K2.6</span><span class="qtag int4">INT4</span></td><td>1 node · 8×GPU</td><td class="num">1459.26</td><td class="num">182.4</td><td><div class="bar" style="width:55%"></div></td><td class="num">1637.28</td><td class="num">850</td><td class="num">82.43</td></tr>
-      <tr><td><span class="modelname">Chandra-OCR-2</span><span class="qtag int4">BF16 · VLM</span></td><td>1 GPU</td><td class="num">2600.67</td><td class="num">—</td><td><span class="barlabel">n/a — image workload</span></td><td class="num">5267.08</td><td class="num">4603</td><td class="num"><span class="best">32.47</span></td></tr>
-    </tbody>
-  </table></div>
-  <div class="callout note"><p><b>Reading the table fairly.</b> The per-GPU view shows what each GPU contributes, but read it with three caveats straight from the raw logs. <b>(1)</b> <sup>†</sup>The DeepSeek NVFP4 run completed 512 requests, not 1536, and uses EAGLE speculative decoding (accept length 2.87) — both flatter its per-GPU figure, and its median TTFT was 18.7&nbsp;s vs 0.33&nbsp;s for the FP8 2-node setup. <b>(2)</b> Scaling 1→2 nodes can be <i>super-linear</i> under this saturation profile: GLM-5.1 NVFP4 jumps 1490 → 3076 tok/s (2.06×) because the 1-node run is prefill-bound at 512 concurrency. There is no universal "single node is more efficient" rule in this data. <b>(3)</b> Kimi-K2.5/K2.6 use native INT4 weight quantization with KV-cache optimization; the absolute throughput leader is Kimi-K2.5 NVFP4 at 3237 tok/s. Chandra-OCR-2 is a single-GPU 9B vision-language model on an image benchmark, so its figures aren't comparable to the text profile. Whisper-large-v3 (ASR) uses a different profile entirely — see its <a href="#whisper">recipe page</a>. Table last updated May 22, 2026.</p></div>
-
-  <h3 id="ov-more">Beyond the standard profile</h3>
-  <p>The repo also measures workload shapes the 1K/8K profile can't capture — long context, latency-sensitive prefill, speech, vision, and the raw network fabric.</p>
-
-  <h4>Kimi-K2.6 long context — vLLM, single node, 256K window</h4>
-  <div class="tblwrap"><table>
-    <thead><tr><th>Shape</th><th class="num">Concurrency</th><th class="num">Input tok/s</th><th class="num">Output tok/s</th><th class="num">Total tok/s</th><th>Details</th></tr></thead>
-    <tbody>
-      <tr><td><b>64K in → 8K out</b></td><td class="num">80</td><td class="num">3019.04</td><td class="num">361.75</td><td class="num">3380.79</td><td rowspan="4" style="vertical-align:middle"><a href="#lc-6488">64K→8K results</a><br><a href="#lc-8864">8K→64K results</a></td></tr>
-      <tr><td><b>8K in → 64K out</b></td><td class="num">64</td><td class="num">95.66</td><td class="num">813.76</td><td class="num">909.42</td></tr>
-      <tr><td><b>8K in → 64K out</b></td><td class="num">80</td><td class="num">111.79</td><td class="num">821.06</td><td class="num">932.85</td></tr>
-      <tr><td><b>8K in → 64K out</b></td><td class="num">128</td><td class="num">108.68</td><td class="num">830.50</td><td class="num">939.19</td></tr>
-    </tbody>
-  </table></div>
-
-  <h4>Qwen3.5-397B-A17B-FP8 latency — 20K in / 1K out, concurrency 40</h4>
-  <div class="tblwrap"><table>
-    <thead><tr><th>Config</th><th class="num">Mean TTFT</th><th class="num">P99 TTFT</th><th class="num">Mean TPOT</th><th>Details</th></tr></thead>
-    <tbody>
-      <tr><td><b>HiCache enabled</b></td><td class="num"><span class="best">1,121 ms</span></td><td class="num"><span class="best">3,360 ms</span></td><td class="num">100.6 ms</td><td rowspan="2" style="vertical-align:middle"><a href="#qw-results">Full A/B report</a></td></tr>
-      <tr><td><b>No radix cache</b></td><td class="num">1,371 ms</td><td class="num">14,053 ms</td><td class="num"><span class="best">90.5 ms</span></td></tr>
-    </tbody>
-  </table></div>
-
-  <h4>Whisper-large-v3 (ASR) — DP8, 512 samples, concurrency 256</h4>
-  <div class="tblwrap"><table>
-    <thead><tr><th>Endpoint</th><th class="num">Throughput</th><th class="num">Avg latency</th><th class="num">WER</th><th>Details</th></tr></thead>
-    <tbody>
-      <tr><td><b>Audio Transcriptions</b></td><td class="num"><span class="best">55.63 req/s</span></td><td class="num"><span class="best">0.322 s</span></td><td class="num">13.14</td><td rowspan="3" style="vertical-align:middle"><a href="#wh-results">Whisper recipe</a></td></tr>
-      <tr><td>Chat Completions</td><td class="num">48.21 req/s</td><td class="num">3.271 s</td><td class="num"><span class="best">12.76</span></td></tr>
-      <tr><td>Streaming</td><td class="num">28.15 req/s</td><td class="num">0.906 s</td><td class="num">13.15</td></tr>
-    </tbody>
-  </table></div>
-
-  <h4>Chandra-OCR-2 (datalab) — single GPU, vision workload, concurrency 96</h4>
-  <div class="tblwrap"><table>
-    <thead><tr><th class="num">Output tok/s</th><th class="num">Total tok/s</th><th class="num">Mean TPOT</th><th class="num">Median TTFT</th><th>Details</th></tr></thead>
-    <tbody>
-      <tr><td class="num">2600.67</td><td class="num">5267.08</td><td class="num"><span class="best">32.47 ms</span></td><td class="num">454 ms</td><td><a href="#ocr-results">OCR recipe</a></td></tr>
-    </tbody>
-  </table></div>
-
-  <h4>Network fabric — DRANET dual-NIC, between two G4 nodes</h4>
-  <div class="tblwrap"><table>
-    <thead><tr><th>Test</th><th class="num">Result</th><th>Notes</th></tr></thead>
-    <tbody>
-      <tr><td><b>iperf3 bidirectional, 8 streams</b></td><td class="num">190 / 190 Gbps</td><td>TX / RX full duplex, consistent over 10 runs — one 200 Gbps NIC saturated. <a href="#nw-results">Network bench</a></td></tr>
-      <tr><td><b>NCCL AllReduce, 512 MB</b></td><td class="num"><span class="best">37.93 GB/s</span> ≈ 303 Gbps</td><td>Median aggregate AlgBW over 10 runs, both NICs (eth1 + eth2).</td></tr>
-      <tr><td><b>NCCL AllReduce, 2 GB</b></td><td class="num">38.17 GB/s ≈ 305 Gbps</td><td>Bandwidth scales with payload size toward the dual-NIC ceiling.</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3 id="ov-jump">Jump to a recipe</h3>
-  <div class="cardgrid">
-    <a class="card" href="#hardware"><div class="ct">G4 hardware · RTX PRO 6000</div><div class="cd">SM120 GPU specs, Titanium offload, and the dual-NUMA node topology infographic.</div><div class="cm">REFERENCE · INFOGRAPHIC</div></a>
-    <a class="card" href="#deepseek"><div class="ct">DeepSeek-V3.2</div><div class="cd">FP8 distributed (TP8·PP2·DP8) and single-node NVFP4 with EAGLE speculative decoding.</div><div class="cm">2 CONFIGS · 2 RESULT SETS</div></a>
-    <a class="card" href="#glm"><div class="ct">GLM-5.1</div><div class="cd">FP8 2-node plus NVFP4 1-node and 2-node with NEXTN speculation. NVFP4 scales 2.06× from 1 to 2 nodes.</div><div class="cm">3 CONFIGS · 3 RESULT SETS</div></a>
-    <a class="card" href="#kimi25"><div class="ct">Kimi-K2.5</div><div class="cd">Native INT4 vs NVFP4 head-to-head on 16 GPUs. NVFP4 holds the repo's best output throughput: 3237 tok/s.</div><div class="cm">2 CONFIGS · 2 RESULT SETS</div></a>
-    <a class="card" href="#kimi26"><div class="ct">Kimi-K2.6</div><div class="cd">EAGLE3 speculation, HiCache, GCS Fuse weights, plus a 2-node distributed variant.</div><div class="cm">2 CONFIGS + AGENTIC BENCH</div></a>
-    <a class="card" href="#qwen"><div class="ct">Qwen3.5-397B-A17B</div><div class="cd">Latency study at 20K-token prompts: HiCache cuts P99 TTFT from 14.1s to 3.4s.</div><div class="cm">LATENCY · HICACHE A/B</div></a>
-    <a class="card" href="#agentic"><div class="ct">Agentic workloads</div><div class="cd">Real Kimi-K2.6 trace replay. 81% prefix-cache hit rate with HiCache on a single node.</div><div class="cm">DEEP DIVE</div></a>
-    <a class="card" href="#gateway"><div class="ct">Inference Gateway</div><div class="cd">Prefix-cache-aware routing on GKE so identical prefixes land on the same replica.</div><div class="cm">DEEP DIVE</div></a>
-    <a class="card" href="#network"><div class="ct">Network &amp; NCCL</div><div class="cd">DRANET dual-NIC setup: 190 Gbps iperf3 full-duplex, ~303 Gbps NCCL AllReduce.</div><div class="cm">DEEP DIVE</div></a>
+  <h1 class="pagetitle">SGLang on GCP G4</h1>
+  <p class="lede">Serving recipes and measured benchmarks for open models on NVIDIA RTX PRO 6000 (Blackwell) GKE nodes. Copy a manifest, apply it, reproduce the numbers.</p>
+  <div class="meta">
+    <span class="chip">RTX PRO 6000 · <b>96 GB</b></span>
+    <span class="chip">g4-standard-384 · <b>8× GPU</b></span>
+    <span class="chip">sglang <b>dev-cu13 / 0.5.10.post1</b></span>
+    <span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000" target="_blank" rel="noopener" style="text-decoration:none">GitHub repo ↗</a></span>
+    <span class="chip"><a href="#hardware" style="text-decoration:none">hardware reference →</a></span>
   </div>
 
-  <h3 id="ov-updates">What changed recently (May 2026)</h3>
-  <ul class="plain">
-    <li><b>Qwen3.5-397B validated</b> — the 397B MoE runs on a single node in FP8; HiCache delivers large TTFT improvements at 20K-token prompts.</li>
-    <li><b>Agentic benchmarking introduced</b> — real-trace replay for Kimi-K2.6 achieving an 81% cache hit rate with HiCache.</li>
-    <li><b>Kimi-K2.5 NVFP4</b> — best standard-profile output throughput in the repo at 3237 tok/s on 16 GPUs.</li>
-    <li><b>Native FP4 serving</b> — DeepSeek-V3.2 and GLM-5.1 validated single-node with NVFP4 on Blackwell tensor cores.</li>
-  </ul>
+  <h3 id="ov-results">Benchmarks</h3>
+  <p>Profile: 1024 in / 8192 out, 512 concurrency, <code class="inline">inf</code> rate, isolated load generator. Bars compare <b>output tok/s per GPU</b> across 1-node (8 GPU) and 2-node (16 GPU) setups.</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Model</th><th>Setup</th><th class="num">Output tok/s</th><th class="num">/ GPU</th><th style="min-width:110px">Per-GPU</th><th class="num">TPOT ms</th></tr></thead>
+    <tbody>
+      <tr><td><a href="#k25-int4">Kimi-K2.5</a><span class="q a">INT4</span></td><td>2n · 16 GPU<div class="rd">Jan 2026</div></td><td class="num">3152.79</td><td class="num">197.0</td><td><div class="bar" style="width:59%"></div></td><td class="num">136.52</td></tr>
+      <tr><td><a href="#kimi25">Kimi-K2.5</a><span class="q">NVFP4</span></td><td>2n · 16 GPU</td><td class="num"><span class="best">3237.46</span></td><td class="num">202.3</td><td><div class="bar" style="width:61%"></div></td><td class="num">137.89</td></tr>
+      <tr><td><a href="#k26-1node">Kimi-K2.6</a><span class="q a">INT4</span></td><td>1n · 8 GPU<div class="rd">Apr 2026</div></td><td class="num">1459.26</td><td class="num">182.4</td><td><div class="bar" style="width:55%"></div></td><td class="num">82.43</td></tr>
+      <tr><td><a href="#ds-fp8">DeepSeek-V3.2</a><span class="q b">FP8</span></td><td>2n · 16 GPU<div class="rd">Dec 2025</div></td><td class="num">2962.79</td><td class="num">185.2</td><td><div class="bar" style="width:55%"></div></td><td class="num">149.29</td></tr>
+      <tr><td><a href="#ds-nvfp4">DeepSeek-V3.2</a><span class="q">NVFP4</span>†</td><td>1n · 8 GPU</td><td class="num">2675.33</td><td class="num"><span class="best">334.4</span></td><td><div class="bar" style="width:100%"></div></td><td class="num">106.03</td></tr>
+      <tr><td><a href="#glm-fp8">GLM-5.1</a><span class="q b">FP8</span></td><td>2n · 16 GPU<div class="rd">Apr 2026</div></td><td class="num">2785.55</td><td class="num">174.1</td><td><div class="bar" style="width:52%"></div></td><td class="num">155.26</td></tr>
+      <tr><td><a href="#glm-nvfp4-1">GLM-5.1</a><span class="q">NVFP4</span></td><td>1n · 8 GPU</td><td class="num">1490.31</td><td class="num">186.3</td><td><div class="bar" style="width:56%"></div></td><td class="num">73.82</td></tr>
+      <tr><td><a href="#glm">GLM-5.1</a><span class="q">NVFP4</span></td><td>2n · 16 GPU</td><td class="num">3075.85</td><td class="num">192.2</td><td><div class="bar" style="width:57%"></div></td><td class="num">141.36</td></tr>
+      <tr><td><a href="#ocr">Chandra-OCR-2</a><span class="q a">VLM</span></td><td>1 GPU</td><td class="num">2600.67</td><td class="num">—</td><td style="color:var(--faint);font-size:11.5px">image workload</td><td class="num"><span class="best">32.47</span></td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:12.5px;color:var(--soft)">† 512 prompts (others 1536) with EAGLE speculation — flatters per-GPU; its median TTFT is 18.7 s vs 0.33 s for FP8 2-node. Scaling can be super-linear under saturation: GLM NVFP4 goes 1490 → 3076 tok/s from 1 → 2 nodes. Kimi-K2.5 INT4 rerun with an optimized DP8 config. Refreshed Jun 10, 2026.</p>
 
-  <h3 id="ov-how">How these docs are organized</h3>
-  <p><b>Start here</b> covers the hardware, provisioning a cluster, and the benchmarking workflow. <b>Model recipes</b> each follow the same shape: a spec nameplate, the exact SGLang launch flags, the Kubernetes manifest, and the raw measured results. <b>Deep dives</b> cover the harder problems — agentic traffic, very long contexts, cache-aware routing, and squeezing the dual 200 Gbps NICs.</p>
+  <h3 id="ov-more">Other benchmarks</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Benchmark</th><th>Key result</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr><td>NCCL AllReduce · dual NIC</td><td>37.9 GB/s (~303 Gbps); 38.2 GB/s @ 2 GB payload</td><td><a href="#nw-results">results</a></td></tr>
+      <tr><td>iperf3 · single NIC, 8 streams</td><td>190 / 190 Gbps full duplex</td><td><a href="#nw-results">results</a></td></tr>
+      <tr><td>Kimi-K2.6 long context · 64K → 8K</td><td>3380.8 total tok/s @ 80c (vLLM, 256K window)</td><td><a href="#lc-6488">results</a></td></tr>
+      <tr><td>Kimi-K2.6 long context · 8K → 64K</td><td>830.5 output tok/s @ 128c; best E2E at 64c</td><td><a href="#lc-8864">results</a></td></tr>
+      <tr><td>Qwen3.5-397B latency · 20K prompts</td><td>HiCache cuts P99 TTFT 14.05 s → 3.36 s</td><td><a href="#qw-results">results</a></td></tr>
+      <tr><td>Kimi-K2.6 agentic trace replay</td><td>81.2% prefix-cache hit rate (HiCache, 1 node)</td><td><a href="#ag-results">results</a></td></tr>
+      <tr><td>Whisper-large-v3 · ASR, DP8</td><td>55.6 req/s, 0.32 s latency (transcriptions API)</td><td><a href="#wh-results">results</a></td></tr>
+      <tr><td>Chandra-OCR-2 · vision, 1 GPU</td><td>5267 total tok/s, 32.5 ms TPOT</td><td><a href="#ocr-results">results</a></td></tr>
+    </tbody>
+  </table></div>
 
-  <div class="pagenav">
-    <span></span>
-    <a class="next" href="#hardware"><div class="dir">Next →</div><div class="pt">G4 hardware reference</div></a>
+  <h3 id="ov-jump">Recipes</h3>
+  <div class="idx">
+    <a href="#kimi25"><span class="it">Kimi-K2.5 <span style="color:var(--faint);font-weight:400;font-size:12px">Jan 2026</span></span><span class="id">INT4 vs NVFP4 — repo's best throughput; NVFP4 build at 959K HF downloads/mo</span></a>
+    <a href="#kimi26"><span class="it">Kimi-K2.6 <span style="color:var(--faint);font-weight:400;font-size:12px">Apr 2026</span></span><span class="id">EAGLE3 + HiCache + GCS Fuse, plus 2-node</span></a>
+    <a href="#deepseek"><span class="it">DeepSeek-V3.2 <span style="color:var(--faint);font-weight:400;font-size:12px">Dec 2025</span></span><span class="id">FP8 distributed · NVFP4 single node — most-downloaded model here (3.7M HF downloads/mo)</span></a>
+    <a href="#glm"><span class="it">GLM-5.1 <span style="color:var(--faint);font-weight:400;font-size:12px">Apr 2026</span></span><span class="id">FP8 + NVFP4, 1- and 2-node, NEXTN speculation</span></a>
+    <a href="#qwen"><span class="it">Qwen3.5-397B <span style="color:var(--faint);font-weight:400;font-size:12px">Feb 2026</span></span><span class="id">HiCache latency A/B at 20K-token prompts</span></a>
+    <a href="#whisper"><span class="it">Whisper-large-v3</span><span class="id">ASR with data parallelism, three API styles</span></a>
+    <a href="#ocr"><span class="it">Chandra-OCR-2</span><span class="id">9B vision OCR on a single GPU</span></a>
+    <a href="#agentic"><span class="it">Agentic benchmark</span><span class="id">Real trace replay, HiCache, SMG router</span></a>
+    <a href="#gateway"><span class="it">Inference Gateway</span><span class="id">Prefix-cache-aware routing on GKE</span></a>
+    <a href="#network"><span class="it">Network &amp; NCCL</span><span class="id">DRANET dual-NIC fabric benchmarks</span></a>
   </div>
+
+  <div class="pagenav"><span></span><a href="#hardware">Hardware →</a></div>
 </section>
 
-<!-- ================= HARDWARE ================= -->
+<!-- HARDWARE -->
 <section class="page" id="page-hardware">
-  <div class="eyebrow">Start here</div>
-  <h2 class="pagetitle">G4 hardware reference</h2>
-  <p class="lede">What you're actually renting: NVIDIA RTX PRO 6000 Blackwell (SM120) GPUs on Google Cloud's Titanium offload architecture. The numbers below drive every tuning decision in the recipes.</p>
-
-  <div class="nameplate">
-    <div class="cell"><div class="k">Architecture</div><div class="v">Blackwell <small>SM120 · CC 12.0</small></div></div>
-    <div class="cell"><div class="k">Memory</div><div class="v">96 GB <small>GDDR7 + ECC</small></div></div>
-    <div class="cell"><div class="k">Bandwidth</div><div class="v">1,792 GB/s <small>384-bit</small></div></div>
-    <div class="cell"><div class="k">Interconnect</div><div class="v">PCIe 5.0 ×16</div></div>
-    <div class="cell"><div class="k">TDP</div><div class="v">300 W</div></div>
+  <h1 class="pagetitle">Hardware</h1>
+  <p class="lede">GCP G4: NVIDIA RTX PRO 6000 Blackwell (SM120) GPUs on Google's Titanium offload architecture.</p>
+  <div class="meta">
+    <span class="chip">SM120 · <b>CC 12.0</b></span>
+    <span class="chip"><b>96 GB</b> GDDR7 + ECC</span>
+    <span class="chip"><b>1792 GB/s</b> bandwidth</span>
+    <span class="chip">PCIe <b>5.0 ×16</b> · no NVLink</span>
+    <span class="chip"><b>300 W</b> TDP</span>
   </div>
 
-
-  <h3 id="hw-topology">Node topology — g4-standard-384 (dual NUMA)</h3>
-  <p>A g4-standard-384 node is a dual-socket AMD Turin machine. Each NUMA domain owns half the vCPUs and memory, four GPUs on PCIe Gen&nbsp;5, and one of the two 200&nbsp;Gbps SmartNICs. There is no NVLink — cross-GPU traffic rides PCIe within a socket and the inter-socket fabric across NUMA domains.</p>
-  <div style="border:1.5px solid var(--spruce);border-radius:12px;background:var(--panel);padding:14px 10px;margin:18px 0 14px;overflow-x:auto">
+  <h3 id="hw-topology">Node topology — g4-standard-384</h3>
+  <p>Dual-socket AMD Turin. Each NUMA domain: half the vCPUs and memory, four GPUs on PCIe Gen 5, one 200 Gbps SmartNIC.</p>
+<div class="fig">
   <svg viewBox="0 0 880 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="G4 node dual NUMA topology" style="min-width:680px;width:100%;font-family:'IBM Plex Mono',monospace">
     <!-- outer node -->
-    <rect x="10" y="10" width="860" height="380" rx="14" fill="#F4F8F4" stroke="#0D1F18" stroke-width="2"/>
-    <text x="30" y="38" font-size="15" font-weight="600" fill="#0D1F18" font-family="Space Grotesk,sans-serif">g4-standard-384</text>
-    <text x="30" y="56" font-size="10.5" fill="#56635D">384 vCPU · 1.5 TB RAM · 8× RTX PRO 6000 · 2× 200 Gbps NIC</text>
+    <rect x="10" y="10" width="860" height="380" rx="14" fill="#F8FAFC" stroke="#1F2937" stroke-width="2"/>
+    <text x="30" y="38" font-size="15" font-weight="600" fill="#1F2937" font-family="Space Grotesk,sans-serif">g4-standard-384</text>
+    <text x="30" y="56" font-size="10.5" fill="#6B7280">384 vCPU · 1.5 TB RAM · 8× RTX PRO 6000 · 2× 200 Gbps NIC</text>
 
     <!-- NUMA 0 -->
-    <rect x="30" y="72" width="395" height="250" rx="10" fill="#FFFFFF" stroke="#0F8A5F" stroke-width="1.5"/>
-    <text x="48" y="96" font-size="12.5" font-weight="600" fill="#0B6B4A" font-family="Space Grotesk,sans-serif">NUMA node 0</text>
-    <rect x="48" y="106" width="172" height="46" rx="7" fill="#E8F4EE" stroke="#9CCDB6"/>
-    <text x="58" y="125" font-size="10.5" fill="#0B6B4A" font-weight="600">AMD Turin socket 0</text>
-    <text x="58" y="141" font-size="9.5" fill="#3C5448">192 vCPU · ~768 GB DRAM</text>
+    <rect x="30" y="72" width="395" height="250" rx="10" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+    <text x="48" y="96" font-size="12.5" font-weight="600" fill="#1E40AF" font-family="Space Grotesk,sans-serif">NUMA node 0</text>
+    <rect x="48" y="106" width="172" height="46" rx="7" fill="#EFF4FF" stroke="#C7D9F5"/>
+    <text x="58" y="125" font-size="10.5" fill="#1E40AF" font-weight="600">AMD Turin socket 0</text>
+    <text x="58" y="141" font-size="9.5" fill="#475569">192 vCPU · ~768 GB DRAM</text>
     <rect x="236" y="106" width="170" height="46" rx="7" fill="#FBF2E2" stroke="#E3C98F"/>
     <text x="246" y="125" font-size="10.5" fill="#7A4E10" font-weight="600">NIC 0 · eth1</text>
     <text x="246" y="141" font-size="9.5" fill="#7A4E10">200 Gbps Diorite SmartNIC</text>
     <!-- PCIe bus 0 -->
-    <line x1="134" y1="152" x2="134" y2="184" stroke="#0F8A5F" stroke-width="2"/>
-    <rect x="48" y="184" width="358" height="22" rx="5" fill="#0D1F18"/>
-    <text x="227" y="199" font-size="9.5" fill="#7FD8AE" text-anchor="middle">PCIe Gen 5 switch fabric — x16 per GPU</text>
+    <line x1="134" y1="152" x2="134" y2="184" stroke="#3B82F6" stroke-width="2"/>
+    <rect x="48" y="184" width="358" height="22" rx="5" fill="#1F2937"/>
+    <text x="227" y="199" font-size="9.5" fill="#93C5FD" text-anchor="middle">PCIe Gen 5 switch fabric — x16 per GPU</text>
     <!-- GPUs 0-3 -->
     <g font-size="10" font-weight="600">
-      <line x1="92" y1="206" x2="92" y2="222" stroke="#0F8A5F" stroke-width="1.5"/>
-      <line x1="182" y1="206" x2="182" y2="222" stroke="#0F8A5F" stroke-width="1.5"/>
-      <line x1="272" y1="206" x2="272" y2="222" stroke="#0F8A5F" stroke-width="1.5"/>
-      <line x1="362" y1="206" x2="362" y2="222" stroke="#0F8A5F" stroke-width="1.5"/>
-      <rect x="50" y="222" width="84" height="78" rx="7" fill="#0E1A15"/><text x="92" y="246" fill="#7FD8AE" text-anchor="middle">GPU 0</text><text x="92" y="263" fill="#D7E6DD" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="92" y="278" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="92" y="291" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
-      <rect x="140" y="222" width="84" height="78" rx="7" fill="#0E1A15"/><text x="182" y="246" fill="#7FD8AE" text-anchor="middle">GPU 1</text><text x="182" y="263" fill="#D7E6DD" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="182" y="278" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="182" y="291" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
-      <rect x="230" y="222" width="84" height="78" rx="7" fill="#0E1A15"/><text x="272" y="246" fill="#7FD8AE" text-anchor="middle">GPU 2</text><text x="272" y="263" fill="#D7E6DD" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="272" y="278" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="272" y="291" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
-      <rect x="320" y="222" width="84" height="78" rx="7" fill="#0E1A15"/><text x="362" y="246" fill="#7FD8AE" text-anchor="middle">GPU 3</text><text x="362" y="263" fill="#D7E6DD" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="362" y="278" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="362" y="291" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
+      <line x1="92" y1="206" x2="92" y2="222" stroke="#3B82F6" stroke-width="1.5"/>
+      <line x1="182" y1="206" x2="182" y2="222" stroke="#3B82F6" stroke-width="1.5"/>
+      <line x1="272" y1="206" x2="272" y2="222" stroke="#3B82F6" stroke-width="1.5"/>
+      <line x1="362" y1="206" x2="362" y2="222" stroke="#3B82F6" stroke-width="1.5"/>
+      <rect x="50" y="222" width="84" height="78" rx="7" fill="#111827"/><text x="92" y="246" fill="#93C5FD" text-anchor="middle">GPU 0</text><text x="92" y="263" fill="#E5E7EB" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="92" y="278" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="92" y="291" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
+      <rect x="140" y="222" width="84" height="78" rx="7" fill="#111827"/><text x="182" y="246" fill="#93C5FD" text-anchor="middle">GPU 1</text><text x="182" y="263" fill="#E5E7EB" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="182" y="278" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="182" y="291" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
+      <rect x="230" y="222" width="84" height="78" rx="7" fill="#111827"/><text x="272" y="246" fill="#93C5FD" text-anchor="middle">GPU 2</text><text x="272" y="263" fill="#E5E7EB" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="272" y="278" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="272" y="291" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
+      <rect x="320" y="222" width="84" height="78" rx="7" fill="#111827"/><text x="362" y="246" fill="#93C5FD" text-anchor="middle">GPU 3</text><text x="362" y="263" fill="#E5E7EB" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="362" y="278" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="362" y="291" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
     </g>
 
     <!-- NUMA 1 -->
-    <rect x="455" y="72" width="395" height="250" rx="10" fill="#FFFFFF" stroke="#0F8A5F" stroke-width="1.5"/>
-    <text x="473" y="96" font-size="12.5" font-weight="600" fill="#0B6B4A" font-family="Space Grotesk,sans-serif">NUMA node 1</text>
-    <rect x="473" y="106" width="172" height="46" rx="7" fill="#E8F4EE" stroke="#9CCDB6"/>
-    <text x="483" y="125" font-size="10.5" fill="#0B6B4A" font-weight="600">AMD Turin socket 1</text>
-    <text x="483" y="141" font-size="9.5" fill="#3C5448">192 vCPU · ~768 GB DRAM</text>
+    <rect x="455" y="72" width="395" height="250" rx="10" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+    <text x="473" y="96" font-size="12.5" font-weight="600" fill="#1E40AF" font-family="Space Grotesk,sans-serif">NUMA node 1</text>
+    <rect x="473" y="106" width="172" height="46" rx="7" fill="#EFF4FF" stroke="#C7D9F5"/>
+    <text x="483" y="125" font-size="10.5" fill="#1E40AF" font-weight="600">AMD Turin socket 1</text>
+    <text x="483" y="141" font-size="9.5" fill="#475569">192 vCPU · ~768 GB DRAM</text>
     <rect x="661" y="106" width="170" height="46" rx="7" fill="#FBF2E2" stroke="#E3C98F"/>
     <text x="671" y="125" font-size="10.5" fill="#7A4E10" font-weight="600">NIC 1 · eth2</text>
     <text x="671" y="141" font-size="9.5" fill="#7A4E10">200 Gbps Diorite SmartNIC</text>
-    <line x1="559" y1="152" x2="559" y2="184" stroke="#0F8A5F" stroke-width="2"/>
-    <rect x="473" y="184" width="358" height="22" rx="5" fill="#0D1F18"/>
-    <text x="652" y="199" font-size="9.5" fill="#7FD8AE" text-anchor="middle">PCIe Gen 5 switch fabric — x16 per GPU</text>
+    <line x1="559" y1="152" x2="559" y2="184" stroke="#3B82F6" stroke-width="2"/>
+    <rect x="473" y="184" width="358" height="22" rx="5" fill="#1F2937"/>
+    <text x="652" y="199" font-size="9.5" fill="#93C5FD" text-anchor="middle">PCIe Gen 5 switch fabric — x16 per GPU</text>
     <g font-size="10" font-weight="600">
-      <line x1="517" y1="206" x2="517" y2="222" stroke="#0F8A5F" stroke-width="1.5"/>
-      <line x1="607" y1="206" x2="607" y2="222" stroke="#0F8A5F" stroke-width="1.5"/>
-      <line x1="697" y1="206" x2="697" y2="222" stroke="#0F8A5F" stroke-width="1.5"/>
-      <line x1="787" y1="206" x2="787" y2="222" stroke="#0F8A5F" stroke-width="1.5"/>
-      <rect x="475" y="222" width="84" height="78" rx="7" fill="#0E1A15"/><text x="517" y="246" fill="#7FD8AE" text-anchor="middle">GPU 4</text><text x="517" y="263" fill="#D7E6DD" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="517" y="278" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="517" y="291" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
-      <rect x="565" y="222" width="84" height="78" rx="7" fill="#0E1A15"/><text x="607" y="246" fill="#7FD8AE" text-anchor="middle">GPU 5</text><text x="607" y="263" fill="#D7E6DD" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="607" y="278" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="607" y="291" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
-      <rect x="655" y="222" width="84" height="78" rx="7" fill="#0E1A15"/><text x="697" y="246" fill="#7FD8AE" text-anchor="middle">GPU 6</text><text x="697" y="263" fill="#D7E6DD" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="697" y="278" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="697" y="291" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
-      <rect x="745" y="222" width="84" height="78" rx="7" fill="#0E1A15"/><text x="787" y="246" fill="#7FD8AE" text-anchor="middle">GPU 7</text><text x="787" y="263" fill="#D7E6DD" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="787" y="278" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="787" y="291" fill="#85A294" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
+      <line x1="517" y1="206" x2="517" y2="222" stroke="#3B82F6" stroke-width="1.5"/>
+      <line x1="607" y1="206" x2="607" y2="222" stroke="#3B82F6" stroke-width="1.5"/>
+      <line x1="697" y1="206" x2="697" y2="222" stroke="#3B82F6" stroke-width="1.5"/>
+      <line x1="787" y1="206" x2="787" y2="222" stroke="#3B82F6" stroke-width="1.5"/>
+      <rect x="475" y="222" width="84" height="78" rx="7" fill="#111827"/><text x="517" y="246" fill="#93C5FD" text-anchor="middle">GPU 4</text><text x="517" y="263" fill="#E5E7EB" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="517" y="278" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="517" y="291" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
+      <rect x="565" y="222" width="84" height="78" rx="7" fill="#111827"/><text x="607" y="246" fill="#93C5FD" text-anchor="middle">GPU 5</text><text x="607" y="263" fill="#E5E7EB" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="607" y="278" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="607" y="291" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
+      <rect x="655" y="222" width="84" height="78" rx="7" fill="#111827"/><text x="697" y="246" fill="#93C5FD" text-anchor="middle">GPU 6</text><text x="697" y="263" fill="#E5E7EB" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="697" y="278" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="697" y="291" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
+      <rect x="745" y="222" width="84" height="78" rx="7" fill="#111827"/><text x="787" y="246" fill="#93C5FD" text-anchor="middle">GPU 7</text><text x="787" y="263" fill="#E5E7EB" text-anchor="middle" font-size="8.5" font-weight="400">RTX PRO 6000</text><text x="787" y="278" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">96 GB GDDR7</text><text x="787" y="291" fill="#9CA3AF" text-anchor="middle" font-size="8.5" font-weight="400">1792 GB/s</text>
     </g>
 
     <!-- inter-socket link -->
@@ -429,48 +301,36 @@ ul.plain li{margin-bottom:6px;max-width:68ch}
     <text x="440" y="229" font-size="8.5" fill="#C07A1C" text-anchor="middle">link</text>
 
     <!-- titanium -->
-    <rect x="30" y="334" width="820" height="40" rx="8" fill="#0D1F18"/>
-    <text x="440" y="351" font-size="10.5" fill="#7FD8AE" text-anchor="middle" font-weight="600">Titanium offload layer</text>
-    <text x="440" y="366" font-size="9.5" fill="#85A294" text-anchor="middle">VPC networking + encryption on dedicated silicon (TOPs) · hardware-path Local SSD up to 12 TiB · up to 400 Gbps aggregate</text>
+    <rect x="30" y="334" width="820" height="40" rx="8" fill="#1F2937"/>
+    <text x="440" y="351" font-size="10.5" fill="#93C5FD" text-anchor="middle" font-weight="600">Titanium offload layer</text>
+    <text x="440" y="366" font-size="9.5" fill="#9CA3AF" text-anchor="middle">VPC networking + encryption on dedicated silicon (TOPs) · hardware-path Local SSD up to 12 TiB · up to 400 Gbps aggregate</text>
 
     <!-- legend -->
-    <g font-size="9.5" fill="#56635D">
-      <rect x="30" y="408" width="12" height="12" rx="3" fill="#0E1A15"/><text x="48" y="418">GPU (PCIe Gen 5 ×16, no NVLink)</text>
-      <rect x="270" y="408" width="12" height="12" rx="3" fill="#E8F4EE" stroke="#9CCDB6"/><text x="288" y="418">CPU + memory domain</text>
+    <g font-size="9.5" fill="#6B7280">
+      <rect x="30" y="408" width="12" height="12" rx="3" fill="#111827"/><text x="48" y="418">GPU (PCIe Gen 5 ×16, no NVLink)</text>
+      <rect x="270" y="408" width="12" height="12" rx="3" fill="#EFF4FF" stroke="#C7D9F5"/><text x="288" y="418">CPU + memory domain</text>
       <rect x="470" y="408" width="12" height="12" rx="3" fill="#FBF2E2" stroke="#E3C98F"/><text x="488" y="418">200 Gbps SmartNIC</text>
       <line x1="660" y1="414" x2="690" y2="414" stroke="#C07A1C" stroke-width="3" stroke-dasharray="6 4"/><text x="698" y="418">cross-NUMA traffic</text>
     </g>
   </svg>
   </div>
-  <div class="callout note"><p><b>Why the recipes care.</b> Logical topology shown; exact lane mapping can vary by platform. The dual-NUMA, dual-NIC layout explains three recurring flags: <code class="inline">SGLANG_SET_CPU_AFFINITY=1</code> pins each GPU's worker to its local socket, <code class="inline">NCCL_SOCKET_IFNAME=eth0,eth1</code> (and DRANET's eth1/eth2) spreads inter-node traffic across both NICs, and <code class="inline">NCCL_P2P_LEVEL=SYS</code> permits peer transfers that cross the socket link since there's no NVLink.</p></div>
+  <div class="figcap">Logical topology — exact lane mapping varies by platform.</div>
+  <p style="font-size:13.5px;color:var(--soft)">This layout is why recipes set <code class="inline">SGLANG_SET_CPU_AFFINITY=1</code> (pin workers to the local socket), <code class="inline">NCCL_SOCKET_IFNAME=eth0,eth1</code> (use both NICs), and <code class="inline">NCCL_P2P_LEVEL=SYS</code> (no NVLink — peer transfers cross the socket link).</p>
 
-  <h3 id="hw-gpu">RTX PRO 6000 Blackwell (SM120)</h3>
+  <h3 id="hw-gpu">RTX PRO 6000 (SM120)</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th>Component</th><th>Specification</th></tr></thead>
     <tbody>
-      <tr><td>CUDA cores</td><td>24,064</td></tr>
-      <tr><td>Tensor cores</td><td>752 (5th generation)</td></tr>
-      <tr><td>RT cores</td><td>188 (4th generation)</td></tr>
-      <tr><td>GPU memory</td><td>96 GB GDDR7 with ECC</td></tr>
-      <tr><td>Memory bandwidth / interface</td><td>1,792 GB/s · 384-bit</td></tr>
-      <tr><td>Interconnect</td><td>PCIe Gen 5.0 ×16</td></tr>
-      <tr><td>Peak performance</td><td>~4,000 TOPS (FP4 with sparsity)</td></tr>
+      <tr><td>CUDA / Tensor / RT cores</td><td class="num">24,064 / 752 (5th gen) / 188 (4th gen)</td></tr>
+      <tr><td>Memory</td><td class="num">96 GB GDDR7 ECC · 1,792 GB/s · 384-bit</td></tr>
+      <tr><td>Peak FP4 (sparsity)</td><td class="num">~4,000 TOPS</td></tr>
+      <tr><td>Precision formats</td><td class="num">FP4 · FP6 · FP8 · INT8 · FP16 · BF16 · TF32 · FP32</td></tr>
     </tbody>
   </table></div>
-
-  <h4>Native 4-bit floating point (NVFP4)</h4>
-  <p>SM120 introduces hardware NVFP4 (E2M1: 1 sign, 2 exponent, 1 mantissa bit) with <b>micro-tensor scaling</b> — two-level scaling using 16-element blocks with FP8 scale factors plus a global FP32 scale — to manage dynamic range. Supported formats span FP4, FP6, FP8, INT8, FP16, BF16, TF32, and FP32. This is why the <code class="inline">modelopt_fp4</code> recipes in these docs can fit trillion-parameter-class MoE models on a single 8-GPU node.</p>
-
-  <h3 id="hw-titanium">Titanium offload architecture</h3>
-  <p>G4 instances offload infrastructure work to dedicated silicon, keeping host CPUs free for tokenization and scheduling:</p>
-  <ul class="plain">
-    <li><b>Networking</b> — Titanium Offload Processors (TOPs) handle VPC networking and packet processing for up to <b>400 Gbps</b>, with Andromeda virtual-network encapsulation offloaded and line-rate encryption.</li>
-    <li><b>Storage</b> — Titanium Local SSD up to <b>12 TiB</b> with a hardware-accelerated data path that bypasses the host CPU.</li>
-  </ul>
+  <p>SM120 adds hardware NVFP4 (E2M1) with micro-tensor scaling — 16-element blocks with FP8 scale factors plus a global FP32 scale. This is what lets the <code class="inline">modelopt_fp4</code> recipes fit trillion-parameter-class MoE models on one 8-GPU node.</p>
 
   <h3 id="hw-shapes">Instance shapes</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th>Instance type</th><th class="num">GPUs</th><th class="num">vCPUs (AMD Turin)</th><th class="num">System memory</th><th class="num">Network</th></tr></thead>
+    <thead><tr><th>Type</th><th class="num">GPUs</th><th class="num">vCPUs</th><th class="num">Memory</th><th class="num">Network</th></tr></thead>
     <tbody>
       <tr><td><code class="inline">g4-standard-48</code></td><td class="num">1</td><td class="num">48</td><td class="num">192 GB</td><td class="num">50 Gbps</td></tr>
       <tr><td><code class="inline">g4-standard-96</code></td><td class="num">2</td><td class="num">96</td><td class="num">384 GB</td><td class="num">100 Gbps</td></tr>
@@ -478,834 +338,451 @@ ul.plain li{margin-bottom:6px;max-width:68ch}
       <tr><td><code class="inline">g4-standard-384</code></td><td class="num">8</td><td class="num">384</td><td class="num">1.5 TB</td><td class="num">400 Gbps</td></tr>
     </tbody>
   </table></div>
-  <div class="callout note"><p><b>Default shape.</b> Every multi-GPU recipe in these docs targets <code class="inline">g4-standard-384</code> (8× RTX PRO 6000, 1.5 TB RAM, 400 Gbps). Multi-node setups simply use two of them.</p></div>
+  <p>Titanium offloads VPC networking and encryption to dedicated silicon (up to 400 Gbps) and provides a hardware data path to up to 12 TiB of Local SSD. All recipes target <code class="inline">g4-standard-384</code>.</p>
 
-  <h3 id="hw-sglang">Implications for SGLang</h3>
-  <ul class="plain">
-    <li><b>96 GB per GPU</b> allows high-density KV-cache allocation — recipes run <code class="inline">--mem-fraction-static</code> at 0.85–0.90.</li>
-    <li><b>NVFP4 serving</b> rides the 5th-gen tensor cores for 4-bit inference (<code class="inline">--quantization modelopt_fp4</code>).</li>
-    <li><b>No NVLink</b> — GPU-to-GPU traffic for TP/PP goes over PCIe Gen 5, which is why every recipe sets <code class="inline">NCCL_P2P_LEVEL=SYS</code>, disables InfiniBand, and disables custom all-reduce in favor of FlashInfer's fused all-reduce.</li>
-  </ul>
-
-  <div class="pagenav">
-    <a href="#overview"><div class="dir">← Previous</div><div class="pt">Overview &amp; results</div></a>
-    <a class="next" href="#cluster"><div class="dir">Next →</div><div class="pt">GKE cluster setup</div></a>
-  </div>
+  <div class="pagenav"><a href="#overview">← Overview</a><a href="#cluster">Cluster setup →</a></div>
 </section>
 
-<!-- ================= CLUSTER ================= -->
+<!-- CLUSTER -->
 <section class="page" id="page-cluster">
-  <div class="eyebrow">Start here</div>
-  <h2 class="pagetitle">GKE cluster setup</h2>
-  <p class="lede">Provision a GKE environment purpose-built for distributed SGLang: high-MTU VPC, multi-networking, private Blackwell node pools, and an isolated pool for the load generator. One script does all of it.</p>
+  <h1 class="pagetitle">Cluster setup</h1>
+  <p class="lede"><code class="inline">gkecluster/createCluster_template.sh</code> provisions everything: 8896-MTU VPC, multi-networking, private GKE cluster, Blackwell GPU pool, NAT, Artifact Registry, and an isolated benchmark-client pool.</p>
 
-  <h3 id="cl-what">What the template provisions</h3>
-  <ul class="plain">
-    <li>A custom VPC with <b>MTU 8896</b> for optimized multi-node traffic</li>
-    <li>Two subnets with secondary ranges for Pods and Services</li>
-    <li>Firewall rules for internal traffic, SSH, and master→node communication</li>
-    <li>A Cloud Router + NAT gateway so private nodes can reach the internet</li>
-    <li>An Artifact Registry repository for Docker images</li>
-    <li>A private GKE cluster with <b>multi-networking enabled</b></li>
-    <li>A GPU node pool of <code class="inline">g4-standard-384</code> (8× RTX PRO 6000 each, default 2 nodes, scalable to 3)</li>
-    <li>A <b>benchmark-client node pool</b> (<code class="inline">n2-standard-64</code>) so load generation never contends with GPU serving</li>
-  </ul>
-
-  <h3 id="cl-run">Run the script</h3>
   <ol class="steps">
-    <li><b>Set the required project variable.</b><p>The script refuses to run without it, to prevent accidental creation in the wrong project.</p>
-      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>export PROJECT_NAME="your-gcp-project-id"</pre></div>
-    </li>
-    <li><b>Optionally override defaults.</b>
-      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>export REGION="us-central1"
-export ZONE="us-central1-a"
-export CLUSTER_NAME="my-custom-sglang-cluster"</pre></div>
-    </li>
-    <li><b>Review CIDR ranges (critical).</b><p>Open the script and check the defaults in section 1 against your existing networks. Defaults: subnet <code class="inline">10.0.0.0/20</code>, pods <code class="inline">10.1.0.0/20</code>, services <code class="inline">10.1.16.0/20</code>, master <code class="inline">172.16.0.16/28</code>.</p></li>
-    <li><b>Execute.</b><p>The script is idempotent — each resource is checked and skipped if it already exists.</p>
-      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>chmod +x createCluster_template.sh
-./createCluster_template.sh</pre></div>
-    </li>
+    <li><b>Set the project (required).</b>
+      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">Copy</button></div><pre>export PROJECT_NAME="your-gcp-project-id"
+<span class="c"># optional overrides</span>
+export REGION="us-central1" ZONE="us-central1-a" CLUSTER_NAME="my-sglang-cluster"
+export GCLOUD_PATH=$(which gcloud)   <span class="c"># template hardcodes the author's path</span></pre></div></li>
+    <li><b>Review CIDR ranges.</b> Defaults: subnet <code class="inline">10.0.0.0/20</code>, pods <code class="inline">10.1.0.0/20</code>, services <code class="inline">10.1.16.0/20</code>, master <code class="inline">172.16.0.16/28</code>. Change them if they collide with your networks.</li>
+    <li><b>Run it.</b> Idempotent — existing resources are skipped.
+      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">Copy</button></div><pre>chmod +x createCluster_template.sh && ./createCluster_template.sh</pre></div></li>
+    <li><b>Add the Hugging Face secret</b> most recipes expect.
+      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">Copy</button></div><pre>kubectl create secret generic hf-secret --from-literal=HF_TOKEN=your_token</pre></div></li>
   </ol>
 
-  <h3 id="cl-vars">Configuration variables</h3>
+  <h3 id="cl-vars">Key variables</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th>Variable</th><th>Description</th><th>Default</th></tr></thead>
+    <thead><tr><th>Variable</th><th>Default</th></tr></thead>
     <tbody>
-      <tr><td><code class="inline">PROJECT_NAME</code></td><td><b>Required.</b> GCP project ID</td><td><i>none — fails if unset</i></td></tr>
-      <tr><td><code class="inline">REGION</code></td><td>GCP region</td><td><code class="inline">europe-west4</code></td></tr>
-      <tr><td><code class="inline">ZONE</code></td><td>GCP zone</td><td><code class="inline">europe-west4-b</code></td></tr>
-      <tr><td><code class="inline">NETWORK_NAME</code></td><td>VPC network name</td><td><code class="inline">$USER-g4-vpc-1</code></td></tr>
-      <tr><td><code class="inline">CLUSTER_NAME</code></td><td>GKE cluster name</td><td><code class="inline">$USER-gke-cluster-v2</code></td></tr>
-      <tr><td><code class="inline">GPU_POOL_NAME</code></td><td>GPU node pool name</td><td><code class="inline">$USER-8x-rtx6000-2nic-pool-v2</code></td></tr>
-      <tr><td><code class="inline">GPU_MACHINE_TYPE</code></td><td>Machine type for GPU nodes</td><td><code class="inline">g4-standard-384</code></td></tr>
-      <tr><td><code class="inline">COMPUTE_MACHINE_TYPE</code></td><td>Benchmark-client machine type</td><td><code class="inline">n2-standard-64</code></td></tr>
-      <tr><td><code class="inline">GPU_POOL_MIN_NODES</code> / <code class="inline">MAX</code></td><td>GPU pool autoscaling bounds</td><td>2 / 3</td></tr>
+      <tr><td><code class="inline">PROJECT_NAME</code></td><td><i>none — required</i></td></tr>
+      <tr><td><code class="inline">REGION</code> / <code class="inline">ZONE</code></td><td><code class="inline">europe-west4</code> / <code class="inline">europe-west4-b</code></td></tr>
+      <tr><td><code class="inline">GPU_MACHINE_TYPE</code></td><td><code class="inline">g4-standard-384</code></td></tr>
+      <tr><td><code class="inline">GPU_POOL_MIN_NODES</code> / <code class="inline">MAX</code></td><td>2 / 3</td></tr>
+      <tr><td><code class="inline">COMPUTE_MACHINE_TYPE</code> (benchmark pool)</td><td><code class="inline">n2-standard-64</code></td></tr>
     </tbody>
   </table></div>
-  <div class="callout warn"><p><b>Path assumptions.</b> The template hardcodes <code class="inline">GCLOUD_PATH</code> and <code class="inline">CLOUDSDK_PYTHON</code> to the author's machine. Override both env vars (or just set <code class="inline">GCLOUD_PATH=$(which gcloud)</code>) before running.</p></div>
 
-  <h3 id="cl-secret">One-time cluster prep</h3>
-  <p>Most recipes pull weights from Hugging Face and expect a token stored as a Kubernetes secret:</p>
-  <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>kubectl create secret generic hf-secret --from-literal=HF_TOKEN=your_token_here</pre></div>
-
-  <div class="pagenav">
-    <a href="#hardware"><div class="dir">← Previous</div><div class="pt">G4 hardware reference</div></a>
-    <a class="next" href="#benchmarking"><div class="dir">Next →</div><div class="pt">Benchmarking guide</div></a>
-  </div>
+  <div class="pagenav"><a href="#hardware">← Hardware</a><a href="#benchmarking">Benchmarking →</a></div>
 </section>
 
-<!-- ================= BENCHMARKING ================= -->
+<!-- BENCHMARKING -->
 <section class="page" id="page-benchmarking">
-  <div class="eyebrow">Start here</div>
-  <h2 class="pagetitle">Benchmarking guide</h2>
-  <p class="lede">The three-step workflow used to produce every result in these docs: deploy the server, run an isolated load generator, extract the JSON. The standard profile is 1024-in / 8192-out at 512 concurrency.</p>
+  <h1 class="pagetitle">Benchmarking</h1>
+  <p class="lede">Deploy the server, run an isolated load generator, copy out the JSON. Standard profile: 1024 in / 8192 out at 512 concurrency.</p>
 
   <ol class="steps">
-    <li><b>Deploy the serving framework.</b>
-      <p>Single-node models use a <code class="inline">Job</code> or single-replica <code class="inline">StatefulSet</code>; distributed models use a 2-replica <code class="inline">StatefulSet</code> plus headless services for rendezvous.</p>
-      <div class="codeblock"><div class="chead"><span>shell — examples</span><button class="copybtn">COPY</button></div><pre><span class="c"># Single node (DeepSeek NVFP4)</span>
-kubectl apply -f models/DeepSeekv3-2/nvp4/sglang-ds32-job-v2.yaml
-
-<span class="c"># Distributed 2-node (GLM-5.1)</span>
-kubectl apply -f models/GLM5.1/sglang-glm51-v1-04232026.yaml</pre></div>
-      <p>Verify with <code class="inline">kubectl logs -f &lt;pod&gt;</code> and wait for <code class="inline">The server is fired up and ready!</code></p>
-    </li>
-    <li><b>Run the benchmark client.</b>
-      <p>The client pod is pinned to the dedicated CPU pool via <code class="inline">nodeSelector: workload: benchmark-client</code>, ensuring zero interference with the GPUs. The canonical client manifest:</p>
-      <div class="codeblock"><div class="chead"><span>benchmarking_scripts/benchmark-dsv2.yaml</span><button class="copybtn">COPY</button></div><pre>apiVersion: v1
-kind: Pod
-metadata:
-  name: sglang-benchmark-client
-spec:
-  nodeSelector:
-    workload: benchmark-client   <span class="c"># forces the pod onto the CPU pool</span>
-  restartPolicy: Never
-  containers:
-  - name: benchmark
-    image: docker.io/lmsysorg/sglang:v0.5.10.post1
-    command: ["/bin/bash","-c"]
-    args:
-    - |
-      API_URL="http://sglang-serving-on-master-opt:8000"
-      MODEL_NAME="deepseek-ai/DeepSeek-V3.2"
-      CONCURRENCY=512
-      INPUT_LEN=1024
-      OUTPUT_LEN=8192
-      NUM_PROMPTS=1536
-
-      python3 -m sglang.bench_serving \
-          --backend sglang-oai \
-          --base-url $API_URL \
-          --model $MODEL_NAME \
-          --dataset-name random \
-          --random-input-len $INPUT_LEN \
-          --random-output-len $OUTPUT_LEN \
-          --num-prompts $NUM_PROMPTS \
-          --max-concurrency $CONCURRENCY \
-          --output-file /workspace/results.json \
-          --apply-chat-template
-
-      echo "Benchmark complete! Sleeping so you can extract results..."
-      sleep infinity</pre></div>
-      <p>Monitor with <code class="inline">kubectl logs -f sglang-benchmark-client</code>.</p>
-    </li>
-    <li><b>Extract results.</b>
-      <p>The client sleeps after completion so you can copy the output:</p>
-      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>kubectl cp sglang-benchmark-client:/workspace/results.json ./results.json</pre></div>
-    </li>
+    <li><b>Deploy the server</b> and wait for <code class="inline">The server is fired up and ready!</code> in the logs.
+      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">Copy</button></div><pre>kubectl apply -f models/DeepSeekv3-2/nvp4/sglang-ds32-job-v2.yaml   <span class="c"># single node</span>
+kubectl apply -f models/GLM5.1/sglang-glm51-v1-04232026.yaml        <span class="c"># 2-node StatefulSet</span></pre></div></li>
+    <li><b>Run the client</b> — pinned to the CPU pool so it never contends with GPUs.
+      <div class="codeblock"><div class="chead"><span>benchmarking_scripts/benchmark-dsv2.yaml (core)</span><button class="copybtn">Copy</button></div><pre>nodeSelector: { workload: benchmark-client }
+...
+python3 -m sglang.bench_serving \
+    --backend sglang-oai \
+    --base-url http://sglang-serving-on-master-opt:8000 \
+    --model deepseek-ai/DeepSeek-V3.2 \
+    --dataset-name random \
+    --random-input-len 1024 --random-output-len 8192 \
+    --num-prompts 1536 --max-concurrency 512 \
+    --output-file /workspace/results.json \
+    --apply-chat-template</pre></div></li>
+    <li><b>Extract</b> (the client sleeps after finishing).
+      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">Copy</button></div><pre>kubectl cp sglang-benchmark-client:/workspace/results.json ./results.json</pre></div></li>
   </ol>
 
   <h3 id="bm-trouble">Troubleshooting</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th>Symptom</th><th>Fix</th></tr></thead>
     <tbody>
-      <tr><td>Pod fails with OOM</td><td>Lower <code class="inline">--mem-fraction-static</code> in the manifest; confirm the model + KV cache fits the 96 GB × GPU budget.</td></tr>
-      <tr><td>Multi-node hangs at NCCL init</td><td>The VPC must use MTU 8896 — use <code class="inline">createCluster_template.sh</code>. Check <code class="inline">NCCL_SOCKET_IFNAME=eth0,eth1</code> matches your interfaces.</td></tr>
-      <tr><td>Benchmark numbers look noisy</td><td>Verify the client landed on the benchmark pool (<code class="inline">kubectl get pod -o wide</code>), not a GPU node.</td></tr>
+      <tr><td><b>OOM</b></td><td>Lower <code class="inline">--mem-fraction-static</code>; confirm model + KV fits 96 GB × GPUs.</td></tr>
+      <tr><td><b>NCCL hangs (multi-node)</b></td><td>VPC must be MTU 8896; check <code class="inline">NCCL_SOCKET_IFNAME=eth0,eth1</code>.</td></tr>
+      <tr><td><b>Noisy numbers</b></td><td>Verify the client landed on the benchmark pool, not a GPU node.</td></tr>
     </tbody>
   </table></div>
 
-  <h3 id="bm-glossary">Metric glossary</h3>
-  <div class="tblwrap"><table>
-    <thead><tr><th>Metric</th><th>Meaning</th></tr></thead>
-    <tbody>
-      <tr><td><b>TTFT</b></td><td>Time to first token — dominated by prefill and queueing. At sustained 512-concurrency saturation, median TTFT can legitimately reach minutes for configs without enough prefill headroom.</td></tr>
-      <tr><td><b>TPOT</b></td><td>Time per output token, excluding the first — the decode-phase pace each request experiences.</td></tr>
-      <tr><td><b>ITL</b></td><td>Inter-token latency distribution across all tokens.</td></tr>
-      <tr><td><b>Output / total tok/s</b></td><td>Aggregate generated (and generated+input) tokens per second across all concurrent requests.</td></tr>
-      <tr><td><b>Accept length</b></td><td>For speculative decoding: average accepted draft tokens per verification step (higher = more speedup).</td></tr>
-    </tbody>
-  </table></div>
+  <h3 id="bm-glossary">Metrics</h3>
+  <p style="font-size:13.5px"><b>TTFT</b> time to first token (prefill + queueing) · <b>TPOT</b> per-token decode pace after the first · <b>ITL</b> inter-token latency distribution · <b>Accept length</b> avg accepted draft tokens per speculative step. At 512-concurrency saturation, single-node median TTFT can legitimately reach minutes — it's queueing, not decode.</p>
 
-  <div class="pagenav">
-    <a href="#cluster"><div class="dir">← Previous</div><div class="pt">GKE cluster setup</div></a>
-    <a class="next" href="#deepseek"><div class="dir">Next →</div><div class="pt">DeepSeek-V3.2 recipe</div></a>
-  </div>
+  <div class="pagenav"><a href="#cluster">← Cluster setup</a><a href="#kimi25">Kimi-K2.5 →</a></div>
 </section>
 
-<!-- ================= DEEPSEEK ================= -->
+<!-- DEEPSEEK -->
 <section class="page" id="page-deepseek">
-  <div class="eyebrow">Model recipe</div>
-  <h2 class="pagetitle">DeepSeek-V3.2</h2>
-  <p class="lede">A strong MoE model served two ways: distributed FP8 across 16 GPUs for peak throughput, or single-node NVFP4 with EAGLE speculative decoding when you only have 8 GPUs.</p>
+  <h1 class="pagetitle">DeepSeek-V3.2</h1>
+  <p class="lede">Two configs: single-node NVFP4 with EAGLE speculation, or distributed FP8 for peak throughput.</p>
 
-  <h3 id="ds-nvfp4">Recipe A — NVFP4, single node</h3>
-  <div class="nameplate">
-    <div class="cell"><div class="k">Model</div><div class="v">nvidia/<wbr>DeepSeek-V3.2-NVFP4</div></div>
-    <div class="cell"><div class="k">Hardware</div><div class="v">1× g4-standard-384 <small>8× RTX 6000</small></div></div>
-    <div class="cell"><div class="k">Quantization</div><div class="v">modelopt_fp4</div></div>
-    <div class="cell"><div class="k">Parallelism</div><div class="v">TP8 · DP8 <small>+ DP attention</small></div></div>
-    <div class="cell"><div class="k">Speculation</div><div class="v">EAGLE <small>3 steps · 4 drafts</small></div></div>
-  </div>
-  <p>Backends: <code class="inline">flashinfer</code> attention, <code class="inline">flashinfer_cutlass</code> MoE runner, <code class="inline">flashinfer_cudnn</code> FP4 GEMM. KV cache stays in <code class="inline">bf16</code>, memory fraction 0.85. Deployed as a Kubernetes Job with <code class="inline">hostNetwork</code>/<code class="inline">hostIPC</code>.</p>
-  <div class="codeblock"><div class="chead"><span>models/DeepSeekv3-2/nvp4/sglang-ds32-job-v2.yaml — launch args</span><button class="copybtn">COPY</button></div><pre>python3 -m sglang.launch_server \
-  --model-path <span class="f">nvidia/DeepSeek-V3.2-NVFP4</span> \
-  --trust-remote-code \
+  <h3 id="ds-nvfp4">NVFP4 · single node</h3>
+  <div class="meta"><span class="chip">nvidia/DeepSeek-V3.2-NVFP4</span><span class="chip"><b>8× GPU</b></span><span class="chip">TP8 · DP8</span><span class="chip">EAGLE 3/4</span><span class="chip">kv bf16 · mem 0.85</span></div>
+  <div class="codeblock"><div class="chead"><span>models/DeepSeekv3-2/nvp4/sglang-ds32-job-v2.yaml</span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
+  --model-path nvidia/DeepSeek-V3.2-NVFP4 --trust-remote-code \
   --tp-size 8 --dp-size 8 --enable-dp-attention \
   --quantization <span class="f">modelopt_fp4</span> \
-  --moe-runner-backend flashinfer_cutlass \
-  --fp4-gemm-backend flashinfer_cudnn \
-  --kv-cache-dtype bf16 \
-  --attention-backend flashinfer \
-  --disable-custom-all-reduce \
-  --enable-flashinfer-allreduce-fusion \
-  --speculative-algorithm <span class="f">EAGLE</span> \
-  --speculative-num-steps 3 \
-  --speculative-eagle-topk 1 \
-  --speculative-num-draft-tokens 4 \
-  --mem-fraction-static 0.85 \
-  --cuda-graph-max-bs 128 \
-  --max-running-requests 768 \
-  --chunked-prefill-size 16384 \
-  --context-length 131072 \
-  --page-size 64 \
-  --enable-mixed-chunk \
-  --tool-call-parser deepseekv32 \
-  --reasoning-parser deepseek-v3 \
-  --enable-metrics --host 0.0.0.0 --port 30000</pre></div>
-  <div class="codeblock"><div class="chead"><span>environment (same manifest)</span><button class="copybtn">COPY</button></div><pre>SGLANG_ENABLE_JIT_DEEPGEMM=0   SGLANG_ENABLE_DEEP_GEMM=0   SGLANG_DISABLE_DEEP_GEMM=1
-SGLANG_ENABLE_SPEC_V2=1        SGLANG_SET_CPU_AFFINITY=1   SAFETENSORS_FAST_GPU=1
-NCCL_IB_DISABLE=1  NCCL_P2P_LEVEL=SYS  NCCL_MIN_NCHANNELS=8  NCCL_ALLOC_P2P_NET_LL_BUFFERS=1
-OMP_NUM_THREADS=24  PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-FLASHINFER_DISABLE_VERSION_CHECK=1</pre></div>
-  <div class="codeblock"><div class="chead"><span>deploy</span><button class="copybtn">COPY</button></div><pre>kubectl apply -f models/DeepSeekv3-2/nvp4/sglang-ds32-job-v2.yaml</pre></div>
+  --moe-runner-backend flashinfer_cutlass --fp4-gemm-backend flashinfer_cudnn \
+  --kv-cache-dtype bf16 --attention-backend flashinfer \
+  --disable-custom-all-reduce --enable-flashinfer-allreduce-fusion \
+  --speculative-algorithm <span class="f">EAGLE</span> --speculative-num-steps 3 \
+  --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 \
+  --mem-fraction-static 0.85 --cuda-graph-max-bs 128 --max-running-requests 768 \
+  --chunked-prefill-size 16384 --context-length 131072 --page-size 64 \
+  --enable-mixed-chunk --tool-call-parser deepseekv32 --reasoning-parser deepseek-v3 \
+  --enable-metrics --host 0.0.0.0 --port 30000
+<span class="c"># env: SGLANG_ENABLE_SPEC_V2=1, deep-GEMM disabled, NCCL_IB_DISABLE=1,</span>
+<span class="c"># NCCL_P2P_LEVEL=SYS, OMP_NUM_THREADS=24, SGLANG_SET_CPU_AFFINITY=1</span></pre></div>
 
-  <h3 id="ds-fp8">Recipe B — FP8, distributed 2 nodes</h3>
-  <div class="nameplate">
-    <div class="cell"><div class="k">Model</div><div class="v">deepseek-ai/<wbr>DeepSeek-V3.2</div></div>
-    <div class="cell"><div class="k">Hardware</div><div class="v">2× g4-standard-384 <small>16× RTX 6000</small></div></div>
-    <div class="cell"><div class="k">Quantization</div><div class="v">FP8 <small>triton GEMM</small></div></div>
-    <div class="cell"><div class="k">Parallelism</div><div class="v">TP8 · PP2 · DP8</div></div>
-    <div class="cell"><div class="k">NSA backend</div><div class="v">tilelang</div></div>
-  </div>
-  <p>Deployed as a 2-replica <code class="inline">StatefulSet</code> with the pod index feeding <code class="inline">--node-rank</code>, a headless <code class="inline">sglang-master-pod-opt:5000</code> service for rendezvous, and a NodePort service exposing port 8000 + metrics on the master.</p>
-  <div class="codeblock"><div class="chead"><span>models/DeepSeekv3-2/fp8/sglang-2node-setup-optimized.yaml — launch args</span><button class="copybtn">COPY</button></div><pre>python3 -m sglang.launch_server \
-  --model <span class="f">deepseek-ai/DeepSeek-V3.2</span> \
-  --tensor-parallel-size 8 \
-  --pipeline-parallel-size 2 \
-  --dp-size 8 --enable-dp-attention \
-  --nnodes 2 --node-rank $POD_INDEX \
-  --dist-init-addr sglang-master-pod-opt:5000 \
-  --trust-remote-code \
-  --reasoning-parser deepseek-v3 --tool-call-parser deepseekv32 \
-  --mem-fraction-static 0.88 \
-  --chunked-prefill-size 16384 \
-  --fp8-gemm-backend <span class="f">triton</span> \
-  --attention-backend flashinfer \
+  <h3 id="ds-fp8">FP8 · 2 nodes</h3>
+  <div class="meta"><span class="chip">deepseek-ai/DeepSeek-V3.2</span><span class="chip"><b>16× GPU</b></span><span class="chip">TP8 · PP2 · DP8</span><span class="chip">NSA tilelang</span><span class="chip">kv bf16 · mem 0.88</span></div>
+  <p>2-replica StatefulSet; <code class="inline">$POD_INDEX</code> → <code class="inline">--node-rank</code>, headless service for rendezvous, NodePort on the master.</p>
+  <div class="codeblock"><div class="chead"><span>models/DeepSeekv3-2/fp8/sglang-2node-setup-optimized.yaml</span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
+  --model deepseek-ai/DeepSeek-V3.2 \
+  --tensor-parallel-size 8 --pipeline-parallel-size 2 --dp-size 8 --enable-dp-attention \
+  --nnodes 2 --node-rank $POD_INDEX --dist-init-addr sglang-master-pod-opt:5000 \
+  --trust-remote-code --reasoning-parser deepseek-v3 --tool-call-parser deepseekv32 \
+  --mem-fraction-static 0.88 --chunked-prefill-size 16384 \
+  --fp8-gemm-backend <span class="f">triton</span> --attention-backend flashinfer \
   --nsa-prefill-backend <span class="f">tilelang</span> --nsa-decode-backend <span class="f">tilelang</span> \
-  --cuda-graph-max-bs 128 \
-  --max-running-requests 768 \
-  --kv-cache-dtype bf16 \
-  --disable-custom-all-reduce \
-  --enable-flashinfer-allreduce-fusion \
+  --cuda-graph-max-bs 128 --max-running-requests 768 --kv-cache-dtype bf16 \
+  --disable-custom-all-reduce --enable-flashinfer-allreduce-fusion \
   --page-size 64 --port 8000 --host 0.0.0.0</pre></div>
-  <p>Multi-node NCCL tuning adds <code class="inline">NCCL_SOCKET_IFNAME=eth0,eth1</code> (both NICs) and <code class="inline">NCCL_SOCKET_NTHREADS=8</code>, <code class="inline">NCCL_NSOCKS_PERTHREAD=8</code> to saturate TCP sockets across the 8896-MTU VPC.</p>
 
-  <h3 id="ds-results">Measured results</h3>
+  <h3 id="ds-results">Results</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th>Metric</th><th class="num">NVFP4 · 1 node</th><th class="num">FP8 · 2 nodes</th></tr></thead>
+    <thead><tr><th></th><th class="num">NVFP4 · 1n</th><th class="num">FP8 · 2n</th></tr></thead>
     <tbody>
-      <tr><td>Output throughput</td><td class="num">2675.33 tok/s</td><td class="num"><span class="best">2962.79 tok/s</span></td></tr>
-      <tr><td>Total throughput</td><td class="num">3012.42 tok/s</td><td class="num"><span class="best">3324.21 tok/s</span></td></tr>
-      <tr><td>Peak output</td><td class="num">2046 tok/s</td><td class="num"><span class="best">4951 tok/s</span></td></tr>
+      <tr><td>Output / total tok/s</td><td class="num">2675.33 / 3012.42</td><td class="num"><span class="best">2962.79 / 3324.21</span></td></tr>
       <tr><td>Mean TPOT</td><td class="num"><span class="best">106.03 ms</span></td><td class="num">149.29 ms</td></tr>
-      <tr><td>Median TTFT</td><td class="num">18.68 s</td><td class="num"><span class="best">327 ms</span></td></tr>
-      <tr><td>Mean ITL</td><td class="num"><span class="best">96.53 ms</span></td><td class="num">139.50 ms</td></tr>
-      <tr><td>P99 TPOT</td><td class="num">214.60 ms</td><td class="num"><span class="best">158.32 ms</span></td></tr>
-      <tr><td>Spec-decode accept length</td><td class="num">2.87</td><td class="num">—</td></tr>
-      <tr><td>Benchmark duration / requests</td><td class="num">768 s · 512 req</td><td class="num">2172 s · 1536 req</td></tr>
+      <tr><td>Median TTFT</td><td class="num">18.7 s</td><td class="num"><span class="best">327 ms</span></td></tr>
+      <tr><td>Accept length / requests</td><td class="num">2.87 · 512 req</td><td class="num">— · 1536 req</td></tr>
     </tbody>
   </table></div>
-  <div class="callout note"><p><b>Which to pick?</b> NVFP4 single-node gives faster per-token decode (106 vs 149 ms TPOT, helped by EAGLE accept length 2.87) at half the hardware, while the FP8 2-node setup wins on aggregate throughput and keeps TTFT in the sub-second range under saturation because it has far more prefill capacity.</p></div>
-
-  <div class="pagenav">
-    <a href="#benchmarking"><div class="dir">← Previous</div><div class="pt">Benchmarking guide</div></a>
-    <a class="next" href="#glm"><div class="dir">Next →</div><div class="pt">GLM-5.1 recipe</div></a>
-  </div>
+  <div class="callout"><p>NVFP4 decodes faster on half the hardware; FP8 2-node wins aggregate throughput and keeps TTFT sub-second under saturation thanks to extra prefill capacity.</p></div>
+  <div class="pagenav"><a href="#kimi25">← Kimi-K2.5</a><a href="#deepseek">DeepSeek-V3.2 →</a></div>
 </section>
 
-<!-- ================= GLM ================= -->
+<!-- GLM -->
 <section class="page" id="page-glm">
-  <div class="eyebrow">Model recipe</div>
-  <h2 class="pagetitle">GLM-5.1</h2>
-  <p class="lede">Zhipu AI's GLM-5.1 in three configurations: distributed FP8, single-node NVFP4 with NEXTN speculation, and distributed NVFP4 — the highest-throughput GLM result in the repo.</p>
+  <h1 class="pagetitle">GLM-5.1</h1>
+  <p class="lede">Three configs: distributed FP8, single-node NVFP4 with NEXTN speculation, and distributed NVFP4.</p>
 
-  <h3 id="glm-fp8">Recipe A — FP8, distributed 2 nodes</h3>
-  <div class="nameplate">
-    <div class="cell"><div class="k">Model</div><div class="v">zai-org/GLM-5.1-FP8</div></div>
-    <div class="cell"><div class="k">Hardware</div><div class="v">2× g4-standard-384 <small>16× RTX 6000</small></div></div>
-    <div class="cell"><div class="k">Parallelism</div><div class="v">TP8 · PP2 · DP8</div></div>
-    <div class="cell"><div class="k">Image</div><div class="v">lmsysorg/sglang<small>:dev-cu13</small></div></div>
-    <div class="cell"><div class="k">Mem fraction</div><div class="v">0.90</div></div>
-  </div>
-  <div class="codeblock"><div class="chead"><span>models/GLM5.1/sglang-glm51-v1-04232026.yaml — launch args</span><button class="copybtn">COPY</button></div><pre>python3 -m sglang.launch_server \
-  --model <span class="f">zai-org/GLM-5.1-FP8</span> \
-  --tensor-parallel-size 8 --pipeline-parallel-size 2 \
-  --dp-size 8 --enable-dp-attention \
-  --nnodes 2 --node-rank $POD_INDEX \
-  --dist-init-addr sglang-master-pod:5000 \
-  --trust-remote-code \
-  --kv-cache-dtype bfloat16 \
+  <h3 id="glm-fp8">FP8 · 2 nodes</h3>
+  <div class="meta"><span class="chip">zai-org/GLM-5.1-FP8</span><span class="chip"><b>16× GPU</b></span><span class="chip">TP8 · PP2 · DP8</span><span class="chip">kv bf16 · mem 0.90</span></div>
+  <div class="codeblock"><div class="chead"><span>models/GLM5.1/sglang-glm51-v1-04232026.yaml</span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
+  --model zai-org/GLM-5.1-FP8 \
+  --tensor-parallel-size 8 --pipeline-parallel-size 2 --dp-size 8 --enable-dp-attention \
+  --nnodes 2 --node-rank $POD_INDEX --dist-init-addr sglang-master-pod:5000 \
+  --trust-remote-code --kv-cache-dtype bfloat16 \
   --reasoning-parser <span class="f">glm45</span> --tool-call-parser <span class="f">glm47</span> \
-  --mem-fraction-static 0.90 \
-  --chunked-prefill-size 16384 \
-  --attention-backend flashinfer \
-  --max-running-requests 768 \
-  --cuda-graph-max-bs 128 \
-  --page-size 64 --port 8000 --host 0.0.0.0</pre></div>
-  <div class="codeblock"><div class="chead"><span>deploy</span><button class="copybtn">COPY</button></div><pre>kubectl apply -f models/GLM5.1/sglang-glm51-v1-04232026.yaml</pre></div>
+  --mem-fraction-static 0.90 --chunked-prefill-size 16384 \
+  --attention-backend flashinfer --max-running-requests 768 \
+  --cuda-graph-max-bs 128 --page-size 64 --port 8000 --host 0.0.0.0</pre></div>
 
-  <h3 id="glm-nvfp4-1">Recipe B — NVFP4, single node (NEXTN speculation)</h3>
-  <div class="nameplate">
-    <div class="cell"><div class="k">Model</div><div class="v">lukealonso/<wbr>GLM-5.1-NVFP4</div></div>
-    <div class="cell"><div class="k">Hardware</div><div class="v">1× g4-standard-384 <small>8× RTX 6000</small></div></div>
-    <div class="cell"><div class="k">Quantization</div><div class="v">modelopt_fp4</div></div>
-    <div class="cell"><div class="k">Speculation</div><div class="v">NEXTN <small>3 steps · 4 drafts</small></div></div>
-    <div class="cell"><div class="k">Image</div><div class="v">voipmonitor/sglang<small>:cu130</small></div></div>
-  </div>
-  <div class="codeblock"><div class="chead"><span>models/GLM5.1/nvfp4/sglang-glm51-nvfp4-1node.yaml — launch args</span><button class="copybtn">COPY</button></div><pre>python3 -m sglang.launch_server \
-  --model-path <span class="f">lukealonso/GLM-5.1-NVFP4</span> \
-  --served-model-name GLM-5.1 \
-  --reasoning-parser glm45 --tool-call-parser glm47 \
-  --tp-size 8 --trust-remote-code \
-  --quantization <span class="f">modelopt_fp4</span> \
-  --kv-cache-dtype bf16 \
-  --fp4-gemm-backend flashinfer_cutlass \
-  --attention-backend flashinfer \
+  <h3 id="glm-nvfp4-1">NVFP4 · single node (NEXTN)</h3>
+  <div class="meta"><span class="chip">lukealonso/GLM-5.1-NVFP4</span><span class="chip"><b>8× GPU</b></span><span class="chip">NEXTN 3/4</span><span class="chip">voipmonitor/sglang:cu130</span><span class="chip">mem 0.88</span></div>
+  <div class="codeblock"><div class="chead"><span>models/GLM5.1/nvfp4/sglang-glm51-nvfp4-1node.yaml</span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
+  --model-path lukealonso/GLM-5.1-NVFP4 --served-model-name GLM-5.1 \
+  --reasoning-parser glm45 --tool-call-parser glm47 --tp-size 8 --trust-remote-code \
+  --quantization <span class="f">modelopt_fp4</span> --kv-cache-dtype bf16 \
+  --fp4-gemm-backend flashinfer_cutlass --attention-backend flashinfer \
   --moe-runner-backend flashinfer_cutlass \
-  --mem-fraction-static 0.88 \
-  --max-running-requests 768 \
-  --chunked-prefill-size 8192 --enable-mixed-chunk \
-  --cuda-graph-max-bs 64 --page-size 64 \
-  --disable-shared-experts-fusion \
-  --disable-custom-all-reduce \
-  --enable-flashinfer-allreduce-fusion \
-  --enable-fused-moe-sum-all-reduce \
-  --enable-dp-lm-head \
-  --tokenizer-worker-num 16 \
-  --speculative-algorithm <span class="f">NEXTN</span> \
-  --speculative-num-steps 3 --speculative-eagle-topk 1 \
-  --speculative-num-draft-tokens 4 \
-  --schedule-conservativeness 1.3 \
-  --host 0.0.0.0 --port 30000</pre></div>
+  --mem-fraction-static 0.88 --max-running-requests 768 \
+  --chunked-prefill-size 8192 --enable-mixed-chunk --cuda-graph-max-bs 64 --page-size 64 \
+  --disable-shared-experts-fusion --disable-custom-all-reduce \
+  --enable-flashinfer-allreduce-fusion --enable-fused-moe-sum-all-reduce \
+  --enable-dp-lm-head --tokenizer-worker-num 16 \
+  --speculative-algorithm <span class="f">NEXTN</span> --speculative-num-steps 3 \
+  --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 \
+  --schedule-conservativeness 1.3 --host 0.0.0.0 --port 30000</pre></div>
+  <p>The 2-node NVFP4 variant (<code class="inline">sglang-glm51-nvfp4-2node.yaml</code>) reuses the FP8 topology — TP8 · PP2 · DP8, mem 0.90 — with <code class="inline">modelopt_fp4</code>.</p>
 
-  <h3 id="glm-nvfp4-2">Recipe C — NVFP4, distributed 2 nodes</h3>
-  <p>Same model and quantization as Recipe B, scaled out with the Recipe A topology (TP8 · PP2 · DP8, image <code class="inline">lmsysorg/sglang:dev-cu13</code>, mem fraction 0.90). Manifest: <code class="inline">models/GLM5.1/nvfp4/sglang-glm51-nvfp4-2node.yaml</code>. This produced the best GLM throughput measured on G4.</p>
-
-  <h3 id="glm-results">Measured results</h3>
+  <h3 id="glm-results">Results</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th>Metric</th><th class="num">FP8 · 2 nodes</th><th class="num">NVFP4 · 1 node</th><th class="num">NVFP4 · 2 nodes</th></tr></thead>
+    <thead><tr><th></th><th class="num">FP8 · 2n</th><th class="num">NVFP4 · 1n</th><th class="num">NVFP4 · 2n</th></tr></thead>
     <tbody>
-      <tr><td>Output throughput</td><td class="num">2785.55 tok/s</td><td class="num">1490.31 tok/s</td><td class="num"><span class="best">3075.85 tok/s</span></td></tr>
-      <tr><td>Total throughput</td><td class="num">3125.35 tok/s</td><td class="num">1672.11 tok/s</td><td class="num"><span class="best">3451.06 tok/s</span></td></tr>
-      <tr><td>Peak output</td><td class="num">4092 tok/s</td><td class="num">734 tok/s</td><td class="num"><span class="best">4606 tok/s</span></td></tr>
+      <tr><td>Output tok/s</td><td class="num">2785.55</td><td class="num">1490.31</td><td class="num"><span class="best">3075.85</span></td></tr>
+      <tr><td>Total tok/s</td><td class="num">3125.35</td><td class="num">1672.11</td><td class="num"><span class="best">3451.06</span></td></tr>
       <tr><td>Mean TPOT</td><td class="num">155.26 ms</td><td class="num"><span class="best">73.82 ms</span></td><td class="num">141.36 ms</td></tr>
       <tr><td>Median TTFT</td><td class="num">344 ms</td><td class="num">1064 s*</td><td class="num"><span class="best">331 ms</span></td></tr>
-      <tr><td>Spec accept length</td><td class="num">—</td><td class="num">3.25</td><td class="num">—</td></tr>
-      <tr><td>Benchmark duration</td><td class="num">2310 s</td><td class="num">4318 s</td><td class="num">2092 s</td></tr>
+      <tr><td>Accept length</td><td class="num">—</td><td class="num">3.25</td><td class="num">—</td></tr>
     </tbody>
   </table></div>
-  <div class="callout warn"><p><b>*About that 1-node TTFT.</b> The 1064-second median TTFT on the single-node NVFP4 run reflects prefill saturation: at 512 sustained concurrency on 8 GPUs, requests queue for prefill capacity. Per-token decode is excellent (41 ms median TPOT, accept length 3.25) — this config shines at lower concurrency, not at this stress profile.</p></div>
-
-  <div class="pagenav">
-    <a href="#deepseek"><div class="dir">← Previous</div><div class="pt">DeepSeek-V3.2 recipe</div></a>
-    <a class="next" href="#kimi25"><div class="dir">Next →</div><div class="pt">Kimi-K2.5 recipe</div></a>
-  </div>
+  <div class="callout warn"><p>* Prefill saturation: at 512 concurrency on 8 GPUs, requests queue (decode itself is fast — 41 ms median TPOT). Use this config at lower concurrency.</p></div>
+  <div class="pagenav"><a href="#kimi26">← Kimi-K2.6</a><a href="#glm">GLM-5.1 →</a></div>
 </section>
 
-<!-- ================= KIMI 2.5 ================= -->
+<!-- KIMI 2.5 -->
 <section class="page" id="page-kimi25">
-  <div class="eyebrow">Model recipe</div>
-  <h2 class="pagetitle">Kimi-K2.5</h2>
-  <p class="lede">Moonshot AI's large MoE for reasoning and tool use, benchmarked head-to-head in native INT4 and NVFP4 on 16 GPUs. NVFP4 produced the fastest standard-profile result in the whole repo.</p>
+  <h1 class="pagetitle">Kimi-K2.5</h1>
+  <p class="lede">Native INT4 vs NVFP4 head-to-head on 16 GPUs. NVFP4 holds the repo's best standard-profile throughput.</p>
 
-  <h3 id="k25-int4">Recipe A — Native INT4, 2 nodes</h3>
-  <div class="nameplate">
-    <div class="cell"><div class="k">Model</div><div class="v">moonshotai/Kimi-K2.5</div></div>
-    <div class="cell"><div class="k">Hardware</div><div class="v">2× g4-standard-384 <small>16× RTX 6000</small></div></div>
-    <div class="cell"><div class="k">Quantization</div><div class="v">Native INT4</div></div>
-    <div class="cell"><div class="k">KV cache</div><div class="v">fp8_e5m2</div></div>
-    <div class="cell"><div class="k">Image</div><div class="v">sglang<small>:v0.5.10.post1</small></div></div>
-  </div>
-  <div class="codeblock"><div class="chead"><span>models/KimiK2.5/sglang-ss.yaml — launch args</span><button class="copybtn">COPY</button></div><pre>python3 -m sglang.launch_server \
-  --model <span class="f">moonshotai/Kimi-K2.5</span> \
+  <h3 id="k25-int4">Native INT4 · 2 nodes</h3>
+  <div class="meta"><span class="chip">moonshotai/Kimi-K2.5</span><span class="chip"><b>16× GPU</b></span><span class="chip">TP8 · PP2 · DP8</span><span class="chip">kv fp8_e5m2</span><span class="chip">sglang:v0.5.10.post1</span></div>
+  <div class="codeblock"><div class="chead"><span>models/KimiK2.5/sglang-kimik2.5-2node.yaml</span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
+  --model-path moonshotai/Kimi-K2.5 \
   --tensor-parallel-size 8 --pipeline-parallel-size 2 \
-  --nnodes 2 --node-rank $POD_INDEX \
-  --dist-init-addr sglang-master-pod:5000 \
-  --trust-remote-code \
-  --kv-cache-dtype <span class="f">fp8_e5m2</span> \
+  --dp-size 8 --enable-dp-attention \
+  --nnodes 2 --node-rank $POD_INDEX --dist-init-addr sglang-master-pod:5000 \
+  --trust-remote-code --kv-cache-dtype <span class="f">fp8_e5m2</span> \
   --reasoning-parser kimi_k2 --tool-call-parser kimi_k2 \
-  --mem-fraction-static 0.85 \
-  --chunked-prefill-size 16384 \
+  --mem-fraction-static 0.85 --chunked-prefill-size 16384 \
+  --schedule-policy fcfs --disable-radix-cache \
+  --disable-shared-experts-fusion --disable-custom-all-reduce \
+  --enable-dp-lm-head --enable-fused-moe-sum-all-reduce \
   --port 8000 --host 0.0.0.0</pre></div>
-  <div class="callout note"><p><b>Profiling baked in.</b> The committed manifest wraps the launch in <code class="inline">nsys profile --capture-range=cudaProfilerApi</code> for Nsight tracing. Strip the wrapper for production serving.</p></div>
-  <div class="codeblock"><div class="chead"><span>deploy</span><button class="copybtn">COPY</button></div><pre>kubectl apply -f models/KimiK2.5/sglang-ss.yaml</pre></div>
+  <p>NVFP4 variant: <code class="inline">nvfp4/sglang-kimi-nvfp4-2node_v2.yaml</code> — <code class="inline">nvidia/Kimi-K2.5-NVFP4</code>, TP8 · PP2 · DP8, kv bf16, image dev-cu13.</p>
 
-  <h3 id="k25-nvfp4">Recipe B — NVFP4, 2 nodes</h3>
-  <div class="nameplate">
-    <div class="cell"><div class="k">Model</div><div class="v">nvidia/<wbr>Kimi-K2.5-NVFP4</div></div>
-    <div class="cell"><div class="k">Hardware</div><div class="v">2× g4-standard-384 <small>16× RTX 6000</small></div></div>
-    <div class="cell"><div class="k">Quantization</div><div class="v">modelopt_fp4</div></div>
-    <div class="cell"><div class="k">Parallelism</div><div class="v">TP8 · PP2 · DP8</div></div>
-    <div class="cell"><div class="k">KV cache</div><div class="v">bfloat16</div></div>
-  </div>
-  <p>Manifest: <code class="inline">models/KimiK2.5/nvfp4/sglang-kimi-nvfp4-2node.yaml</code> with image <code class="inline">lmsysorg/sglang:dev-cu13</code> and the same Kimi reasoning/tool-call parsers.</p>
-
-  <h3 id="k25-results">Measured results</h3>
+  <h3 id="k25-results">Results</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th>Metric</th><th class="num">Native INT4</th><th class="num">NVFP4</th></tr></thead>
+    <thead><tr><th></th><th class="num">INT4</th><th class="num">NVFP4</th></tr></thead>
     <tbody>
-      <tr><td>Output throughput</td><td class="num">3152.79 tok/s</td><td class="num"><span class="best">3237.46 tok/s</span></td></tr>
-      <tr><td>Total throughput</td><td class="num">3537.39 tok/s</td><td class="num"><span class="best">3632.39 tok/s</span></td></tr>
-      <tr><td>Peak output</td><td class="num">4793 tok/s</td><td class="num"><span class="best">5535 tok/s</span></td></tr>
+      <tr><td>Output / total tok/s</td><td class="num">3152.79 / 3537.39</td><td class="num"><span class="best">3237.46 / 3632.39</span></td></tr>
+      <tr><td>Peak output</td><td class="num">4793</td><td class="num"><span class="best">5535</span></td></tr>
       <tr><td>Mean TPOT</td><td class="num"><span class="best">136.52 ms</span></td><td class="num">137.89 ms</td></tr>
-      <tr><td>Median TTFT</td><td class="num"><span class="best">300.83 ms</span></td><td class="num">304.01 ms</td></tr>
-      <tr><td>Mean E2E latency</td><td class="num">543.2 s</td><td class="num"><span class="best">537.9 s</span></td></tr>
-      <tr><td>Benchmark duration</td><td class="num">2041.0 s</td><td class="num"><span class="best">1987.6 s</span></td></tr>
+      <tr><td>Median TTFT</td><td class="num"><span class="best">301 ms</span></td><td class="num">304 ms</td></tr>
     </tbody>
   </table></div>
-  <p>NVFP4 finishes the same 1536-prompt workload ~5% faster with better steady-state pacing; native INT4 hits a higher instantaneous peak and slightly lower median TTFT. Attribution: final numbers and tuning by <b>Karim Roukoz</b>.</p>
-
-  <div class="pagenav">
-    <a href="#glm"><div class="dir">← Previous</div><div class="pt">GLM-5.1 recipe</div></a>
-    <a class="next" href="#kimi26"><div class="dir">Next →</div><div class="pt">Kimi-K2.6 recipe</div></a>
-  </div>
+  <p style="font-size:13px;color:var(--soft)">Tuning and final numbers: Karim Roukoz.</p>
+  <div class="pagenav"><a href="#glm">← GLM-5.1</a><a href="#whisper">Whisper →</a></div>
 </section>
 
-<!-- ================= KIMI 2.6 ================= -->
+<!-- KIMI 2.6 -->
 <section class="page" id="page-kimi26">
-  <div class="eyebrow">Model recipe</div>
-  <h2 class="pagetitle">Kimi-K2.6</h2>
-  <p class="lede">The latest Kimi MoE, with the most feature-rich recipe in the repo: EAGLE3 speculative decoding, hierarchical cache (HiCache), GCS Fuse weight streaming, and a 2-node distributed variant.</p>
+  <h1 class="pagetitle">Kimi-K2.6</h1>
+  <p class="lede">The most feature-rich recipe: EAGLE3 speculation, HiCache, GCS Fuse weights — plus a 2-node variant.</p>
 
-  <h3 id="k26-1node">Recipe A — single node, EAGLE3 + HiCache</h3>
-  <div class="nameplate">
-    <div class="cell"><div class="k">Model</div><div class="v">moonshotai/Kimi-K2.6</div></div>
-    <div class="cell"><div class="k">Hardware</div><div class="v">1× g4-standard-384 <small>8× RTX 6000</small></div></div>
-    <div class="cell"><div class="k">KV cache</div><div class="v">fp8_e4m3</div></div>
-    <div class="cell"><div class="k">Speculation</div><div class="v">EAGLE3 <small>k2.5-eagle3 draft</small></div></div>
-    <div class="cell"><div class="k">Cache</div><div class="v">HiCache <small>ratio 2.0</small></div></div>
-  </div>
-  <p>Weights are mounted read-only from a GCS bucket via the GCS Fuse CSI driver, with aggressive parallel-download mount options and an init container that validates <code class="inline">config.json</code> and the safetensors shards before SGLang starts.</p>
-  <div class="codeblock"><div class="chead"><span>models/KimiK2.6/sglang-kimi-26-1node.yaml — launch args</span><button class="copybtn">COPY</button></div><pre>python3 -m sglang.launch_server \
-  --model-path /models \                <span class="c"># GCS Fuse mount</span>
-  --tp 8 \
-  --kv-cache-dtype fp8_e4m3 \
-  --trust-remote-code \
+  <h3 id="k26-1node">Single node · EAGLE3 + HiCache</h3>
+  <div class="meta"><span class="chip">moonshotai/Kimi-K2.6</span><span class="chip"><b>8× GPU</b></span><span class="chip">EAGLE3 · k2.5-eagle3</span><span class="chip">HiCache 2.0</span><span class="chip">kv fp8_e4m3</span><span class="chip">GCS Fuse</span></div>
+  <div class="codeblock"><div class="chead"><span>models/KimiK2.6/sglang-kimi-26-1node.yaml</span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
+  --model-path /models \  <span class="c"># GCS Fuse CSI mount, parallel-download tuned</span>
+  --tp 8 --kv-cache-dtype fp8_e4m3 --trust-remote-code \
   --reasoning-parser kimi_k2 --tool-call-parser kimi_k2 \
   --speculative-algorithm <span class="f">EAGLE3</span> \
   --speculative-draft-model-path <span class="f">lightseekorg/kimi-k2.5-eagle3</span> \
-  --speculative-num-steps 3 --speculative-eagle-topk 1 \
-  --speculative-num-draft-tokens 4 \
-  --enable-hierarchical-cache \
-  --hicache-ratio 2.0 \
+  --speculative-num-steps 3 --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 \
+  --enable-hierarchical-cache --hicache-ratio 2.0 \
   --hicache-write-policy write_through_selective \
-  --schedule-policy <span class="f">lpm</span> \
-  --schedule-conservativeness 0.3 \
-  --chunked-prefill-size 16384 --enable-mixed-chunk \
-  --context-length 131072 \
-  --max-running-requests 128 \
-  --mem-fraction-static 0.85 \
-  --attention-backend flashinfer \
-  --enable-p2p-check \
-  --host 0.0.0.0 --port 30000</pre></div>
-  <div class="codeblock"><div class="chead"><span>GCS Fuse volume (same manifest)</span><button class="copybtn">COPY</button></div><pre>volumes:
-- name: models
-  csi:
-    driver: gcsfuse.csi.storage.gke.io
-    readOnly: true
-    volumeAttributes:
-      bucketName: <span class="s">&lt;your-weights-bucket&gt;</span>
-      mountOptions: "implicit-dirs,only-dir=kimi-k2.6,\
-        file-cache:max-size-mb:900000,\
-        file-cache:enable-parallel-downloads:true,\
-        file-cache:parallel-downloads-per-file:16,\
-        file-cache:download-chunk-size-mb:50,\
-        metadata-cache:ttl-secs:-1"</pre></div>
-  <div class="codeblock"><div class="chead"><span>deploy</span><button class="copybtn">COPY</button></div><pre>kubectl apply -f models/KimiK2.6/sglang-kimi-26-1node.yaml</pre></div>
+  --schedule-policy <span class="f">lpm</span> --schedule-conservativeness 0.3 \
+  --chunked-prefill-size 16384 --enable-mixed-chunk --context-length 131072 \
+  --max-running-requests 128 --mem-fraction-static 0.85 \
+  --attention-backend flashinfer --enable-p2p-check --host 0.0.0.0 --port 30000</pre></div>
+  <p>An init container validates <code class="inline">config.json</code> and the safetensors shards before launch. 2-node variant (<code class="inline">sglang-kimi-26-2nd.yaml</code>): TP8 · PP2, kv fp8_e5m2, image v0.5.10.post1.</p>
 
-  <h3 id="k26-2node">Recipe B — 2-node distributed</h3>
-  <div class="nameplate">
-    <div class="cell"><div class="k">Model</div><div class="v">moonshotai/Kimi-K2.6</div></div>
-    <div class="cell"><div class="k">Hardware</div><div class="v">2× g4-standard-384 <small>16× RTX 6000</small></div></div>
-    <div class="cell"><div class="k">Parallelism</div><div class="v">TP8 · PP2</div></div>
-    <div class="cell"><div class="k">KV cache</div><div class="v">fp8_e5m2</div></div>
-    <div class="cell"><div class="k">Image</div><div class="v">sglang<small>:v0.5.10.post1</small></div></div>
-  </div>
-  <div class="codeblock"><div class="chead"><span>models/KimiK2.6/sglang-kimi-26-2nd.yaml — launch args</span><button class="copybtn">COPY</button></div><pre>python3 -m sglang.launch_server \
-  --model moonshotai/Kimi-K2.6 \
-  --tensor-parallel-size 8 --pipeline-parallel-size 2 \
-  --nnodes 2 --node-rank $POD_INDEX \
-  --dist-init-addr sglang-master-pod:5000 \
-  --trust-remote-code \
-  --kv-cache-dtype fp8_e5m2 \
-  --reasoning-parser kimi_k2 --tool-call-parser kimi_k2 \
-  --mem-fraction-static 0.85 \
-  --chunked-prefill-size 16384 \
-  --port 8000 --host 0.0.0.0</pre></div>
-
-  <h3 id="k26-results">Measured results — single node, standard profile</h3>
-  <div class="duo">
-    <div class="stat"><div class="sv">1459.26 <em>tok/s</em></div><div class="sk">Output throughput</div></div>
-    <div class="stat"><div class="sv">1637.28 <em>tok/s</em></div><div class="sk">Total throughput</div></div>
-    <div class="stat good"><div class="sv">36.55 <em>ms</em></div><div class="sk">Median TPOT</div></div>
-    <div class="stat good"><div class="sv">3.65</div><div class="sk">EAGLE3 accept length</div></div>
-  </div>
+  <h3 id="k26-results">Results — single node, standard profile</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th>Metric</th><th class="num">Value</th></tr></thead>
     <tbody>
-      <tr><td>Peak output throughput</td><td class="num">850 tok/s</td></tr>
-      <tr><td>Mean / median TPOT</td><td class="num">82.43 / 36.55 ms</td></tr>
-      <tr><td>Median TTFT</td><td class="num">1087.88 s</td></tr>
-      <tr><td>Mean ITL</td><td class="num">70.15 ms (median 32.76)</td></tr>
-      <tr><td>Duration / requests</td><td class="num">4409.7 s · 1536 req</td></tr>
+      <tr><td>Output / total tok/s</td><td class="num">1459.26 / 1637.28</td></tr>
+      <tr><td>Mean / median TPOT</td><td class="num">82.43 / <span class="best">36.55</span> ms</td></tr>
+      <tr><td>EAGLE3 accept length</td><td class="num"><span class="best">3.65</span></td></tr>
+      <tr><td>Median TTFT</td><td class="num">1088 s (queueing at 512c on 1 node, capped at 128 running)</td></tr>
     </tbody>
   </table></div>
-  <div class="callout warn"><p><b>TTFT context.</b> The ~18-minute median TTFT reflects the sustained 512-concurrency saturation profile against a single node capped at <code class="inline">--max-running-requests 128</code> — requests queue. For Kimi-K2.6's real strength on realistic traffic, see the <a href="#agentic">agentic benchmark</a>, where the same HiCache setup delivers P50 latency of 16 s and an 81% cache hit rate.</p></div>
-
-  <div class="pagenav">
-    <a href="#kimi25"><div class="dir">← Previous</div><div class="pt">Kimi-K2.5 recipe</div></a>
-    <a class="next" href="#qwen"><div class="dir">Next →</div><div class="pt">Qwen3.5-397B recipe</div></a>
-  </div>
+  <div class="callout"><p>For realistic traffic, see the <a href="#agentic">agentic benchmark</a>: same HiCache setup, 16 s P50 latency, 81% cache hit rate.</p></div>
+  <div class="pagenav"><a href="#benchmarking">← Benchmarking</a><a href="#kimi26">Kimi-K2.6 →</a></div>
 </section>
 
-<!-- ================= QWEN ================= -->
+<!-- QWEN -->
 <section class="page" id="page-qwen">
-  <div class="eyebrow">Model recipe · latency study</div>
-  <h2 class="pagetitle">Qwen3.5-397B-A17B-FP8</h2>
-  <p class="lede">An ultra-large MoE on a single node, benchmarked for latency rather than throughput: 20,000-token prompts, 1,000-token outputs, 40-way concurrency, 2,000 requests — with and without SGLang HiCache.</p>
+  <h1 class="pagetitle">Qwen3.5-397B-A17B-FP8</h1>
+  <p class="lede">Latency study: 20K-token prompts, 1K outputs, concurrency 40, 2000 requests — HiCache on vs radix cache off.</p>
+  <div class="meta"><span class="chip">Qwen/Qwen3.5-397B-A17B-FP8</span><span class="chip"><b>8× GPU</b> · TP8</span><span class="chip">~19.7M input tokens</span><span class="chip">dev-cu13</span></div>
 
-  <div class="nameplate">
-    <div class="cell"><div class="k">Model</div><div class="v">Qwen/Qwen3.5-<wbr>397B-A17B-FP8</div></div>
-    <div class="cell"><div class="k">Hardware</div><div class="v">1 node · 8× GPU</div></div>
-    <div class="cell"><div class="k">Precision</div><div class="v">FP8 <small>MoE</small></div></div>
-    <div class="cell"><div class="k">Profile</div><div class="v">20K in / 1K out <small>conc 40</small></div></div>
-    <div class="cell"><div class="k">Volume</div><div class="v">~19.7M <small>input tokens</small></div></div>
-  </div>
+  <div class="codeblock"><div class="chead"><span>common flags + variants</span><button class="copybtn">Copy</button></div><pre>--tp 8 --chunked-prefill-size 4096 --max-prefill-tokens 32768 --enable-mixed-chunk \
+--enable-fused-qk-norm-rope --enable-fused-moe-sum-all-reduce \
+--enable-flashinfer-allreduce-fusion --enforce-piecewise-cuda-graph \
+--mem-fraction-static 0.8
 
-  <h3 id="qw-server">Server configuration</h3>
-  <p>Common flags across both runs (image <code class="inline">lmsysorg/sglang:dev-cu13</code>):</p>
-  <div class="codeblock"><div class="chead"><span>common launch flags</span><button class="copybtn">COPY</button></div><pre>--tp 8 \
---chunked-prefill-size 4096 \
---max-prefill-tokens 32768 \
---enable-mixed-chunk \
---enable-fused-qk-norm-rope \
---enable-fused-moe-sum-all-reduce \
---enable-flashinfer-allreduce-fusion \
---enforce-piecewise-cuda-graph \
---mem-fraction-static 0.8</pre></div>
-  <div class="codeblock"><div class="chead"><span>variant flags</span><button class="copybtn">COPY</button></div><pre><span class="c"># Run 1 — HiCache enabled</span>
+<span class="c"># Run 1 — HiCache</span>
 --enable-hierarchical-cache --hicache-ratio=2.0 --hicache-io-backend=<span class="f">kernel</span>
-
 <span class="c"># Run 2 — no radix cache</span>
 --disable-radix-cache</pre></div>
-  <p>Manifests: <code class="inline">sglang_qwen35_397b_hicache.yaml</code> and <code class="inline">sglang-singlenode-no-hicache.yaml</code>; the load generator lives in <code class="inline">benchmark_scripts/benchmark-pod.yaml</code>.</p>
 
-  <h3 id="qw-results">Results: HiCache vs no radix cache</h3>
+  <h3 id="qw-results">Results</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th>Metric</th><th class="num">HiCache enabled</th><th class="num">No radix cache</th></tr></thead>
+    <thead><tr><th></th><th class="num">HiCache</th><th class="num">No radix cache</th></tr></thead>
     <tbody>
-      <tr><td>Mean TTFT</td><td class="num"><span class="best">1,121.17 ms</span></td><td class="num">1,371.28 ms</td></tr>
-      <tr><td>Median TTFT</td><td class="num"><span class="best">1,054.01 ms</span></td><td class="num">1,128.88 ms</td></tr>
-      <tr><td>P99 TTFT</td><td class="num"><span class="best">3,359.76 ms</span></td><td class="num">14,052.80 ms</td></tr>
-      <tr><td>Mean TPOT</td><td class="num">100.59 ms</td><td class="num"><span class="best">90.45 ms</span></td></tr>
-      <tr><td>Median TPOT</td><td class="num">101.18 ms</td><td class="num"><span class="best">90.41 ms</span></td></tr>
-      <tr><td>P99 TPOT</td><td class="num">165.27 ms</td><td class="num"><span class="best">140.58 ms</span></td></tr>
-      <tr><td>Mean ITL</td><td class="num">100.03 ms</td><td class="num"><span class="best">89.97 ms</span></td></tr>
-      <tr><td>Output throughput</td><td class="num">390.65 tok/s</td><td class="num"><span class="best">431.26 tok/s</span></td></tr>
-      <tr><td>Total throughput</td><td class="num">8,202 tok/s</td><td class="num"><span class="best">9,055 tok/s</span></td></tr>
-      <tr><td>Mean E2E latency</td><td class="num">50.2 s</td><td class="num"><span class="best">45.5 s</span></td></tr>
+      <tr><td>Mean / P99 TTFT</td><td class="num"><span class="best">1,121 / 3,360 ms</span></td><td class="num">1,371 / 14,053 ms</td></tr>
+      <tr><td>Mean TPOT / ITL</td><td class="num">100.6 / 100.0 ms</td><td class="num"><span class="best">90.5 / 90.0 ms</span></td></tr>
+      <tr><td>Total tok/s</td><td class="num">8,202</td><td class="num"><span class="best">9,055</span></td></tr>
+      <tr><td>Mean E2E</td><td class="num">50.2 s</td><td class="num"><span class="best">45.5 s</span></td></tr>
     </tbody>
   </table></div>
-
-  <h3 id="qw-takeaways">Takeaways</h3>
-  <ul class="plain">
-    <li><b>TTFT tail collapses with HiCache.</b> P99 TTFT drops from 14.05 s to 3.36 s — a 4.2× improvement — and mean TTFT improves ~18%. For interactive 20K-prompt workloads, HiCache is the difference between consistent and occasionally terrible first-token latency.</li>
-    <li><b>Decode pays a small tax.</b> No-radix-cache shows ~10% better TPOT/ITL because cache management adds generation-phase overhead. Mean E2E ends up ~5 s higher with HiCache as that TPOT delta accumulates over the sequence.</li>
-    <li><b>Pick by workload.</b> Prefill-heavy, prefix-sharing traffic (RAG, agents, long system prompts) → HiCache. Pure unique-prompt batch generation → radix cache off.</li>
-  </ul>
-
-  <div class="pagenav">
-    <a href="#kimi26"><div class="dir">← Previous</div><div class="pt">Kimi-K2.6 recipe</div></a>
-    <a class="next" href="#whisper"><div class="dir">Next →</div><div class="pt">Whisper-large-v3 recipe</div></a>
-  </div>
+  <div class="callout"><p>HiCache collapses the TTFT tail 4.2× at a ~10% decode-speed cost. Prefix-sharing workloads (RAG, agents) → HiCache. Unique-prompt batch → radix cache off.</p></div>
+  <div class="pagenav"><a href="#deepseek">← DeepSeek-V3.2</a><a href="#qwen">Qwen3.5-397B →</a></div>
 </section>
 
-<!-- ================= WHISPER ================= -->
+<!-- WHISPER -->
 <section class="page" id="page-whisper">
-  <div class="eyebrow">Model recipe · speech recognition</div>
-  <h2 class="pagetitle">Whisper-large-v3</h2>
-  <p class="lede">OpenAI's general-purpose ASR model served with SGLang data parallelism: eight independent replicas, one per GPU, behind a single endpoint. Three API styles benchmarked.</p>
+  <h1 class="pagetitle">Whisper-large-v3</h1>
+  <p class="lede">ASR with data parallelism: eight replicas, one per GPU. Three API styles benchmarked on 512 earnings-call samples at concurrency 256.</p>
+  <div class="meta"><span class="chip">openai/whisper-large-v3</span><span class="chip">TP1 · <b>DP8</b></span><span class="chip">float16</span><span class="chip">sglang:latest</span></div>
 
-  <div class="nameplate">
-    <div class="cell"><div class="k">Model</div><div class="v">openai/<wbr>whisper-large-v3</div></div>
-    <div class="cell"><div class="k">Hardware</div><div class="v">1× g4-standard-384</div></div>
-    <div class="cell"><div class="k">Parallelism</div><div class="v">TP1 · DP8</div></div>
-    <div class="cell"><div class="k">Precision</div><div class="v">float16</div></div>
-    <div class="cell"><div class="k">Image</div><div class="v">lmsysorg/sglang<small>:latest</small></div></div>
-  </div>
-
-  <h3 id="wh-launch">Launch configuration</h3>
-  <div class="codeblock"><div class="chead"><span>server launch</span><button class="copybtn">COPY</button></div><pre>sglang serve --model-path <span class="f">openai/whisper-large-v3</span> \
-    --tp-size 1 \
-    --dp-size 8 \
-    --trust-remote-code \
-    --mem-fraction-static 0.90 \
-    --max-running-requests 1024 \
-    --chunked-prefill-size 16384 \
-    --cuda-graph-max-bs 128 \
+  <div class="codeblock"><div class="chead"><span>launch</span><button class="copybtn">Copy</button></div><pre>sglang serve --model-path openai/whisper-large-v3 \
+    --tp-size 1 --dp-size 8 --trust-remote-code \
+    --mem-fraction-static 0.90 --max-running-requests 1024 \
+    --chunked-prefill-size 16384 --cuda-graph-max-bs 128 \
     --attention-backend flashinfer</pre></div>
-  <div class="codeblock"><div class="chead"><span>deploy benchmark job</span><button class="copybtn">COPY</button></div><pre>kubectl apply -f models/whisper-v3-large/sglang-whisper-job.yaml</pre></div>
 
-  <h3 id="wh-results">Results — 512 samples, concurrency 256</h3>
-  <p>Dataset: <code class="inline">D4nt3/esb-datasets-earnings22-validation-tiny-filtered</code> (earnings-call audio). The same workload was driven through three endpoint styles:</p>
+  <h3 id="wh-results">Results</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th>Metric</th><th class="num">Chat Completions</th><th class="num">Audio Transcriptions</th><th class="num">Streaming</th></tr></thead>
+    <thead><tr><th></th><th class="num">Transcriptions API</th><th class="num">Chat Completions</th><th class="num">Streaming</th></tr></thead>
     <tbody>
-      <tr><td>Throughput</td><td class="num">48.21 req/s</td><td class="num"><span class="best">55.63 req/s</span></td><td class="num">28.15 req/s</td></tr>
-      <tr><td>Token throughput</td><td class="num">898.04 tok/s</td><td class="num"><span class="best">1048.84 tok/s</span></td><td class="num">530.64 tok/s</td></tr>
-      <tr><td>Average latency</td><td class="num">3.271 s</td><td class="num"><span class="best">0.322 s</span></td><td class="num">0.906 s</td></tr>
-      <tr><td>95th-pct latency</td><td class="num">3.578 s</td><td class="num"><span class="best">0.585 s</span></td><td class="num">1.294 s</td></tr>
-      <tr><td>WER</td><td class="num"><span class="best">12.76</span></td><td class="num">13.14</td><td class="num">13.15</td></tr>
+      <tr><td>Throughput</td><td class="num"><span class="best">55.63 req/s</span></td><td class="num">48.21</td><td class="num">28.15</td></tr>
+      <tr><td>Avg latency</td><td class="num"><span class="best">0.322 s</span></td><td class="num">3.271 s</td><td class="num">0.906 s</td></tr>
+      <tr><td>WER</td><td class="num">13.14</td><td class="num"><span class="best">12.76</span></td><td class="num">13.15</td></tr>
     </tbody>
   </table></div>
-  <div class="callout note"><p><b>Use the transcriptions API.</b> The dedicated <code class="inline">/v1/audio/transcriptions</code> endpoint is 10× lower latency than routing audio through chat completions, at a negligible 0.4-point WER cost. The standard 1K/8K LLM profile doesn't apply to ASR, which is why Whisper sits outside the headline table.</p></div>
-
-  <div class="pagenav">
-    <a href="#qwen"><div class="dir">← Previous</div><div class="pt">Qwen3.5-397B recipe</div></a>
-    <a class="next" href="#ocr"><div class="dir">Next →</div><div class="pt">Chandra-OCR-2 recipe</div></a>
-  </div>
+  <div class="callout"><p>Use <code class="inline">/v1/audio/transcriptions</code>: 10× lower latency than chat completions for a 0.4-point WER cost.</p></div>
+  <div class="pagenav"><a href="#whisper">← Whisper</a><a href="#agentic">Agentic benchmark →</a></div>
 </section>
 
-<!-- ================= OCR ================= -->
+<!-- OCR -->
 <section class="page" id="page-ocr">
-  <div class="eyebrow">Model recipe · vision-language</div>
-  <h2 class="pagetitle">Chandra-OCR-2</h2>
-  <p class="lede">datalab-to/chandra-ocr-2 is a Qwen3.5-based 9B OCR model small enough for a single 96 GB GPU. Benchmarked with a real image workload on GCE (scripts are GCE-style, not GKE).</p>
+  <h1 class="pagetitle">Chandra-OCR-2</h1>
+  <p class="lede">Qwen3.5-based 9B OCR model on a single 96 GB GPU. Image workload, 200 requests at concurrency 96, run on GCE.</p>
+  <div class="meta"><span class="chip">datalab-to/chandra-ocr-2</span><span class="chip"><b>1× GPU</b></span><span class="chip">BF16</span><span class="chip">98% vision input tokens</span></div>
 
-  <div class="nameplate">
-    <div class="cell"><div class="k">Model</div><div class="v">datalab-to/<wbr>chandra-ocr-2</div></div>
-    <div class="cell"><div class="k">Base</div><div class="v">Qwen3.5 · 9B</div></div>
-    <div class="cell"><div class="k">Hardware</div><div class="v">1× RTX PRO 6000</div></div>
-    <div class="cell"><div class="k">Precision</div><div class="v">BF16</div></div>
-    <div class="cell"><div class="k">Backend</div><div class="v">sglang-oai-chat</div></div>
-  </div>
-
-  <h3 id="ocr-results">Results — image benchmark, concurrency 96, 200 requests</h3>
-  <div class="duo">
-    <div class="stat good"><div class="sv">32.47 <em>ms</em></div><div class="sk">Mean TPOT — best in repo</div></div>
-    <div class="stat"><div class="sv">2600.67 <em>tok/s</em></div><div class="sk">Output throughput</div></div>
-    <div class="stat"><div class="sv">5267.08 <em>tok/s</em></div><div class="sk">Total throughput</div></div>
-    <div class="stat"><div class="sv">1.28 <em>req/s</em></div><div class="sk">Request throughput</div></div>
-  </div>
+  <h3 id="ocr-results">Results</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th>Metric</th><th class="num">Value</th></tr></thead>
     <tbody>
-      <tr><td>Total input tokens (vision)</td><td class="num">408,323 of 416,595</td></tr>
-      <tr><td>Total generated tokens</td><td class="num">406,325</td></tr>
-      <tr><td>Peak output throughput</td><td class="num">4,603 tok/s</td></tr>
-      <tr><td>Median TTFT</td><td class="num">454 ms (mean 5.51 s)</td></tr>
-      <tr><td>Median / P99 TPOT</td><td class="num">29.14 / 85.47 ms</td></tr>
-      <tr><td>Mean E2E latency</td><td class="num">60.4 s</td></tr>
-      <tr><td>Benchmark duration</td><td class="num">156.2 s</td></tr>
+      <tr><td>Output / total tok/s</td><td class="num">2600.67 / 5267.08</td></tr>
+      <tr><td>Mean TPOT</td><td class="num"><span class="best">32.47 ms</span> — fastest in the repo</td></tr>
+      <tr><td>Median TTFT</td><td class="num">454 ms</td></tr>
+      <tr><td>Peak output</td><td class="num">4,603 tok/s</td></tr>
     </tbody>
   </table></div>
-  <p>Scripts: <code class="inline">models/datalab2-ocr/single_gpu_rtxpr6k_dtlv2ocr.sh</code> launches the server on a GCE instance; <code class="inline">benchmark_script.sh</code> drives the vision-token workload. Because the input is overwhelmingly vision tokens (98% of input), this benchmark differs from the random-text profile used by the LLM recipes.</p>
-
-  <div class="pagenav">
-    <a href="#whisper"><div class="dir">← Previous</div><div class="pt">Whisper-large-v3 recipe</div></a>
-    <a class="next" href="#agentic"><div class="dir">Next →</div><div class="pt">Agentic benchmark deep dive</div></a>
-  </div>
+  <p>Scripts: <code class="inline">single_gpu_rtxpr6k_dtlv2ocr.sh</code> (server) and <code class="inline">benchmark_script.sh</code> (load). Not directly comparable to the text profile.</p>
+  <div class="pagenav"><a href="#qwen">← Qwen3.5-397B</a><a href="#ocr">Chandra-OCR-2 →</a></div>
 </section>
 
-<!-- ================= AGENTIC ================= -->
+<!-- AGENTIC -->
 <section class="page" id="page-agentic">
-  <div class="eyebrow">Deep dive</div>
-  <h2 class="pagetitle">Agentic benchmark — Kimi-K2.6</h2>
-  <p class="lede">Standard random-token benchmarks miss what agents actually do: long multi-turn sequences with heavily shared prefixes and a long tail of steps. This benchmark replays real Kimi-K2.6 agentic traces against SGLang.</p>
-
-  <h3 id="ag-setup">The workload</h3>
-  <ul class="plain">
-    <li><b>Traffic:</b> replay of real-world agentic traces (long-tail step counts and sequences), temperature 0.6, top_p 0.95, max 4096 tokens per step.</li>
-    <li><b>Why it's hard:</b> long sequences plus a large prompt volume stress KV-cache management; the default benchmark parallelism of 256 overwhelms a single node and causes timeouts, so the single-node run uses parallelism 64 (128 may work but is untested).</li>
-    <li><b>Data:</b> ships as <code class="inline">benchmark_scripts/data.jsonl.zst</code> — decompress with <code class="inline">zstd -d</code> before running.</li>
-  </ul>
-
-  <h3 id="ag-features">SGLang features that made it work</h3>
-  <div class="tblwrap"><table>
-    <thead><tr><th>Feature</th><th>Role</th></tr></thead>
-    <tbody>
-      <tr><td><b>HiCache</b> (hierarchical cache)</td><td>Spills KV cache to host memory (<code class="inline">--hicache-ratio 2.0</code>, <code class="inline">write_through_selective</code>) so multi-turn prefixes survive eviction — the key to the 81% hit rate.</td></tr>
-      <tr><td><b>EAGLE3 speculative decoding</b></td><td>Draft model <code class="inline">lightseekorg/kimi-k2.5-eagle3</code> accelerates decode. Dual-node uses a swept setting of (steps 4, drafts 6) vs (3, 4) on single-node.</td></tr>
-      <tr><td><b>LPM scheduling</b></td><td><code class="inline">--schedule-policy lpm</code> (longest-prefix-match) batches requests to maximize cache reuse.</td></tr>
-      <tr><td><b>SMG router</b></td><td>Routes traffic across the two GCE replicas (<code class="inline">power_of_two</code> policy). Planned replacement: <a href="#gateway">GKE Inference Gateway</a>.</td></tr>
-    </tbody>
-  </table></div>
+  <h1 class="pagetitle">Agentic benchmark — Kimi-K2.6</h1>
+  <p class="lede">Replays real agentic traces (long sequences, shared prefixes, long-tail steps) instead of random tokens. Temperature 0.6, top_p 0.95, 4096 max tokens per step.</p>
 
   <h3 id="ag-results">Results</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th>Metric</th><th class="num">Single-node (GKE, par 64)</th><th class="num">Two-node (GCE, par 256)</th></tr></thead>
+    <thead><tr><th></th><th class="num">Single node (GKE, par 64)</th><th class="num">Two nodes (GCE, par 256)</th></tr></thead>
     <tbody>
-      <tr><td>Requests per second</td><td class="num">0.353</td><td class="num"><span class="best">0.481</span></td></tr>
-      <tr><td>Total tokens per second</td><td class="num">6,550.98</td><td class="num"><span class="best">8,924.50</span></td></tr>
-      <tr><td>Mean latency</td><td class="num"><span class="best">100.19 s</span></td><td class="num">133.92 s</td></tr>
-      <tr><td>P50 latency</td><td class="num"><span class="best">16.13 s</span></td><td class="num">33.96 s</td></tr>
-      <tr><td>P99 latency</td><td class="num"><span class="best">699.50 s</span></td><td class="num">952.79 s</td></tr>
-      <tr><td>Prompt-cache hit rate</td><td class="num"><span class="best">81.19%</span></td><td class="num">0.00%*</td></tr>
+      <tr><td>Requests / s</td><td class="num">0.353</td><td class="num"><span class="best">0.481</span></td></tr>
+      <tr><td>Total tok/s</td><td class="num">6,551</td><td class="num"><span class="best">8,925</span></td></tr>
+      <tr><td>P50 / P99 latency</td><td class="num"><span class="best">16.1 / 699.5 s</span></td><td class="num">34.0 / 952.8 s</td></tr>
+      <tr><td>Prefix-cache hit rate</td><td class="num"><span class="best">81.19%</span></td><td class="num">0%*</td></tr>
     </tbody>
   </table></div>
-  <div class="callout note"><p><b>*The 0% is a reporting artifact.</b> The SMG router doesn't correctly aggregate cache statistics from backend workers, so the dual-node hit rate reads as zero. Single-node per-node throughput is also naturally higher since the two-node figure is spread across both machines.</p></div>
+  <p style="font-size:12.5px;color:var(--soft)">* SMG router doesn't aggregate worker cache stats — reporting artifact, not a real miss rate. Default parallelism 256 overwhelms one node; single-node runs at 64.</p>
 
-  <h3 id="ag-run">Run it yourself</h3>
-  <ol class="steps">
-    <li><b>Deploy the server.</b><p>Single-node GKE: <code class="inline">sglang-debug-hicache.yaml</code> (includes a ConfigMap-mounted patch to <code class="inline">radix_cache.py</code> — create it with <code class="inline">kubectl create configmap radix-cache-patch --from-file=radix_cache.py=…</code>). Dual-node GCE: follow <code class="inline">sglang-2node-hicache-smg.sh</code>.</p></li>
-    <li><b>Decompress the trace data.</b>
-      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>zstd -d benchmark_scripts/data.jsonl.zst</pre></div></li>
-    <li><b>Run the replay.</b>
-      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>python3 benchmark_scripts/agentic_benchmark_sglang_low_load.py \
-    http://&lt;SGLANG_IP&gt;:30000 --parallelism 64</pre></div></li>
-  </ol>
+  <h3 id="ag-features">What makes it work</h3>
+  <ul class="plain">
+    <li><b>HiCache</b> (<code class="inline">ratio 2.0</code>, <code class="inline">write_through_selective</code>) — multi-turn prefixes survive eviction → the 81% hit rate.</li>
+    <li><b>EAGLE3</b> — draft <code class="inline">lightseekorg/kimi-k2.5-eagle3</code>; dual-node swept to steps 4 / drafts 6.</li>
+    <li><b>LPM scheduling</b> — batches by longest prefix match to maximize reuse.</li>
+    <li><b>SMG router</b> — <code class="inline">power_of_two</code> across the two GCE replicas (to be replaced by the <a href="#gateway">Inference Gateway</a>).</li>
+  </ul>
 
-  <h4>Dual-node SMG launch (per node + router)</h4>
-  <div class="codeblock"><div class="chead"><span>sglang-2node-hicache-smg.sh — essentials</span><button class="copybtn">COPY</button></div><pre><span class="c"># On EACH node — identical single-node TP=8 server on :30000</span>
-python3 -m sglang.launch_server \
-  --model-path moonshotai/Kimi-K2.6 --tp 8 \
+  <h3 id="ag-run">Run it</h3>
+  <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">Copy</button></div><pre><span class="c"># 1. server: sglang-debug-hicache.yaml (GKE) or sglang-2node-hicache-smg.sh (GCE)</span>
+<span class="c">#    GKE pod needs the radix_cache.py patch ConfigMap:</span>
+kubectl create configmap radix-cache-patch --from-file=radix_cache.py=./radix_cache.py
+
+<span class="c"># 2. data + replay</span>
+zstd -d benchmark_scripts/data.jsonl.zst
+python3 benchmark_scripts/agentic_benchmark_sglang_low_load.py \
+    http://&lt;SGLANG_IP&gt;:30000 --parallelism 64
+
+<span class="c"># 3. optional live dashboard (KV cache, pods, per-step progress)</span>
+kubectl apply -f k8s-monitor/k8s-manifests.yaml
+kubectl port-forward svc/k8s-monitor 8080:80</pre></div>
+  <div class="codeblock"><div class="chead"><span>dual-node: per-server launch + SMG router</span><button class="copybtn">Copy</button></div><pre><span class="c"># each node, :30000</span>
+python3 -m sglang.launch_server --model-path moonshotai/Kimi-K2.6 --tp 8 \
   --kv-cache-dtype fp8_e4m3 --trust-remote-code \
   --reasoning-parser kimi_k2 --tool-call-parser kimi_k2 \
-  --speculative-algorithm EAGLE3 \
-  --speculative-draft-model-path lightseekorg/kimi-k2.5-eagle3 \
-  --speculative-num-steps <span class="f">4</span> --speculative-num-draft-tokens <span class="f">6</span> \
-  --enable-hierarchical-cache --hicache-ratio 2.0 \
-  --hicache-write-policy write_through_selective \
+  --speculative-algorithm EAGLE3 --speculative-draft-model-path lightseekorg/kimi-k2.5-eagle3 \
+  --speculative-num-steps <span class="f">4</span> --speculative-num-draft-tokens <span class="f">6</span> --speculative-eagle-topk 1 \
+  --enable-hierarchical-cache --hicache-ratio 2.0 --hicache-write-policy write_through_selective \
   --schedule-policy lpm --schedule-conservativeness 0.3 \
-  --chunked-prefill-size 16384 --enable-mixed-chunk \
-  --context-length 131072 --max-running-requests 128 \
-  --mem-fraction-static 0.85 --attention-backend flashinfer \
-  --enable-p2p-check --host 0.0.0.0 --port 30000
+  --chunked-prefill-size 16384 --enable-mixed-chunk --context-length 131072 \
+  --max-running-requests 128 --mem-fraction-static 0.85 \
+  --attention-backend flashinfer --enable-p2p-check --host 0.0.0.0 --port 30000
 
-<span class="c"># Once, on either node — SMG router exposing one endpoint on :8000</span>
-smg launch \
-  --worker-urls http://&lt;NODE1_IP&gt;:30000 http://&lt;NODE2_IP&gt;:30000 \
-  --policy power_of_two \
-  --host 0.0.0.0 --port 8000 \
-  --request-timeout-secs 1800 \
-  --max-concurrent-requests 512</pre></div>
-
-  <h3 id="ag-monitor">Real-time monitoring dashboard</h3>
-  <p>The repo ships a small <code class="inline">k8s-monitor</code> app: live SGLang KV-cache and throughput metrics, GKE workload status with logs, and granular per-step benchmark progress.</p>
-  <div class="codeblock"><div class="chead"><span>deploy the monitor</span><button class="copybtn">COPY</button></div><pre>kubectl apply -f k8s-monitor/k8s-manifests.yaml
-kubectl port-forward svc/k8s-monitor 8080:80
-<span class="c"># open http://localhost:8080</span></pre></div>
-  <div class="callout warn"><p><b>Known issue.</b> HiCache with a Local-SSD or Lustre file backend currently crashes SGLang and is under investigation; the validated setup uses host-memory HiCache (<code class="inline">io-backend kernel</code> on Qwen, default on Kimi).</p></div>
-
-  <div class="pagenav">
-    <a href="#ocr"><div class="dir">← Previous</div><div class="pt">Chandra-OCR-2 recipe</div></a>
-    <a class="next" href="#longcontext"><div class="dir">Next →</div><div class="pt">Long-context benchmarks</div></a>
-  </div>
+<span class="c"># once, either node</span>
+smg launch --worker-urls http://&lt;N1&gt;:30000 http://&lt;N2&gt;:30000 \
+  --policy power_of_two --host 0.0.0.0 --port 8000 \
+  --request-timeout-secs 1800 --max-concurrent-requests 512</pre></div>
+  <div class="callout warn"><p>HiCache with Local-SSD or Lustre file backends currently crashes SGLang — host-memory HiCache is the validated path.</p></div>
+  <div class="pagenav"><a href="#ocr">← Chandra-OCR-2</a><a href="#longcontext">Long context →</a></div>
 </section>
 
-<!-- ================= LONG CONTEXT ================= -->
+<!-- LONG CONTEXT -->
 <section class="page" id="page-longcontext">
-  <div class="eyebrow">Deep dive</div>
-  <h2 class="pagetitle">Long-context benchmarks — Kimi-K2.6 on vLLM</h2>
-  <p class="lede">What happens at 64K-token prompts or 64K-token generations? These runs use vLLM on a single G4 node with a 256K context window, Eagle3 speculation, and decode context parallelism.</p>
+  <h1 class="pagetitle">Long context — Kimi-K2.6 on vLLM</h1>
+  <p class="lede">64K prompts and 64K generations on one node with a 256K window, Eagle3, and decode context parallelism.</p>
+  <div class="meta"><span class="chip">vLLM kimi-k26-mtp stack</span><span class="chip">TP8 + <b>DCP8</b></span><span class="chip">max len 262,144</span><span class="chip">kv fp8 · TRITON_MLA</span><span class="chip">Eagle3 · 3 tok · MLA draft</span></div>
+  <p>Chunked prefill, prefix caching, async scheduling enabled. Manifests under <code class="inline">models/KimiK2.6/longcontext-bench/</code>.</p>
 
-  <h3 id="lc-server">Server configuration</h3>
-  <div class="nameplate">
-    <div class="cell"><div class="k">Engine</div><div class="v">vLLM <small>kimi-k26-mtp stack</small></div></div>
-    <div class="cell"><div class="k">Parallelism</div><div class="v">TP8 <small>+ decode CP 8</small></div></div>
-    <div class="cell"><div class="k">Max length</div><div class="v">262,144 <small>256K</small></div></div>
-    <div class="cell"><div class="k">KV cache</div><div class="v">fp8 <small>TRITON_MLA</small></div></div>
-    <div class="cell"><div class="k">Speculation</div><div class="v">Eagle3 <small>3 tokens · MLA draft</small></div></div>
-  </div>
-  <p>Features: chunked prefill, prefix caching, and async scheduling enabled. Draft model <code class="inline">lightseekorg/kimi-k2.5-eagle3-mla</code>. Image: <code class="inline">voipmonitor/vllm:kimi-k26-mtp-upstream-stack-pcie-env-test-20260424</code>. Server manifests live under <code class="inline">models/KimiK2.6/longcontext-bench/</code>.</p>
+  <h3 id="lc-6488">64K → 8K</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th class="num">Concurrency</th><th class="num">Input tok/s</th><th class="num">Output tok/s</th><th class="num">Total tok/s</th><th class="num">Mean E2E</th></tr></thead>
+    <tbody><tr><td class="num">80</td><td class="num"><span class="best">3019.04</span></td><td class="num">361.75</td><td class="num"><span class="best">3380.79</span></td><td class="num">817.6 s</td></tr></tbody>
+  </table></div>
 
-  <h3 id="lc-6488">64K in → 8K out (RAG / document analysis shape)</h3>
+  <h3 id="lc-8864">8K → 64K</h3>
   <div class="tblwrap"><table>
     <thead><tr><th class="num">Concurrency</th><th class="num">Input tok/s</th><th class="num">Output tok/s</th><th class="num">Total tok/s</th><th class="num">Mean E2E</th></tr></thead>
     <tbody>
-      <tr><td class="num">80</td><td class="num"><span class="best">3019.04</span></td><td class="num">361.75</td><td class="num"><span class="best">3380.79</span></td><td class="num">817.6 s</td></tr>
+      <tr><td class="num">64</td><td class="num">95.66</td><td class="num">813.76</td><td class="num">909.42</td><td class="num"><span class="best">2162 s</span></td></tr>
+      <tr><td class="num">80</td><td class="num">111.79</td><td class="num">821.06</td><td class="num">932.85</td><td class="num">2707 s</td></tr>
+      <tr><td class="num">128</td><td class="num">108.68</td><td class="num"><span class="best">830.50</span></td><td class="num"><span class="best">939.19</span></td><td class="num">4311 s</td></tr>
     </tbody>
   </table></div>
-
-  <h3 id="lc-8864">8K in → 64K out (long-generation shape)</h3>
-  <div class="tblwrap"><table>
-    <thead><tr><th class="num">Concurrency</th><th class="num">Input tok/s</th><th class="num">Output tok/s</th><th class="num">Total tok/s</th><th class="num">Mean E2E</th></tr></thead>
-    <tbody>
-      <tr><td class="num">64</td><td class="num">95.66</td><td class="num">813.76</td><td class="num">909.42</td><td class="num"><span class="best">2162.4 s</span></td></tr>
-      <tr><td class="num">80</td><td class="num">111.79</td><td class="num">821.06</td><td class="num">932.85</td><td class="num">2707.0 s</td></tr>
-      <tr><td class="num">128</td><td class="num">108.68</td><td class="num"><span class="best">830.50</span></td><td class="num"><span class="best">939.19</span></td><td class="num">4311.0 s</td></tr>
-    </tbody>
-  </table></div>
-  <div class="callout note"><p><b>Diminishing returns past 64 concurrent.</b> Going 64 → 128 concurrency buys only ~2% more output throughput while doubling mean E2E latency (36 min → 72 min per request). At the 128-concurrency point, median TPOT is still a healthy 80 ms — the cost is entirely queueing, with median TTFT reaching ~32 minutes. Run long-generation workloads at the lowest concurrency that saturates the GPUs.</p></div>
-  <p>An SGLang single-node comparison for the 8K→64K @80c case is also recorded in <code class="inline">8k-64k/results/sglang-1node-benchmark-resuls-8k-64k-80c.md</code>, with server config <code class="inline">sglang-1node-kimik26-server-8k-64k.yaml</code>.</p>
-
-  <div class="pagenav">
-    <a href="#agentic"><div class="dir">← Previous</div><div class="pt">Agentic benchmark</div></a>
-    <a class="next" href="#gateway"><div class="dir">Next →</div><div class="pt">GKE Inference Gateway</div></a>
-  </div>
+  <div class="callout"><p>64 → 128 concurrency buys ~2% throughput while doubling E2E latency — pure queueing (median TPOT stays at 80 ms). Run long-generation work at the lowest concurrency that saturates the GPUs.</p></div>
+  <p style="font-size:13px;color:var(--soft)">An SGLang single-node comparison for 8K→64K @ 80c is in <code class="inline">8k-64k/results/sglang-1node-benchmark-resuls-8k-64k-80c.md</code>.</p>
+  <div class="pagenav"><a href="#agentic">← Agentic benchmark</a><a href="#gateway">Inference Gateway →</a></div>
 </section>
 
-<!-- ================= GATEWAY ================= -->
+<!-- GATEWAY -->
 <section class="page" id="page-gateway">
-  <div class="eyebrow">Deep dive</div>
-  <h2 class="pagetitle">GKE Inference Gateway — prefix-cache-aware routing</h2>
-  <p class="lede">Multiple SGLang replicas only pay off if requests sharing a prompt prefix land on the replica that already has that prefix cached. GKE Inference Gateway's Endpoint Picker makes routing precise — maximizing KV-cache reuse and cutting TTFT.</p>
+  <h1 class="pagetitle">GKE Inference Gateway</h1>
+  <p class="lede">Prefix-cache-aware routing: requests sharing a prompt prefix land on the replica that already holds it in KV cache — maximizing reuse, minimizing TTFT. Shipped for both SGLang and vLLM backends.</p>
 
-
-  <h3 id="gw-flow">Request flow — prefix-aware routing across two G4 nodes</h3>
-  <div style="border:1.5px solid var(--spruce);border-radius:12px;background:var(--panel);padding:14px 10px;margin:18px 0 14px;overflow-x:auto">
+<div class="fig">
   <svg viewBox="0 0 880 540" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GKE Inference Gateway flow across two nodes" style="min-width:680px;width:100%;font-family:'IBM Plex Mono',monospace">
     <defs>
-      <marker id="arrG" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0F8A5F"/></marker>
+      <marker id="arrG" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#3B82F6"/></marker>
       <marker id="arrA" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#C07A1C"/></marker>
       <marker id="arrB" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#23527C"/></marker>
     </defs>
 
     <!-- client -->
-    <rect x="330" y="14" width="220" height="58" rx="9" fill="#FFFFFF" stroke="#0D1F18" stroke-width="1.5"/>
-    <text x="440" y="38" font-size="12" font-weight="600" text-anchor="middle" fill="#0D1F18" font-family="Space Grotesk,sans-serif">Client pod</text>
-    <text x="440" y="56" font-size="9.5" text-anchor="middle" fill="#56635D">vllm-chat-app.yaml · openai SDK · tests/</text>
+    <rect x="330" y="14" width="220" height="58" rx="9" fill="#FFFFFF" stroke="#1F2937" stroke-width="1.5"/>
+    <text x="440" y="38" font-size="12" font-weight="600" text-anchor="middle" fill="#1F2937" font-family="Space Grotesk,sans-serif">Client pod</text>
+    <text x="440" y="56" font-size="9.5" text-anchor="middle" fill="#6B7280">vllm-chat-app.yaml · openai SDK · tests/</text>
 
-    <line x1="440" y1="72" x2="440" y2="104" stroke="#0F8A5F" stroke-width="2" marker-end="url(#arrG)"/>
-    <text x="452" y="93" font-size="9" fill="#0B6B4A">HTTP :80 → Gateway IP</text>
+    <line x1="440" y1="72" x2="440" y2="104" stroke="#3B82F6" stroke-width="2" marker-end="url(#arrG)"/>
+    <text x="452" y="93" font-size="9" fill="#1E40AF">HTTP :80 → Gateway IP</text>
 
     <!-- gateway -->
-    <rect x="270" y="106" width="340" height="64" rx="9" fill="#E8F4EE" stroke="#0F8A5F" stroke-width="1.5"/>
-    <text x="440" y="130" font-size="12" font-weight="600" text-anchor="middle" fill="#0B6B4A" font-family="Space Grotesk,sans-serif">GKE Inference Gateway (gke-l7-rilb)</text>
-    <text x="440" y="147" font-size="9.5" text-anchor="middle" fill="#3C5448">gateway.yaml — internal regional L7 LB</text>
-    <text x="440" y="161" font-size="9.5" text-anchor="middle" fill="#3C5448">httproute.yaml → InferencePool</text>
+    <rect x="270" y="106" width="340" height="64" rx="9" fill="#EFF4FF" stroke="#3B82F6" stroke-width="1.5"/>
+    <text x="440" y="130" font-size="12" font-weight="600" text-anchor="middle" fill="#1E40AF" font-family="Space Grotesk,sans-serif">GKE Inference Gateway (gke-l7-rilb)</text>
+    <text x="440" y="147" font-size="9.5" text-anchor="middle" fill="#475569">gateway.yaml — internal regional L7 LB</text>
+    <text x="440" y="161" font-size="9.5" text-anchor="middle" fill="#475569">httproute.yaml → InferencePool</text>
 
-    <line x1="440" y1="170" x2="440" y2="202" stroke="#0F8A5F" stroke-width="2" marker-end="url(#arrG)"/>
-    <text x="452" y="191" font-size="9" fill="#0B6B4A">ext-proc consult</text>
+    <line x1="440" y1="170" x2="440" y2="202" stroke="#3B82F6" stroke-width="2" marker-end="url(#arrG)"/>
+    <text x="452" y="191" font-size="9" fill="#1E40AF">ext-proc consult</text>
 
     <!-- EPP -->
-    <rect x="240" y="204" width="400" height="84" rx="9" fill="#0D1F18"/>
-    <text x="440" y="228" font-size="12" font-weight="600" text-anchor="middle" fill="#7FD8AE" font-family="Space Grotesk,sans-serif">Endpoint Picker (EPP)</text>
-    <text x="440" y="245" font-size="9.5" text-anchor="middle" fill="#D7E6DD">helm: inferencepool chart · precise prefix-cache-aware scheduler</text>
-    <text x="440" y="260" font-size="9.5" text-anchor="middle" fill="#85A294">epp-values.yaml · inference-objective.yaml (priority)</text>
-    <text x="440" y="275" font-size="9.5" text-anchor="middle" fill="#85A294">scrapes replica metrics → tracks per-pod KV-cache state</text>
+    <rect x="240" y="204" width="400" height="84" rx="9" fill="#1F2937"/>
+    <text x="440" y="228" font-size="12" font-weight="600" text-anchor="middle" fill="#93C5FD" font-family="Space Grotesk,sans-serif">Endpoint Picker (EPP)</text>
+    <text x="440" y="245" font-size="9.5" text-anchor="middle" fill="#E5E7EB">helm: inferencepool chart · precise prefix-cache-aware scheduler</text>
+    <text x="440" y="260" font-size="9.5" text-anchor="middle" fill="#9CA3AF">epp-values.yaml · inference-objective.yaml (priority)</text>
+    <text x="440" y="275" font-size="9.5" text-anchor="middle" fill="#9CA3AF">scrapes replica metrics → tracks per-pod KV-cache state</text>
 
     <!-- routing arrows -->
     <path d="M 330 288 C 280 320 230 330 210 352" stroke="#C07A1C" stroke-width="2.5" fill="none" marker-end="url(#arrA)"/>
@@ -1316,11 +793,11 @@ kubectl port-forward svc/k8s-monitor 8080:80
     <!-- node A -->
     <rect x="40" y="356" width="380" height="128" rx="10" fill="#FFFFFF" stroke="#C07A1C" stroke-width="1.5"/>
     <text x="58" y="380" font-size="11.5" font-weight="600" fill="#7A4E10" font-family="Space Grotesk,sans-serif">G4 node A — replica-0</text>
-    <rect x="58" y="392" width="200" height="76" rx="7" fill="#0E1A15"/>
-    <text x="158" y="414" font-size="10.5" font-weight="600" text-anchor="middle" fill="#7FD8AE">Model server :30000</text>
-    <text x="158" y="430" font-size="9" text-anchor="middle" fill="#D7E6DD">SGLang dev-cu13 · or · vLLM v0.19.1</text>
-    <text x="158" y="444" font-size="9" text-anchor="middle" fill="#85A294">TP=8 · Kimi-K2.6 · GCS Fuse weights</text>
-    <text x="158" y="458" font-size="9" text-anchor="middle" fill="#85A294">hostNetwork → anti-affinity per node</text>
+    <rect x="58" y="392" width="200" height="76" rx="7" fill="#111827"/>
+    <text x="158" y="414" font-size="10.5" font-weight="600" text-anchor="middle" fill="#93C5FD">Model server :30000</text>
+    <text x="158" y="430" font-size="9" text-anchor="middle" fill="#E5E7EB">SGLang dev-cu13 · or · vLLM v0.19.1</text>
+    <text x="158" y="444" font-size="9" text-anchor="middle" fill="#9CA3AF">TP=8 · Kimi-K2.6 · GCS Fuse weights</text>
+    <text x="158" y="458" font-size="9" text-anchor="middle" fill="#9CA3AF">hostNetwork → anti-affinity per node</text>
     <rect x="272" y="392" width="132" height="76" rx="7" fill="#FBF2E2" stroke="#E3C98F"/>
     <text x="338" y="418" font-size="10" font-weight="600" text-anchor="middle" fill="#7A4E10">KV cache</text>
     <text x="338" y="434" font-size="9" text-anchor="middle" fill="#7A4E10">prefix A resident</text>
@@ -1329,284 +806,180 @@ kubectl port-forward svc/k8s-monitor 8080:80
     <!-- node B -->
     <rect x="460" y="356" width="380" height="128" rx="10" fill="#FFFFFF" stroke="#23527C" stroke-width="1.5"/>
     <text x="478" y="380" font-size="11.5" font-weight="600" fill="#23527C" font-family="Space Grotesk,sans-serif">G4 node B — replica-1</text>
-    <rect x="478" y="392" width="200" height="76" rx="7" fill="#0E1A15"/>
-    <text x="578" y="414" font-size="10.5" font-weight="600" text-anchor="middle" fill="#7FD8AE">Model server :30000</text>
-    <text x="578" y="430" font-size="9" text-anchor="middle" fill="#D7E6DD">SGLang dev-cu13 · or · vLLM v0.19.1</text>
-    <text x="578" y="444" font-size="9" text-anchor="middle" fill="#85A294">TP=8 · Kimi-K2.6 · GCS Fuse weights</text>
-    <text x="578" y="458" font-size="9" text-anchor="middle" fill="#85A294">hostNetwork → anti-affinity per node</text>
+    <rect x="478" y="392" width="200" height="76" rx="7" fill="#111827"/>
+    <text x="578" y="414" font-size="10.5" font-weight="600" text-anchor="middle" fill="#93C5FD">Model server :30000</text>
+    <text x="578" y="430" font-size="9" text-anchor="middle" fill="#E5E7EB">SGLang dev-cu13 · or · vLLM v0.19.1</text>
+    <text x="578" y="444" font-size="9" text-anchor="middle" fill="#9CA3AF">TP=8 · Kimi-K2.6 · GCS Fuse weights</text>
+    <text x="578" y="458" font-size="9" text-anchor="middle" fill="#9CA3AF">hostNetwork → anti-affinity per node</text>
     <rect x="692" y="392" width="132" height="76" rx="7" fill="#E7F0FA" stroke="#A9C4DC"/>
     <text x="758" y="418" font-size="10" font-weight="600" text-anchor="middle" fill="#23527C">KV cache</text>
     <text x="758" y="434" font-size="9" text-anchor="middle" fill="#23527C">prefix B resident</text>
     <text x="758" y="449" font-size="9" text-anchor="middle" fill="#23527C">→ warm TTFT</text>
 
     <!-- metrics back-edges -->
-    <path d="M 230 392 C 250 330 290 305 320 290" stroke="#85A294" stroke-width="1.5" fill="none" stroke-dasharray="4 4"/>
-    <path d="M 650 392 C 630 330 590 305 560 290" stroke="#85A294" stroke-width="1.5" fill="none" stroke-dasharray="4 4"/>
-    <text x="440" y="346" font-size="9" fill="#56635D" text-anchor="middle">⌁ PodMonitoring metrics (cache state, load) feed back to EPP scheduling</text>
+    <path d="M 230 392 C 250 330 290 305 320 290" stroke="#9CA3AF" stroke-width="1.5" fill="none" stroke-dasharray="4 4"/>
+    <path d="M 650 392 C 630 330 590 305 560 290" stroke="#9CA3AF" stroke-width="1.5" fill="none" stroke-dasharray="4 4"/>
+    <text x="440" y="346" font-size="9" fill="#6B7280" text-anchor="middle">⌁ PodMonitoring metrics (cache state, load) feed back to EPP scheduling</text>
 
     <!-- caption -->
-    <text x="440" y="516" font-size="10" fill="#56635D" text-anchor="middle">Same-prefix requests always land on the replica that already holds that prefix in KV cache — maximizing reuse, minimizing TTFT.</text>
+    <text x="440" y="516" font-size="10" fill="#6B7280" text-anchor="middle">Same-prefix requests always land on the replica that already holds that prefix in KV cache — maximizing reuse, minimizing TTFT.</text>
   </svg>
   </div>
+  <div class="figcap">Request flow across two G4 nodes (replica StatefulSet, 2 replicas, anti-affinity).</div>
 
-  <h3 id="gw-backends">Backend variants: SGLang vs vLLM</h3>
-  <p>The repo ships the full gateway stack twice under <code class="inline">models/KimiK2.6/gke-inference-gateway/</code> — once per serving engine. The routing layer is identical; the differences are in the model-server manifests:</p>
-  <div class="tblwrap"><table>
-    <thead><tr><th></th><th>SGLang variant (<code class="inline">sglang/</code>)</th><th>vLLM variant (<code class="inline">vllm/</code>)</th></tr></thead>
-    <tbody>
-      <tr><td><b>Server image</b></td><td><code class="inline">lmsysorg/sglang:dev-cu13</code></td><td><code class="inline">vllm/vllm-openai:v0.19.1-x86_64-cu130</code></td></tr>
-      <tr><td><b>Replica manifest</b></td><td><code class="inline">kimi-k2.6/sglang-kimik2.6-1node.yaml</code> — StatefulSet, 2 replicas, TP=8, port 30000, <code class="inline">--enable-cache-report</code> so EPP sees cache state</td><td><code class="inline">kimik2.6/vllm-kimi-g4.yaml</code> — StatefulSet, 2 replicas, TP=8, port 30000, anti-affinity forces replicas onto separate physical nodes (hostNetwork port collision)</td></tr>
-      <tr><td><b>Extra pieces</b></td><td>—</td><td><code class="inline">tokenizer-patch-configmap.yaml</code> — hotfix ConfigMap for Kimi's custom tokenizer</td></tr>
-      <tr><td><b>EPP install</b></td><td>Helm chart <code class="inline">v1.5.0</code>; <code class="inline">epp-values.yaml</code> declares <code class="inline">modelServerType: vllm</code> to skip deprecated flag injection while EPP auto-detects SGLang pods via labels</td><td>Helm chart with vLLM-native detection; CRDs from inference-extension <code class="inline">v1.4.0</code> if not preinstalled</td></tr>
-      <tr><td><b>Test suite</b></td><td>7 tests (adds high/extreme/massive stress: 50/100/200 concurrent)</td><td>4 tests (functional, 20-concurrent, multi-prefix, unbalanced)</td></tr>
-      <tr><td><b>Monitoring</b></td><td><code class="inline">sglang-kimi-podmonitoring.yaml</code></td><td><code class="inline">vllm-kimi-podmonitoring.yaml</code></td></tr>
-    </tbody>
-  </table></div>
-
-  <h3 id="gw-arch">Components</h3>
-  <div class="tblwrap"><table>
-    <thead><tr><th>Resource</th><th>Purpose</th></tr></thead>
-    <tbody>
-      <tr><td><code class="inline">gateway.yaml</code></td><td>Gateway using <code class="inline">gke-l7-rilb</code> (internal regional L7 load balancer).</td></tr>
-      <tr><td><code class="inline">httproute.yaml</code></td><td>Binds traffic from the Gateway to the InferencePool.</td></tr>
-      <tr><td><code class="inline">epp-values.yaml</code></td><td>Helm values for the Endpoint Picker (EPP) — the prefix-aware scheduler.</td></tr>
-      <tr><td><code class="inline">inference-objective.yaml</code></td><td>InferenceObjective for routing priority.</td></tr>
-      <tr><td><code class="inline">kimi-k2.6/sglang-kimik2.6-1node.yaml</code></td><td>SGLang replica StatefulSet (2 replicas) + PodMonitoring.</td></tr>
-      <tr><td><code class="inline">vllm-chat-app.yaml</code></td><td>Lightweight CLI chat client pod used to run the tests.</td></tr>
-    </tbody>
-  </table></div>
-  <p>Prerequisites: GKE 1.34+ (native InferencePool support), the <code class="inline">hf-secret</code>, model weights in a GCS bucket, and the InferenceExtension CRDs if not preinstalled. Variants exist for both <b>SGLang</b> and <b>vLLM</b> backends under <code class="inline">models/KimiK2.6/gke-inference-gateway/</code>.</p>
-
-  <h3 id="gw-setup">Setup sequence</h3>
+  <h3 id="gw-setup">Setup</h3>
   <ol class="steps">
-    <li><b>Enable Gateway API on the cluster.</b>
-      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>gcloud container clusters update &lt;CLUSTER&gt; \
-  --gateway-api=standard --zone=&lt;ZONE&gt; --project=&lt;PROJECT&gt;</pre></div></li>
-    <li><b>Create a proxy-only subnet</b> (required by <code class="inline">gke-l7-rilb</code> internal load balancing).
-      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>gcloud compute networks subnets create &lt;NAME&gt;-proxy-only-subnet \
+    <li><b>Gateway API + networking.</b>
+      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">Copy</button></div><pre>gcloud container clusters update &lt;CLUSTER&gt; --gateway-api=standard --zone=&lt;ZONE&gt;
+<span class="c"># gke-l7-rilb needs a proxy-only subnet</span>
+gcloud compute networks subnets create &lt;NAME&gt;-proxy-only \
   --purpose=REGIONAL_MANAGED_PROXY --role=ACTIVE \
-  --region=&lt;REGION&gt; --network=&lt;VPC&gt; \
-  --range=10.129.0.0/23 --project=&lt;PROJECT&gt;</pre></div></li>
-    <li><b>Wire up GCS access.</b><p>Enable Workload Identity and the GCS Fuse CSI driver, then grant <code class="inline">roles/storage.objectViewer</code> on the weights bucket to both the Kubernetes service account (via Workload Identity) and the default compute service account.</p>
-      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>gcloud container clusters update &lt;CLUSTER&gt; \
-  --workload-pool=&lt;PROJECT&gt;.svc.id.goog --zone=&lt;ZONE&gt;
-gcloud container clusters update &lt;CLUSTER&gt; \
-  --update-addons=GcsFuseCsiDriver=ENABLED --zone=&lt;ZONE&gt;
-gcloud storage buckets add-iam-policy-binding gs://&lt;WEIGHTS_BUCKET&gt; \
-  --member=serviceAccount:&lt;PROJECT&gt;.svc.id.goog[default/sglang-sa] \
-  --role=roles/storage.objectViewer</pre></div></li>
-    <li><b>Deploy the SGLang replicas + monitoring.</b>
-      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>kubectl apply -f kimi-k2.6/sglang-kimik2.6-1node.yaml
-kubectl apply -f kimi-k2.6/sglang-kimi-podmonitoring.yaml</pre></div></li>
-    <li><b>Install the Endpoint Picker via Helm.</b>
-      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>helm install precise-prefix-cache-routing \
+  --region=&lt;REGION&gt; --network=&lt;VPC&gt; --range=10.129.0.0/23</pre></div></li>
+    <li><b>GCS weights access.</b> Enable Workload Identity + GCS Fuse CSI driver; grant <code class="inline">roles/storage.objectViewer</code> on the bucket to the <code class="inline">sglang-sa</code> Workload Identity and the default compute SA.</li>
+    <li><b>Deploy replicas + EPP + routing.</b>
+      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">Copy</button></div><pre>kubectl apply -f kimi-k2.6/sglang-kimik2.6-1node.yaml
+kubectl apply -f kimi-k2.6/sglang-kimi-podmonitoring.yaml
+
+helm install precise-prefix-cache-routing \
   oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool \
-  --version v1.5.0 \
-  -f inference-gateway/epp-values.yaml -n default</pre></div>
-      <p>No <code class="inline">kubectl patch</code> needed anymore: <code class="inline">epp-values.yaml</code> declares <code class="inline">modelServerType: vllm</code> to bypass deprecated flag injection while EPP still auto-detects SGLang pods via labels, and tunes the scraping interval to prevent timeouts.</p></li>
-    <li><b>Apply Gateway, HTTPRoute, and InferenceObjective.</b>
-      <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>kubectl apply -f inference-gateway/gateway.yaml
+  --version v1.5.0 -f inference-gateway/epp-values.yaml -n default
+
+kubectl apply -f inference-gateway/gateway.yaml
 kubectl apply -f inference-gateway/httproute.yaml
 kubectl apply -f inference-gateway/inference-objective.yaml
-kubectl get gateway kimi-inference-gateway   <span class="c"># wait for an IP</span></pre></div></li>
-    <li><b>Deploy the client and point it at the Gateway IP</b> (<code class="inline">VLLM_API_URL</code> in <code class="inline">vllm-chat-app.yaml</code>), then <code class="inline">kubectl apply</code> it.</li>
+kubectl get gateway kimi-inference-gateway   <span class="c"># wait for IP</span></pre></div></li>
+    <li><b>Client.</b> Set <code class="inline">VLLM_API_URL</code> in <code class="inline">vllm-chat-app.yaml</code> to the Gateway IP and apply.</li>
   </ol>
 
-  <h3 id="gw-tests">Verification test suite</h3>
-  <p>Copy the tests into the client pod (<code class="inline">kubectl cp inference-gateway/tests/ vllm-chat-app-pod:/app/</code>) and run them with <code class="inline">kubectl exec</code>:</p>
+  <h3 id="gw-backends">SGLang vs vLLM variants</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th>Test</th><th>What it proves</th></tr></thead>
+    <thead><tr><th></th><th>sglang/</th><th>vllm/</th></tr></thead>
     <tbody>
-      <tr><td><code class="inline">prefix_cache_benchmark.py</code></td><td>Sequential functional test: repeated prefixes get cache hits.</td></tr>
-      <tr><td><code class="inline">prefix_cache_concurrency_test.py</code></td><td>20 concurrent same-prefix requests all converge on one replica.</td></tr>
-      <tr><td><code class="inline">prefix_specific_test.py</code></td><td>Two distinct prefixes route to their own targeted replicas.</td></tr>
-      <tr><td><code class="inline">prefix_unbalanced_test.py</code></td><td>Unbalanced load (10 vs 20 requests) across two prefixes.</td></tr>
-      <tr><td><code class="inline">high / extreme / massive_stress_test.py</code></td><td>50 / 100 / 200 concurrent requests under routing pressure.</td></tr>
+      <tr><td>Image</td><td><code class="inline">lmsysorg/sglang:dev-cu13</code></td><td><code class="inline">vllm/vllm-openai:v0.19.1</code></td></tr>
+      <tr><td>Replicas</td><td>StatefulSet ×2, TP8, :30000, <code class="inline">--enable-cache-report</code></td><td>StatefulSet ×2, TP8, :30000, anti-affinity (hostNetwork ports)</td></tr>
+      <tr><td>Extras</td><td>—</td><td><code class="inline">tokenizer-patch-configmap.yaml</code> (Kimi tokenizer hotfix)</td></tr>
+      <tr><td>EPP</td><td>chart v1.5.0; <code class="inline">modelServerType: vllm</code> bypasses deprecated flags, EPP auto-detects SGLang via labels</td><td>vLLM-native; CRDs from inference-extension v1.4.0</td></tr>
+      <tr><td>Tests</td><td>7 (adds 50/100/200-concurrent stress)</td><td>4 (functional, 20c, multi-prefix, unbalanced)</td></tr>
     </tbody>
   </table></div>
-  <p>To watch routing live, tail each replica's logs while filtering health-check noise:</p>
-  <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">COPY</button></div><pre>kubectl logs &lt;SGLANG_POD&gt; -c sglang-container -f | grep -v -E "/metrics|/health"</pre></div>
 
-  <div class="pagenav">
-    <a href="#longcontext"><div class="dir">← Previous</div><div class="pt">Long-context benchmarks</div></a>
-    <a class="next" href="#network"><div class="dir">Next →</div><div class="pt">Network &amp; NCCL bench</div></a>
-  </div>
+  <h3 id="gw-tests">Verify routing</h3>
+  <div class="codeblock"><div class="chead"><span>shell</span><button class="copybtn">Copy</button></div><pre>kubectl cp inference-gateway/tests/ vllm-chat-app-pod:/app/
+kubectl exec -it vllm-chat-app-pod -- python3 /app/tests/prefix_cache_benchmark.py
+kubectl exec -it vllm-chat-app-pod -- python3 /app/tests/prefix_specific_test.py
+<span class="c"># watch which replica receives each prefix</span>
+kubectl logs &lt;SGLANG_POD&gt; -c sglang-container -f | grep -v -E "/metrics|/health"</pre></div>
+  <div class="pagenav"><a href="#longcontext">← Long context</a><a href="#network">Network &amp; NCCL →</a></div>
 </section>
 
-<!-- ================= NETWORK ================= -->
+<!-- NETWORK -->
 <section class="page" id="page-network">
-  <div class="eyebrow">Deep dive</div>
-  <h2 class="pagetitle">Network &amp; NCCL benchmarks</h2>
-  <p class="lede">G4 nodes carry two 200 Gbps Diorite SmartNICs. The DRANET API plane with an 8896-MTU VPC exposes both to pods natively — and these benchmarks prove you can actually use the aggregate bandwidth.</p>
+  <h1 class="pagetitle">Network &amp; NCCL</h1>
+  <p class="lede">G4 nodes carry two 200 Gbps Diorite SmartNICs. DRANET (8896-MTU VPC + Dynamic Resource Allocation) exposes both to pods — and the benchmarks confirm the aggregate bandwidth is real.</p>
+  <div class="meta"><span class="chip">iperf3 <b>190/190 Gbps</b> duplex</span><span class="chip">NCCL <b>37.9 GB/s</b> ≈ 303 Gbps</span></div>
 
-  <h3 id="nw-headline">Headline numbers</h3>
-  <div class="duo">
-    <div class="stat"><div class="sv">190 <em>Gbps</em></div><div class="sk">iperf3 TX and RX, full duplex (single NIC)</div></div>
-    <div class="stat good"><div class="sv">37.9 <em>GB/s</em></div><div class="sk">NCCL AllReduce AlgBW · ≈303 Gbps · dual NIC</div></div>
-  </div>
-
-  <h3 id="nw-setup">DRANET infrastructure</h3>
-  <p>Three pieces: a dedicated 8896-MTU VPC with isolated payload subnets, a Dataplane-V2 GKE cluster whose G4 node pool attaches both extra networks with the DRA networking driver label, and a Kubernetes <code class="inline">ResourceClaimTemplate</code> that lets pods claim the NIC devices.</p>
-  <div class="codeblock"><div class="chead"><span>VPC + subnets (01_setup_network.sh essence)</span><button class="copybtn">COPY</button></div><pre>gcloud compute networks create dranet-vpc --subnet-mode=custom --mtu=<span class="f">8896</span>
+  <h3 id="nw-setup">DRANET setup</h3>
+  <div class="codeblock"><div class="chead"><span>01_setup_network.sh · 02_create_cluster.sh · 03_deploy_dra.yaml (essence)</span><button class="copybtn">Copy</button></div><pre>gcloud compute networks create dranet-vpc --subnet-mode=custom --mtu=<span class="f">8896</span>
 gcloud compute networks subnets create sub0 --network=dranet-vpc --range=10.10.0.0/16 --region=us-central1
 gcloud compute networks subnets create sub1 --network=dranet-vpc --range=10.20.0.0/16 --region=us-central1
 gcloud compute networks subnets create sub2 --network=dranet-vpc --range=10.30.0.0/16 --region=us-central1
-gcloud compute firewall-rules create allow-dranet-internal \
-    --network=dranet-vpc --allow=tcp,udp,icmp --source-ranges=10.0.0.0/8</pre></div>
-  <div class="codeblock"><div class="chead"><span>cluster + DRANET node pool (02_create_cluster.sh essence)</span><button class="copybtn">COPY</button></div><pre>gcloud container clusters create dranet-cluster \
-    --network=dranet-vpc --subnetwork=sub0 \
-    --enable-ip-alias --enable-dataplane-v2 \
-    --zone=us-central1-b --num-nodes=1 --machine-type=e2-standard-4
 
-gcloud container node-pools create g4-dranet-pool \
-    --cluster=dranet-cluster --machine-type=<span class="f">g4-standard-384</span> \
-    --accelerator type=nvidia-rtx-pro-6000,count=8 \
-    --enable-gvnic --num-nodes=2 --zone=us-central1-b \
-    --node-labels=cloud.google.com/gke-networking-dra-driver=true \
-    --additional-node-network network=dranet-vpc,subnetwork=sub1 \
-    --additional-node-network network=dranet-vpc,subnetwork=sub2</pre></div>
-  <div class="codeblock"><div class="chead"><span>03_deploy_dra.yaml — claim both NICs per pod</span><button class="copybtn">COPY</button></div><pre>apiVersion: resource.k8s.io/v1
+gcloud container clusters create dranet-cluster --network=dranet-vpc --subnetwork=sub0 \
+  --enable-ip-alias --enable-dataplane-v2 --zone=us-central1-b --num-nodes=1
+
+gcloud container node-pools create g4-pool --cluster=dranet-cluster \
+  --machine-type=g4-standard-384 --accelerator type=nvidia-rtx-pro-6000,count=8 \
+  --enable-gvnic --num-nodes=2 --zone=us-central1-b \
+  --node-labels=cloud.google.com/gke-networking-dra-driver=true \
+  --additional-node-network network=dranet-vpc,subnetwork=sub1 \
+  --additional-node-network network=dranet-vpc,subnetwork=sub2
+
+<span class="c"># pods claim both NICs via DRA</span>
+apiVersion: resource.k8s.io/v1
 kind: ResourceClaimTemplate
-metadata:
-  name: netdev-claim-template
 spec:
   spec:
     devices:
       requests:
       - name: netdev-request
-        exactly:
-          deviceClassName: <span class="f">netdev.google.com</span>
-          allocationMode: ExactCount
-          count: <span class="f">2</span></pre></div>
+        exactly: { deviceClassName: <span class="f">netdev.google.com</span>, allocationMode: ExactCount, count: <span class="f">2</span> }</pre></div>
+  <div class="codeblock"><div class="chead"><span>run</span><button class="copybtn">Copy</button></div><pre>kubectl apply -f 03_deploy_dra.yaml
+kubectl apply -f 04_iperf_dranet.yaml && ./run_iperf_10x.sh          <span class="c"># iperf3 ×10</span>
+kubectl apply -f chiv01-nccl-bench.yaml && ./run_bench_10x.sh        <span class="c"># NCCL dual-NIC ×10</span></pre></div>
 
-  <h3 id="nw-run">Running the benchmarks</h3>
-  <ol class="steps">
-    <li><b>Provision.</b> <code class="inline">./01_setup_network.sh && ./02_create_cluster.sh</code> — both idempotent.</li>
-    <li><b>Deploy the DRA template.</b> <code class="inline">kubectl apply -f 03_deploy_dra.yaml</code></li>
-    <li><b>iperf3:</b> <code class="inline">kubectl apply -f 04_iperf_dranet.yaml</code> then <code class="inline">./run_iperf_10x.sh</code> for 10 logged bidirectional runs.</li>
-    <li><b>NCCL multi-NIC:</b> apply <code class="inline">chiv01-nccl-bench.yaml</code> (the dual-NIC "golden" deployment), then <code class="inline">./run_bench_10x.sh</code>, or run ranks manually:
-      <div class="codeblock"><div class="chead"><span>manual ranks</span><button class="copybtn">COPY</button></div><pre>kubectl exec &lt;POD_RANK_0&gt; -- bash -c \
-  "MASTER_ADDR=&lt;MASTER_IP&gt; MASTER_PORT=29500 WORLD_SIZE=2 RANK=0 python3 /root/dist_test.py"
-kubectl exec &lt;POD_RANK_1&gt; -- bash -c \
-  "MASTER_ADDR=&lt;MASTER_IP&gt; MASTER_PORT=29500 WORLD_SIZE=2 RANK=1 python3 /root/dist_test.py"</pre></div></li>
-  </ol>
-
-  <h3 id="nw-results">Measured results</h3>
-  <h4>iperf3 bidirectional, 8 streams</h4>
-  <p>190 Gbits/sec TX and 190 Gbits/sec RX, consistent across 10 runs — saturating a single 200 Gbps NIC in full duplex.</p>
-  <h4>NCCL AllReduce scaling (dual NIC)</h4>
+  <h3 id="nw-results">Results</h3>
   <div class="tblwrap"><table>
-    <thead><tr><th class="num">Payload (MB)</th><th class="num">Time (µs)</th><th class="num">AlgBW (GB/s)</th><th class="num">≈ Bitrate (Gbps)</th></tr></thead>
+    <thead><tr><th>Test</th><th class="num">Result</th></tr></thead>
     <tbody>
-      <tr><td class="num">256</td><td class="num">15,078.72</td><td class="num">35.60</td><td class="num">284.8</td></tr>
-      <tr><td class="num">512</td><td class="num">29,465.29</td><td class="num">36.44</td><td class="num">291.5</td></tr>
-      <tr><td class="num">1024</td><td class="num">56,750.69</td><td class="num">37.84</td><td class="num">302.7</td></tr>
-      <tr><td class="num">2048</td><td class="num">112,527.62</td><td class="num"><span class="best">38.17</span></td><td class="num"><span class="best">305.4</span></td></tr>
+      <tr><td>iperf3 bidirectional, 8 streams (single NIC)</td><td class="num">190 / 190 Gbps over 10 runs</td></tr>
+      <tr><td>NCCL AllReduce 256 MB</td><td class="num">35.60 GB/s</td></tr>
+      <tr><td>NCCL AllReduce 512 MB (median ×10)</td><td class="num"><span class="best">37.93 GB/s</span> ≈ 303 Gbps</td></tr>
+      <tr><td>NCCL AllReduce 1 GB / 2 GB</td><td class="num">37.84 / 38.17 GB/s</td></tr>
     </tbody>
   </table></div>
-  <p>Median measured aggregate AlgBW at 512 MB across 10 runs: <b>37.925 GB/s (~303 Gbps)</b>, confirming both <code class="inline">eth1</code> and <code class="inline">eth2</code> are utilized. Bandwidth keeps climbing with payload size toward the ~38 GB/s ceiling — this is the headroom that makes the TP8·PP2 multi-node recipes viable over plain TCP.</p>
-
-  <div class="pagenav">
-    <a href="#gateway"><div class="dir">← Previous</div><div class="pt">GKE Inference Gateway</div></a>
-    <a class="next" href="#overview"><div class="dir">Back to →</div><div class="pt">Overview</div></a>
-  </div>
+  <p>Bandwidth scales with payload toward ~38 GB/s across both NICs — the headroom that makes the TP8·PP2 multi-node recipes viable over plain TCP.</p>
+  <div class="pagenav"><a href="#gateway">← Inference Gateway</a><a href="#overview">Overview →</a></div>
 </section>
 
-  </div><!-- /content -->
-</div><!-- /main -->
+</div></div>
 
 <script>
 (function(){
-  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
-  var links = Array.prototype.slice.call(document.querySelectorAll('#nav a'));
-  var crumb = document.getElementById('crumb');
+  var pages = [].slice.call(document.querySelectorAll('.page'));
+  var links = [].slice.call(document.querySelectorAll('#nav a'));
   var sidebar = document.getElementById('sidebar');
   var titles = {};
-  links.forEach(function(l){
-    var c = l.cloneNode(true);
-    var t = c.querySelector('.tag'); if(t) t.remove();
-    titles[l.dataset.page] = c.textContent.trim();
-  });
+  links.forEach(function(l){ titles[l.dataset.page] = l.textContent.trim(); });
 
   function show(id){
-    var pg = document.getElementById('page-' + id);
-    if(!pg){ id = 'overview'; pg = document.getElementById('page-overview'); }
+    var pg = document.getElementById('page-' + id) || document.getElementById('page-overview');
     pages.forEach(function(p){ p.classList.remove('visible'); });
     pg.classList.add('visible');
-    links.forEach(function(l){ l.classList.toggle('active', l.dataset.page === id); });
-    crumb.textContent = titles[id] || id;
+    links.forEach(function(l){ l.classList.toggle('active', 'page-'+l.dataset.page === pg.id); });
     sidebar.classList.remove('open');
     window.scrollTo(0,0);
   }
   function route(){
     var h = (location.hash || '#overview').slice(1);
-    // support deep anchors like #deepseek/ds-results? keep simple: page ids only, or page anchors within page
-    var pageId = h.split('/')[0];
-    if(document.getElementById('page-' + pageId)){ show(pageId); }
-    else {
-      // maybe it's an in-page anchor id; find its page
-      var el = document.getElementById(h);
-      if(el){
-        var sec = el.closest('.page');
-        if(sec){ show(sec.id.replace('page-','')); setTimeout(function(){ el.scrollIntoView(); }, 30); return; }
-      }
-      show('overview');
-    }
+    if(document.getElementById('page-' + h)){ show(h); return; }
+    var el = document.getElementById(h);
+    if(el){ var sec = el.closest('.page'); if(sec){ show(sec.id.replace('page-','')); setTimeout(function(){ el.scrollIntoView(); }, 30); return; } }
+    show('overview');
   }
   window.addEventListener('hashchange', route);
   route();
+  document.getElementById('menubtn').addEventListener('click', function(){ sidebar.classList.toggle('open'); });
 
-  document.getElementById('menubtn').addEventListener('click', function(){
-    sidebar.classList.toggle('open');
-  });
-
-  // copy buttons
   document.querySelectorAll('.codeblock').forEach(function(cb){
-    var btn = cb.querySelector('.copybtn');
-    if(!btn) return;
+    var btn = cb.querySelector('.copybtn'); if(!btn) return;
     btn.addEventListener('click', function(){
       var text = cb.querySelector('pre').innerText;
-      function done(){ btn.textContent = 'COPIED ✓'; setTimeout(function(){ btn.textContent='COPY'; }, 1600); }
-      if(navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(text).then(done, function(){ fallback(); });
-      } else { fallback(); }
-      function fallback(){
-        var ta = document.createElement('textarea');
-        ta.value = text; document.body.appendChild(ta); ta.select();
-        try{ document.execCommand('copy'); done(); }catch(e){}
-        document.body.removeChild(ta);
-      }
+      function done(){ btn.textContent='Copied'; setTimeout(function(){ btn.textContent='Copy'; },1500); }
+      function fb(){ var t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); try{document.execCommand('copy');done();}catch(e){} document.body.removeChild(t); }
+      if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done, fb); } else fb();
     });
   });
 
-  // search: index page text
-  var idx = pages.map(function(p){
-    return { id: p.id.replace('page-',''), title: titles[p.id.replace('page-','')] || p.id, text: p.innerText.toLowerCase() };
-  });
-  var input = document.getElementById('search');
-  var box = document.getElementById('searchresults');
+  var idx = pages.map(function(p){ return { id:p.id.replace('page-',''), title:titles[p.id.replace('page-','')]||p.id, text:p.innerText.toLowerCase() }; });
+  var input = document.getElementById('search'), box = document.getElementById('searchresults');
   input.addEventListener('input', function(){
     var q = input.value.trim().toLowerCase();
     if(q.length < 2){ box.style.display='none'; box.innerHTML=''; return; }
     var hits = idx.filter(function(e){ return e.text.indexOf(q) !== -1 || e.title.toLowerCase().indexOf(q) !== -1; });
-    if(!hits.length){ box.innerHTML = '<a><span class="sr-page">no results</span><br>Try "hicache", "nvfp4", "nccl"…</a>'; box.style.display='block'; return; }
+    if(!hits.length){ box.innerHTML='<a><span class="sr-page">No results</span></a>'; box.style.display='block'; return; }
     box.innerHTML = hits.slice(0,8).map(function(e){
-      // grab a snippet around match
       var i = e.text.indexOf(q);
-      var snip = i >= 0 ? '…' + e.text.slice(Math.max(0,i-30), i+50).replace(/\s+/g,' ') + '…' : '';
+      var snip = i>=0 ? '…'+e.text.slice(Math.max(0,i-25), i+45).replace(/\s+/g,' ')+'…' : '';
       return '<a href="#'+e.id+'"><span class="sr-page">'+e.title+'</span><br>'+snip+'</a>';
     }).join('');
-    box.style.display = 'block';
+    box.style.display='block';
   });
   input.addEventListener('keydown', function(ev){
-    if(ev.key === 'Enter'){
-      var first = box.querySelector('a[href]');
-      if(first){ location.hash = first.getAttribute('href'); box.style.display='none'; input.blur(); }
-    }
-    if(ev.key === 'Escape'){ box.style.display='none'; }
+    if(ev.key==='Enter'){ var f=box.querySelector('a[href]'); if(f){ location.hash=f.getAttribute('href'); box.style.display='none'; input.blur(); } }
+    if(ev.key==='Escape'){ box.style.display='none'; }
   });
   document.addEventListener('click', function(ev){
-    if(!box.contains(ev.target) && ev.target !== input){ box.style.display='none'; }
+    if(!box.contains(ev.target) && ev.target!==input){ box.style.display='none'; }
     if(ev.target.closest && ev.target.closest('#searchresults a')){ box.style.display='none'; input.value=''; }
   });
 })();
