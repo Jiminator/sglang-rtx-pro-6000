@@ -126,6 +126,80 @@ ul.plain li{margin-bottom:5px;max-width:66ch}
 }
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </style>
+
+<style id="igw-css">
+/* ===== Inference Gateway interactive widget (namespaced igw-) ===== */
+.igw{margin:6px 0 10px}
+.igw-stage{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  background:linear-gradient(180deg,#0e1428,#0a0f20);height:480px}
+.igw-stage canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.igw-grid{position:absolute;inset:0;opacity:.10;pointer-events:none;
+  background-image:linear-gradient(#26314f 1px,transparent 1px),linear-gradient(90deg,#26314f 1px,transparent 1px);
+  background-size:32px 32px}
+.igw-layout{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1.3fr 1.3fr;
+  align-items:center;padding:22px 18px;gap:0}
+.igw-col{display:flex;flex-direction:column;align-items:center;z-index:2}
+.igw-col.igw-mid{gap:38px}
+.igw-col.igw-reps{gap:18px}
+.igw-node{background:linear-gradient(180deg,#182040,#141a30);border:1px solid #33406a;border-radius:11px;
+  padding:10px 11px;width:100%;max-width:212px;box-shadow:0 10px 24px -16px rgba(0,0,0,.7);
+  transition:border-color .2s,box-shadow .2s;color:#e9eefb;line-height:1.4}
+.igw-node .igw-tag{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#5d6b91}
+.igw-node .igw-name{font-size:13.5px;font-weight:650;margin-top:2px}
+.igw-node .igw-desc{font-size:10.5px;color:#8493b8;margin-top:3px;line-height:1.35}
+.igw-node .igw-desc code{font-family:var(--mono);font-size:9.5px;color:#aab8dd}
+.igw-node.igw-flash{border-color:#e9eefb;box-shadow:0 0 0 1px #e9eefb}
+.igw-node.igw-flashctl{border-color:#9db4ff;box-shadow:0 0 0 1px #9db4ff}
+.igw-node.igw-epp{border-style:dashed;border-color:#46559a}
+.igw-epp .igw-tag{color:#9db4ff}
+.igw-meter{margin-top:8px;height:5px;border-radius:4px;background:#0c1226;overflow:hidden;border:1px solid #26314f}
+.igw-meter span{display:block;height:100%;width:0;background:linear-gradient(90deg,#9db4ff,#56e39b);transition:width .18s linear}
+.igw-pick,.igw-hold{font-family:var(--mono);font-size:9.5px;color:#8493b8;margin-top:5px;min-height:13px}
+.igw-pick b,.igw-hold b{color:#e9eefb}
+.igw-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#56e39b;box-shadow:0 0 8px #56e39b;margin-left:6px}
+.igw-kv{margin-top:8px}
+.igw-kv .igw-lab{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#5d6b91;margin-bottom:4px}
+.igw-slots{display:flex;gap:5px}
+.igw-slot{flex:1;height:22px;border-radius:6px;border:1px dashed #33406a;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:10.5px;font-weight:600;color:#0a0e1c;background:#0c1226;transition:all .25s;position:relative;overflow:hidden}
+.igw-slot.igw-filled{border-style:solid;border-color:transparent}
+.igw-slot.igw-prefill{animation:igwPrefill 1s ease infinite}
+@keyframes igwPrefill{0%,100%{opacity:.55}50%{opacity:1}}
+.igw-slot.igw-hit::after{content:"";position:absolute;inset:0;background:#56e39b;opacity:0;animation:igwHit .5s ease}
+@keyframes igwHit{0%{opacity:.9}100%{opacity:0}}
+.igw-ttft{margin-top:8px;font-family:var(--mono);font-size:9.5px;color:#8493b8;min-height:13px}
+/* light-themed chrome to match the docs */
+.igw-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:12px}
+.igw-seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--codebg)}
+.igw-seg button{appearance:none;border:0;background:transparent;color:var(--soft);font-family:var(--sans);
+  font-size:12.5px;font-weight:500;padding:6px 12px;cursor:pointer;transition:.15s}
+.igw-seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.igw-btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);font-family:var(--sans);
+  font-size:12.5px;font-weight:500;padding:6px 13px;border-radius:8px;cursor:pointer}
+.igw-btn:hover{background:var(--codebg)}
+.igw-spd{display:flex;align-items:center;gap:7px;color:var(--faint);font-size:11px;font-family:var(--mono)}
+.igw-spd input{accent-color:var(--accent)}
+.igw-stats{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+.igw-stat{border:1px solid var(--line);border-radius:9px;background:#fff;padding:5px 12px;min-width:86px}
+.igw-stat .igw-k{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.igw-stat .igw-v{font-size:17px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.3}
+.igw-stat .igw-v small{font-size:11px;color:var(--faint);font-weight:500}
+#igw-vhr{color:#0E8A4F}
+#igw-vtt{color:var(--accent)}
+.igw-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:11px;color:var(--soft);font-family:var(--mono)}
+.igw-legend .igw-it{display:inline-flex;align-items:center;gap:6px}
+.igw-chipc{width:10px;height:10px;border-radius:3px;display:inline-block}
+.igw-line{width:20px;display:inline-block;border-top:2.5px solid #94a3b8;border-radius:2px}
+.igw-line.igw-dash{border-top-style:dashed;border-top-color:#5b79e0}
+@media (max-width:900px){
+  .igw-layout{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:16px 12px;padding:16px 14px}
+  .igw-col.igw-reps{grid-column:1/-1;flex-direction:row;gap:12px}
+  .igw-col.igw-reps .igw-node{flex:1}
+  .igw-col.igw-mid{gap:22px}
+  .igw-stage{height:560px}
+  .igw-stats{margin-left:0;width:100%}
+}
+</style>
 </head>
 <body>
 <button class="menubtn" id="menubtn" aria-label="Toggle navigation">Menu</button>
@@ -780,80 +854,77 @@ smg launch --worker-urls http://&lt;N1&gt;:30000 http://&lt;N2&gt;:30000 \
   <div class="meta"><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.6/gke-inference-gateway" target="_blank" rel="noopener" style="text-decoration:none">models/KimiK2.6/gke-inference-gateway/ on GitHub ↗</a></span></div>
   <p class="lede">Prefix-cache-aware routing: requests sharing a prompt prefix land on the replica that already holds it in KV cache — maximizing reuse, minimizing TTFT. Shipped for both SGLang and vLLM backends.</p>
 
-<div class="fig">
-  <svg viewBox="0 0 880 540" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GKE Inference Gateway flow across two nodes" style="min-width:680px;width:100%;font-family:'IBM Plex Mono',monospace">
-    <defs>
-      <marker id="arrG" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#3B82F6"/></marker>
-      <marker id="arrA" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#C07A1C"/></marker>
-      <marker id="arrB" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#23527C"/></marker>
-    </defs>
-
-    <!-- client -->
-    <rect x="330" y="14" width="220" height="58" rx="9" fill="#FFFFFF" stroke="#1F2937" stroke-width="1.5"/>
-    <text x="440" y="38" font-size="12" font-weight="600" text-anchor="middle" fill="#1F2937" font-family="Space Grotesk,sans-serif">Client pod</text>
-    <text x="440" y="56" font-size="9.5" text-anchor="middle" fill="#6B7280">vllm-chat-app.yaml · openai SDK · tests/</text>
-
-    <line x1="440" y1="72" x2="440" y2="104" stroke="#3B82F6" stroke-width="2" marker-end="url(#arrG)"/>
-    <text x="452" y="93" font-size="9" fill="#1E40AF">HTTP :80 → Gateway IP</text>
-
-    <!-- gateway -->
-    <rect x="270" y="106" width="340" height="64" rx="9" fill="#EFF4FF" stroke="#3B82F6" stroke-width="1.5"/>
-    <text x="440" y="130" font-size="12" font-weight="600" text-anchor="middle" fill="#1E40AF" font-family="Space Grotesk,sans-serif">GKE Inference Gateway (gke-l7-rilb)</text>
-    <text x="440" y="147" font-size="9.5" text-anchor="middle" fill="#475569">gateway.yaml — internal regional L7 LB</text>
-    <text x="440" y="161" font-size="9.5" text-anchor="middle" fill="#475569">httproute.yaml → InferencePool</text>
-
-    <line x1="440" y1="170" x2="440" y2="202" stroke="#3B82F6" stroke-width="2" marker-end="url(#arrG)"/>
-    <text x="452" y="191" font-size="9" fill="#1E40AF">ext-proc consult</text>
-
-    <!-- EPP -->
-    <rect x="240" y="204" width="400" height="84" rx="9" fill="#1F2937"/>
-    <text x="440" y="228" font-size="12" font-weight="600" text-anchor="middle" fill="#93C5FD" font-family="Space Grotesk,sans-serif">Endpoint Picker (EPP)</text>
-    <text x="440" y="245" font-size="9.5" text-anchor="middle" fill="#E5E7EB">helm: inferencepool chart · precise prefix-cache-aware scheduler</text>
-    <text x="440" y="260" font-size="9.5" text-anchor="middle" fill="#9CA3AF">epp-values.yaml · inference-objective.yaml (priority)</text>
-    <text x="440" y="275" font-size="9.5" text-anchor="middle" fill="#9CA3AF">scrapes replica metrics → tracks per-pod KV-cache state</text>
-
-    <!-- routing arrows -->
-    <path d="M 330 288 C 280 320 230 330 210 352" stroke="#C07A1C" stroke-width="2.5" fill="none" marker-end="url(#arrA)"/>
-    <text x="208" y="322" font-size="9.5" fill="#C07A1C" font-weight="600">prompts sharing prefix A</text>
-    <path d="M 550 288 C 600 320 650 330 670 352" stroke="#23527C" stroke-width="2.5" fill="none" marker-end="url(#arrB)"/>
-    <text x="560" y="322" font-size="9.5" fill="#23527C" font-weight="600">prompts sharing prefix B</text>
-
-    <!-- node A -->
-    <rect x="40" y="356" width="380" height="128" rx="10" fill="#FFFFFF" stroke="#C07A1C" stroke-width="1.5"/>
-    <text x="58" y="380" font-size="11.5" font-weight="600" fill="#7A4E10" font-family="Space Grotesk,sans-serif">G4 node A — replica-0</text>
-    <rect x="58" y="392" width="200" height="76" rx="7" fill="#111827"/>
-    <text x="158" y="414" font-size="10.5" font-weight="600" text-anchor="middle" fill="#93C5FD">Model server :30000</text>
-    <text x="158" y="430" font-size="9" text-anchor="middle" fill="#E5E7EB">SGLang dev-cu13 · or · vLLM v0.19.1</text>
-    <text x="158" y="444" font-size="9" text-anchor="middle" fill="#9CA3AF">TP=8 · Kimi-K2.6 · GCS Fuse weights</text>
-    <text x="158" y="458" font-size="9" text-anchor="middle" fill="#9CA3AF">hostNetwork → anti-affinity per node</text>
-    <rect x="272" y="392" width="132" height="76" rx="7" fill="#FBF2E2" stroke="#E3C98F"/>
-    <text x="338" y="418" font-size="10" font-weight="600" text-anchor="middle" fill="#7A4E10">KV cache</text>
-    <text x="338" y="434" font-size="9" text-anchor="middle" fill="#7A4E10">prefix A resident</text>
-    <text x="338" y="449" font-size="9" text-anchor="middle" fill="#7A4E10">→ warm TTFT</text>
-
-    <!-- node B -->
-    <rect x="460" y="356" width="380" height="128" rx="10" fill="#FFFFFF" stroke="#23527C" stroke-width="1.5"/>
-    <text x="478" y="380" font-size="11.5" font-weight="600" fill="#23527C" font-family="Space Grotesk,sans-serif">G4 node B — replica-1</text>
-    <rect x="478" y="392" width="200" height="76" rx="7" fill="#111827"/>
-    <text x="578" y="414" font-size="10.5" font-weight="600" text-anchor="middle" fill="#93C5FD">Model server :30000</text>
-    <text x="578" y="430" font-size="9" text-anchor="middle" fill="#E5E7EB">SGLang dev-cu13 · or · vLLM v0.19.1</text>
-    <text x="578" y="444" font-size="9" text-anchor="middle" fill="#9CA3AF">TP=8 · Kimi-K2.6 · GCS Fuse weights</text>
-    <text x="578" y="458" font-size="9" text-anchor="middle" fill="#9CA3AF">hostNetwork → anti-affinity per node</text>
-    <rect x="692" y="392" width="132" height="76" rx="7" fill="#E7F0FA" stroke="#A9C4DC"/>
-    <text x="758" y="418" font-size="10" font-weight="600" text-anchor="middle" fill="#23527C">KV cache</text>
-    <text x="758" y="434" font-size="9" text-anchor="middle" fill="#23527C">prefix B resident</text>
-    <text x="758" y="449" font-size="9" text-anchor="middle" fill="#23527C">→ warm TTFT</text>
-
-    <!-- metrics back-edges -->
-    <path d="M 230 392 C 250 330 290 305 320 290" stroke="#9CA3AF" stroke-width="1.5" fill="none" stroke-dasharray="4 4"/>
-    <path d="M 650 392 C 630 330 590 305 560 290" stroke="#9CA3AF" stroke-width="1.5" fill="none" stroke-dasharray="4 4"/>
-    <text x="440" y="346" font-size="9" fill="#6B7280" text-anchor="middle">⌁ PodMonitoring metrics (cache state, load) feed back to EPP scheduling</text>
-
-    <!-- caption -->
-    <text x="440" y="516" font-size="10" fill="#6B7280" text-anchor="middle">Same-prefix requests always land on the replica that already holds that prefix in KV cache — maximizing reuse, minimizing TTFT.</text>
-  </svg>
+<div class="igw" id="igw">
+  <div class="igw-stage" id="igw-stage">
+    <div class="igw-grid"></div>
+    <canvas id="igw-wires"></canvas>
+    <div class="igw-layout">
+      <div class="igw-col">
+        <div class="igw-node" id="igw-client">
+          <div class="igw-tag">Client pod</div>
+          <div class="igw-name">vllm-chat-app</div>
+          <div class="igw-desc">openai SDK · HTTP :80 → Gateway IP<br><code>vllm-chat-app.yaml</code></div>
+        </div>
+      </div>
+      <div class="igw-col igw-mid">
+        <div class="igw-node" id="igw-gateway">
+          <div class="igw-tag">Data plane · gke-l7-rilb</div>
+          <div class="igw-name">Inference Gateway</div>
+          <div class="igw-desc">Envoy · holds request, asks EPP, then forwards it itself<br><code>gateway.yaml · httproute.yaml → InferencePool</code></div>
+          <div class="igw-hold" id="igw-gwhold">&nbsp;</div>
+        </div>
+        <div class="igw-node igw-epp" id="igw-epp">
+          <div class="igw-tag">Control plane · ext-proc</div>
+          <div class="igw-name">Endpoint Picker (EPP)</div>
+          <div class="igw-desc">Scores replicas on prefix-cache state + load — returns a decision, never forwards traffic<br><code>epp-values.yaml · inference-objective.yaml</code></div>
+          <div class="igw-meter"><span id="igw-meter"></span></div>
+          <div class="igw-pick" id="igw-pick">idle</div>
+        </div>
+      </div>
+      <div class="igw-col igw-reps">
+        <div class="igw-node" id="igw-rep0">
+          <div class="igw-tag">G4 node A · replica-0</div>
+          <div class="igw-name">Model server :30000<span class="igw-dot"></span></div>
+          <div class="igw-desc">SGLang dev-cu13 · or · vLLM v0.19.1<br>TP=8 · Kimi-K2.6 · GCS Fuse weights</div>
+          <div class="igw-kv"><div class="igw-lab">KV cache</div><div class="igw-slots" id="igw-kv0"></div></div>
+          <div class="igw-ttft" id="igw-tt0">&nbsp;</div>
+        </div>
+        <div class="igw-node" id="igw-rep1">
+          <div class="igw-tag">G4 node B · replica-1</div>
+          <div class="igw-name">Model server :30000<span class="igw-dot"></span></div>
+          <div class="igw-desc">SGLang dev-cu13 · or · vLLM v0.19.1<br>TP=8 · Kimi-K2.6 · GCS Fuse weights</div>
+          <div class="igw-kv"><div class="igw-lab">KV cache</div><div class="igw-slots" id="igw-kv1"></div></div>
+          <div class="igw-ttft" id="igw-tt1">&nbsp;</div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="figcap">Request flow across two G4 nodes (replica StatefulSet, 2 replicas, anti-affinity).</div>
+  <div class="igw-controls">
+    <div class="igw-seg" role="group" aria-label="Routing strategy">
+      <button id="igw-moderr" aria-pressed="false">Round-robin</button>
+      <button id="igw-modepa" aria-pressed="true">Prefix-aware (EPP)</button>
+    </div>
+    <button class="igw-btn" id="igw-play">Pause</button>
+    <div class="igw-spd"><label for="igw-speed">SPEED</label>
+      <input type="range" id="igw-speed" min="0.4" max="2.4" step="0.1" value="1"></div>
+    <div class="igw-stats">
+      <div class="igw-stat"><div class="igw-k">Routed</div><div class="igw-v" id="igw-vrq">0</div></div>
+      <div class="igw-stat"><div class="igw-k">Cache hit rate</div><div class="igw-v" id="igw-vhr">0<small>%</small></div></div>
+      <div class="igw-stat"><div class="igw-k">Avg TTFT</div><div class="igw-v" id="igw-vtt">—</div></div>
+    </div>
+  </div>
+  <div class="igw-legend">
+    <span class="igw-it"><span class="igw-line"></span>data path (request + tokens)</span>
+    <span class="igw-it"><span class="igw-line igw-dash"></span>ext-proc consult (decision only)</span>
+    <span class="igw-it"><span class="igw-chipc" style="background:#ffb938"></span>prefix A</span>
+    <span class="igw-it"><span class="igw-chipc" style="background:#34d1d6"></span>prefix B</span>
+    <span class="igw-it"><span class="igw-chipc" style="background:#b68cff"></span>prefix C</span>
+    <span class="igw-it"><span class="igw-chipc" style="background:#ff7a9c"></span>prefix D</span>
+    <span class="igw-it"><span class="igw-chipc" style="background:#56e39b"></span>warm hit</span>
+    <span class="igw-it"><span class="igw-chipc" style="background:#ff8a5c"></span>cold prefill</span>
+  </div>
+</div>
+<div class="figcap">Live simulation — request flow across two G4 nodes (StatefulSet ×2, anti-affinity). The packet holds at the gateway while a consult pulse round-trips to the EPP; traffic then flows gateway → replica directly, and tokens stream back without touching the EPP. Toggle round-robin to watch the KV caches thrash and the hit rate collapse.</div>
 
   <h3 id="gw-setup">Setup</h3>
   <ol class="steps">
@@ -1011,6 +1082,234 @@ kubectl apply -f chiv01-nccl-bench.yaml && ./run_bench_10x.sh        <span class
     if(!box.contains(ev.target) && ev.target!==input){ box.style.display='none'; }
     if(ev.target.closest && ev.target.closest('#searchresults a')){ box.style.display='none'; input.value=''; }
   });
+})();
+</script>
+
+<script>
+/* ===== Inference Gateway interactive simulation (igw) ===== */
+(function(){
+  "use strict";
+  var stage = document.getElementById('igw-stage');
+  if(!stage) return;
+  var reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var COLORS = {A:'#ffb938',B:'#34d1d6',C:'#b68cff',D:'#ff7a9c'};
+  var CTL='#9db4ff', PREFIXES=['A','B','C','D'], CACHE_CAP=2, WARM=0.20, COLD=2.05;
+
+  function $(i){return document.getElementById(i);}
+  var cv=$('igw-wires'), ctx=cv.getContext('2d');
+  var els={client:$('igw-client'),gateway:$('igw-gateway'),epp:$('igw-epp'),
+    rep:[$('igw-rep0'),$('igw-rep1')],kv:[$('igw-kv0'),$('igw-kv1')],tt:[$('igw-tt0'),$('igw-tt1')],
+    meter:$('igw-meter'),pick:$('igw-pick'),gwhold:$('igw-gwhold'),
+    vrq:$('igw-vrq'),vhr:$('igw-vhr'),vtt:$('igw-vtt'),
+    play:$('igw-play'),speed:$('igw-speed'),moderr:$('igw-moderr'),modepa:$('igw-modepa')};
+
+  var state={mode:'PA',running:!reduce,speed:1,packets:[],pulses:[],returns:[],
+    spawnAcc:0,rr:0,routed:0,hits:0,ttftSum:0,homes:{},homeCounts:[0,0],
+    caches:[new Map(),new Map()],tick:0};
+
+  var slotEls=[[],[]];
+  for(var r=0;r<2;r++){for(var s=0;s<CACHE_CAP;s++){
+    var d=document.createElement('div');d.className='igw-slot';els.kv[r].appendChild(d);slotEls[r].push(d);}}
+
+  function visible(){ return stage.offsetParent!==null; }
+  function resize(){
+    if(!visible()) return;
+    var b=stage.getBoundingClientRect();
+    var DPR=Math.min(devicePixelRatio||1,2);
+    cv.width=b.width*DPR; cv.height=b.height*DPR;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  function anchor(el,side){
+    var s=stage.getBoundingClientRect(),b=el.getBoundingClientRect();
+    if(side==='b')return{x:b.left-s.left+b.width/2,y:b.bottom-s.top};
+    if(side==='t')return{x:b.left-s.left+b.width/2,y:b.top-s.top};
+    var y=b.top-s.top+b.height/2;
+    return side==='r'?{x:b.right-s.left,y:y}:{x:b.left-s.left,y:y};
+  }
+
+  function pickReplica(prefix){
+    if(state.mode==='RR'){var t=state.rr%2;state.rr++;return t;}
+    if(state.homes[prefix]===undefined){
+      var h=state.homeCounts[0]<=state.homeCounts[1]?0:1;
+      state.homes[prefix]=h;state.homeCounts[h]++;}
+    return state.homes[prefix];
+  }
+  function spawn(){
+    var prefix=PREFIXES[Math.floor(Math.random()*PREFIXES.length)];
+    state.packets.push({prefix:prefix,color:COLORS[prefix],target:null,
+      phase:0,p:0,hold:0,consultSent:false,decisionBack:false,landed:false,pos:null});
+  }
+  function flash(el,cls){el.classList.add(cls);setTimeout(function(){el.classList.remove(cls);},260);}
+
+  function segMove(pk,a,b,dt,spd){
+    var len=Math.hypot(b.x-a.x,b.y-a.y)||1;
+    pk.p+=(spd*dt)/len;
+    if(pk.p>=1){pk.pos={x:b.x,y:b.y};return true;}
+    pk.pos={x:a.x+(b.x-a.x)*pk.p,y:a.y+(b.y-a.y)*pk.p};return false;
+  }
+  function advance(pk,dt){
+    var spd=360*state.speed;
+    if(pk.phase===0){
+      if(segMove(pk,anchor(els.client,'r'),anchor(els.gateway,'l'),dt,spd)){
+        pk.phase=1;pk.p=0;flash(els.gateway,'igw-flash');
+        els.gwhold.innerHTML='holding <b style="color:'+pk.color+'">'+pk.prefix+'</b> · consulting EPP…';}
+    }else if(pk.phase===1){
+      pk.pos=anchor(els.gateway,'r');pk.hold+=dt;
+      if(!pk.consultSent&&pk.hold>0.05){pk.consultSent=true;
+        state.pulses.push({pk:pk,dir:1,p:0});flash(els.gateway,'igw-flashctl');}
+      if(pk.decisionBack){pk.phase=2;pk.p=0;
+        els.gwhold.innerHTML='forward <b style="color:'+pk.color+'">'+pk.prefix+'</b> → replica-'+pk.target;}
+    }else if(pk.phase===2){
+      if(segMove(pk,anchor(els.gateway,'r'),anchor(els.rep[pk.target],'l'),dt,spd)){
+        onLand(pk);pk.landed=true;}
+    }
+  }
+  function advancePulse(pl,dt){
+    var down=pl.dir===1;
+    var a=down?anchor(els.gateway,'b'):anchor(els.epp,'t');
+    var b=down?anchor(els.epp,'t'):anchor(els.gateway,'b');
+    var len=Math.hypot(b.x-a.x,b.y-a.y)||1;
+    pl.p+=(300*state.speed*dt)/len;
+    if(pl.p>=1){
+      if(down){onDecision(pl.pk);flash(els.epp,'igw-flashctl');state.pulses.push({pk:pl.pk,dir:-1,p:0});}
+      else pl.pk.decisionBack=true;
+      return true;}
+    pl.pos={x:a.x+(b.x-a.x)*pl.p,y:a.y+(b.y-a.y)*pl.p};return false;
+  }
+  function advanceReturn(rt,dt){
+    var spd=430*state.speed,a,b,len;
+    if(rt.phase===0){a=anchor(els.rep[rt.target],'l');b=anchor(els.gateway,'r');}
+    else{a=anchor(els.gateway,'l');b=anchor(els.client,'r');}
+    len=Math.hypot(b.x-a.x,b.y-a.y)||1;
+    rt.p+=(spd*dt)/len;
+    if(rt.p>=1){if(rt.phase===0){rt.phase=1;rt.p=0;return false;}return true;}
+    rt.pos={x:a.x+(b.x-a.x)*rt.p,y:a.y+(b.y-a.y)*rt.p};return false;
+  }
+  function onDecision(pk){
+    pk.target=pickReplica(pk.prefix);
+    els.meter.style.width=(35+Math.random()*55)+'%';
+    els.meter.style.background='linear-gradient(90deg,'+pk.color+',#56e39b)';
+    var res=state.caches[pk.target].has(pk.prefix);
+    els.pick.innerHTML='pick replica-'+pk.target+' · prefix <b style="color:'+pk.color+'">'+pk.prefix+'</b> '+
+      (res?'<span style="color:#56e39b">cached</span>':'<span style="color:#ff8a5c">cold</span>');
+  }
+  function onLand(pk){
+    var cache=state.caches[pk.target],hit=cache.has(pk.prefix);
+    state.routed++;state.tick++;
+    if(hit){state.hits++;state.ttftSum+=WARM;cache.set(pk.prefix,state.tick);
+      pulseSlot(pk.target,pk.prefix,'hit');showTTFT(pk.target,WARM,true);}
+    else{state.ttftSum+=COLD;
+      if(cache.size>=CACHE_CAP){var lruK=null,lruT=Infinity;
+        cache.forEach(function(t,k){if(t<lruT){lruT=t;lruK=k;}});cache.delete(lruK);}
+      cache.set(pk.prefix,state.tick);
+      pulseSlot(pk.target,pk.prefix,'prefill');showTTFT(pk.target,COLD,false);}
+    renderCache(pk.target);renderStats();
+    setTimeout(function(){state.returns.push({target:pk.target,color:pk.color,phase:0,p:0,pos:null});},
+      (hit?120:550)/state.speed);
+  }
+  function renderCache(r){
+    var entries=[];state.caches[r].forEach(function(t,k){entries.push([k,t]);});
+    entries.sort(function(a,b){return a[1]-b[1];});
+    for(var s=0;s<CACHE_CAP;s++){var el=slotEls[r][s],ent=entries[s];
+      el.classList.remove('igw-filled');
+      if(ent){el.classList.add('igw-filled');el.style.background=COLORS[ent[0]];el.textContent=ent[0];}
+      else{el.style.background='#0c1226';el.textContent='';}}
+  }
+  function pulseSlot(r,prefix,kind){
+    requestAnimationFrame(function(){
+      var el=null;slotEls[r].forEach(function(e){if(e.textContent===prefix)el=e;});
+      if(!el)return;
+      if(kind==='hit'){el.classList.remove('igw-hit');void el.offsetWidth;el.classList.add('igw-hit');}
+      else{el.classList.add('igw-prefill');setTimeout(function(){el.classList.remove('igw-prefill');},900);}});
+  }
+  function showTTFT(r,sec,hit){
+    els.tt[r].innerHTML=hit
+      ?'<b style="color:#56e39b">warm</b> · TTFT '+Math.round(sec*1000)+' ms'
+      :'<b style="color:#ff8a5c">cold</b> · TTFT '+sec.toFixed(2)+' s';
+  }
+  function renderStats(){
+    els.vrq.textContent=state.routed;
+    var hr=state.routed?Math.round(100*state.hits/state.routed):0;
+    els.vhr.innerHTML=hr+'<small>%</small>';
+    var avg=state.routed?state.ttftSum/state.routed:0;
+    els.vtt.textContent=state.routed?(avg<1?Math.round(avg*1000)+' ms':avg.toFixed(2)+' s'):'—';
+  }
+
+  function draw(){
+    var b=stage.getBoundingClientRect();
+    ctx.clearRect(0,0,b.width,b.height);
+    var segs=[[anchor(els.client,'r'),anchor(els.gateway,'l')],
+      [anchor(els.gateway,'r'),anchor(els.rep[0],'l')],
+      [anchor(els.gateway,'r'),anchor(els.rep[1],'l')]];
+    ctx.lineWidth=1.6;ctx.setLineDash([]);ctx.strokeStyle='#2a3760';
+    segs.forEach(function(sg){ctx.beginPath();ctx.moveTo(sg[0].x,sg[0].y);ctx.lineTo(sg[1].x,sg[1].y);ctx.stroke();});
+    var ga=anchor(els.gateway,'b'),eb=anchor(els.epp,'t');
+    ctx.setLineDash([5,5]);ctx.lineWidth=1.4;ctx.strokeStyle=CTL+'88';
+    ctx.beginPath();ctx.moveTo(ga.x,ga.y);ctx.lineTo(eb.x,eb.y);ctx.stroke();ctx.setLineDash([]);
+    state.returns.forEach(function(rt){if(!rt.pos)return;
+      var g=ctx.createRadialGradient(rt.pos.x,rt.pos.y,0,rt.pos.x,rt.pos.y,11);
+      g.addColorStop(0,rt.color+'66');g.addColorStop(1,rt.color+'00');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(rt.pos.x,rt.pos.y,11,0,7);ctx.fill();
+      ctx.fillStyle=rt.color+'99';ctx.beginPath();ctx.arc(rt.pos.x,rt.pos.y,2.6,0,7);ctx.fill();});
+    state.pulses.forEach(function(pl){if(!pl.pos)return;
+      var g=ctx.createRadialGradient(pl.pos.x,pl.pos.y,0,pl.pos.x,pl.pos.y,10);
+      g.addColorStop(0,CTL+'cc');g.addColorStop(1,CTL+'00');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(pl.pos.x,pl.pos.y,10,0,7);ctx.fill();
+      ctx.fillStyle=CTL;ctx.beginPath();ctx.arc(pl.pos.x,pl.pos.y,3.2,0,7);ctx.fill();});
+    state.packets.forEach(function(pk){if(!pk.pos)return;
+      var g=ctx.createRadialGradient(pk.pos.x,pk.pos.y,0,pk.pos.x,pk.pos.y,15);
+      g.addColorStop(0,pk.color+'cc');g.addColorStop(1,pk.color+'00');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(pk.pos.x,pk.pos.y,15,0,7);ctx.fill();
+      ctx.fillStyle=pk.color;ctx.beginPath();ctx.arc(pk.pos.x,pk.pos.y,5.5,0,7);ctx.fill();
+      ctx.fillStyle='#06101e';ctx.font='600 8px ui-monospace,monospace';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(pk.prefix,pk.pos.x,pk.pos.y+0.5);});
+  }
+
+  var last=performance.now(),wasVisible=false;
+  function loop(now){
+    var dt=Math.min((now-last)/1000,0.05);last=now;
+    var vis=visible();
+    if(vis&&!wasVisible){resize();}   /* page just routed in */
+    wasVisible=vis;
+    if(vis&&state.running){
+      state.spawnAcc+=dt;
+      if(state.spawnAcc>=0.95/state.speed){state.spawnAcc=0;spawn();}
+      state.packets.forEach(function(pk){advance(pk,dt);});
+      state.packets=state.packets.filter(function(p){return !p.landed;});
+      var done=[];
+      state.pulses.slice().forEach(function(pl){if(advancePulse(pl,dt))done.push(pl);});
+      state.pulses=state.pulses.filter(function(pl){return done.indexOf(pl)<0;});
+      state.returns=state.returns.filter(function(rt){return !advanceReturn(rt,dt);});
+    }
+    if(vis)draw();
+    requestAnimationFrame(loop);
+  }
+
+  function setMode(m){
+    state.mode=m;
+    els.modepa.setAttribute('aria-pressed',m==='PA');
+    els.moderr.setAttribute('aria-pressed',m==='RR');
+    state.packets=[];state.pulses=[];state.returns=[];
+    state.routed=0;state.hits=0;state.ttftSum=0;
+    state.homes={};state.homeCounts=[0,0];state.rr=0;state.tick=0;
+    state.caches=[new Map(),new Map()];
+    renderCache(0);renderCache(1);renderStats();
+    els.tt[0].innerHTML='&nbsp;';els.tt[1].innerHTML='&nbsp;';
+    els.gwhold.innerHTML='&nbsp;';els.pick.textContent='idle';els.meter.style.width='0';
+  }
+  els.modepa.onclick=function(){setMode('PA');};
+  els.moderr.onclick=function(){setMode('RR');};
+  els.play.onclick=function(){state.running=!state.running;
+    els.play.textContent=state.running?'Pause':'Play';};
+  els.speed.oninput=function(e){state.speed=parseFloat(e.target.value);};
+
+  addEventListener('resize',resize);
+  addEventListener('hashchange',function(){setTimeout(resize,30);});
+  if(window.ResizeObserver) new ResizeObserver(function(){resize();}).observe(stage);
+  resize();renderStats();
+  if(reduce)els.play.textContent='Play';
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>
