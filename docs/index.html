@@ -211,7 +211,7 @@ ul.plain li{margin-bottom:5px;max-width:66ch}
       <tr><td>Kimi-K2.6 long context · 64K → 8K</td><td>3380.8 total tok/s @ 80c (vLLM, 256K window)</td><td><a href="#lc-6488">results</a></td></tr>
       <tr><td>Kimi-K2.6 long context · 8K → 64K</td><td>830.5 output tok/s @ 128c; best E2E at 64c</td><td><a href="#lc-8864">results</a></td></tr>
       <tr><td>Qwen3.5-397B latency · 20K prompts</td><td>HiCache cuts P99 TTFT 14.05 s → 3.36 s</td><td><a href="#qw-results">results</a></td></tr>
-      <tr><td>Kimi-K2.6 agentic trace replay</td><td>81.2% prefix-cache hit rate (HiCache, 1 node)</td><td><a href="#ag-results">results</a></td></tr>
+      <tr><td>Kimi-K2.6 agentic trace replay</td><td>256 real sequences, up to 250 steps &amp; ~73K-tok prompts — 81.2% cache hit rate</td><td><a href="#ag-results">results</a></td></tr>
       <tr><td>Whisper-large-v3 · ASR, DP8</td><td>55.6 req/s, 0.32 s latency (transcriptions API)</td><td><a href="#wh-results">results</a></td></tr>
       <tr><td>Chandra-OCR-2 · vision, 1 GPU</td><td>5267 total tok/s, 32.5 ms TPOT</td><td><a href="#ocr-results">results</a></td></tr>
     </tbody>
@@ -677,7 +677,21 @@ python3 -m sglang.bench_serving \
 <section class="page" id="page-agentic">
   <h1 class="pagetitle">Agentic benchmark — Kimi-K2.6</h1>
   <div class="meta"><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.6/agent_benchmark" target="_blank" rel="noopener" style="text-decoration:none">models/KimiK2.6/agent_benchmark/ on GitHub ↗</a></span></div>
-  <p class="lede">Replays real agentic traces (long sequences, shared prefixes, long-tail steps) instead of random tokens. Temperature 0.6, top_p 0.95, 4096 max tokens per step.</p>
+  <p class="lede">Replays 256 real agentic sequences — 12,542 requests with ever-growing multi-turn contexts — instead of random tokens. Sequences run up to 250 steps, and a single request's prompt reaches 290K characters (~73K tokens).</p>
+
+  <h3 id="ag-workload">The workload, measured from the trace data</h3>
+  <p>Statistics computed directly from <a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/KimiK2.6/agent_benchmark/benchmark_scripts/data.jsonl.zst" target="_blank" rel="noopener"><code class="inline">data.jsonl.zst</code></a> (token counts estimated at ~4 chars/token):</p>
+  <div class="tblwrap"><table>
+    <tbody>
+      <tr><td style="white-space:nowrap">Sequences / total requests</td><td style="font-family:var(--mono);font-size:12.5px">256 / 12,542</td></tr>
+      <tr><td style="white-space:nowrap">Steps per sequence</td><td style="font-family:var(--mono);font-size:12.5px">median 38 · P90 96 · P99 170 · max 250</td></tr>
+      <tr><td style="white-space:nowrap">Prompt length per request</td><td style="font-family:var(--mono);font-size:12.5px">median 38.7K chars (~10K tok) · P90 102K (~26K) · P99 209K (~52K) · max 290K (~73K)</td></tr>
+      <tr><td style="white-space:nowrap">Messages per request</td><td style="font-family:var(--mono);font-size:12.5px">median 54 · max 500</td></tr>
+      <tr><td style="white-space:nowrap">Total prompt volume</td><td style="font-family:var(--mono);font-size:12.5px">~625M chars ≈ 156M tokens</td></tr>
+      <tr><td style="white-space:nowrap">Request shape</td><td style="font-family:var(--mono);font-size:12.5px">bash tool-calling · temp 0.6 · top_p 0.95 · ≤4096 new tok/step</td></tr>
+    </tbody>
+  </table></div>
+  <p>Two structural properties define the benchmark. <b>First</b>, each step's prompt is an exact extension of the previous step's — the full conversation history plus the latest tool result is resent every time, so within a sequence only the newly appended tokens need prefill <i>if</i> the prefix is still cached. <b>Second</b>, the replay script pins each sequence to a worker by hashing its <code class="inline">sequence_id</code>, so a sequence's growing prefix always returns to the same KV cache. This is why it's hard: contexts grow toward 50–73K tokens per request under sustained concurrency, and without HiCache spilling KV to host memory, eviction destroys the reuse and every step pays a full multi-ten-thousand-token prefill.</p>
 
   <h3 id="ag-results">Results</h3>
   <div class="tblwrap"><table>
@@ -689,7 +703,7 @@ python3 -m sglang.bench_serving \
       <tr><td>Prefix-cache hit rate</td><td class="num"><span class="best">81.19%</span></td><td class="num">0%*</td></tr>
     </tbody>
   </table></div>
-  <p style="font-size:12.5px;color:var(--soft)">* SMG router doesn't aggregate worker cache stats — reporting artifact, not a real miss rate. Default parallelism 256 overwhelms one node; single-node runs at 64.</p>
+  <p style="font-size:12.5px;color:var(--soft)">* SMG router doesn't aggregate worker cache stats — reporting artifact, not a real miss rate. The trace's 256 sequences map to parallelism 256 on two nodes; a single node can't hold that many 10–73K-token contexts and runs at parallelism 64.</p>
 
   <h3 id="ag-features">What makes it work</h3>
   <ul class="plain">
