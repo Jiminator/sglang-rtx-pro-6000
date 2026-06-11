@@ -1,6 +1,6 @@
 # OSS Model Benchmarks on GCP G4
 
-📖 **[Documentation & Benchmarks](https://shivajid.github.io/sglang-rtx-pro-6000/)** — serving recipes, measured results, hardware reference, and deep dives.
+📖 **[Link to Documentation](https://shivajid.github.io/sglang-rtx-pro-6000/)** 
 
 
 Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances.
