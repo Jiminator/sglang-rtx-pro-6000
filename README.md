@@ -15,7 +15,7 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 | Model | Quantization | Setup | Output Throughput (tok/s) | Total Throughput (tok/s) | Peak Throughput (tok/s) | TPOT (ms) |
 |-------|--------------|-------|---------------------------|--------------------------|-------------------------|-----------|
 | [nvidia/Kimi-K2.6-NVFP4](./models/KimiK2.6/nvfp4/results/benchmark-results.md) | NVFP4 | 2 Nodes (16x RTX 6000) | 3261.28 | 3662.79 | 4725.00 | 138.54 |
-| [moonshotai/Kimi-K2.6](./models/KimiK2.6/results/benchmark_results.md) | INT4* | 1 Node (8x RTX 6000) (not optimized) | 1459.26 | 1637.28 | 850.00 | 82.43 |
+| [moonshotai/Kimi-K2.6](./models/KimiK2.6/results/benchmark_results.md) (wip)| INT4* | 1 Node (8x RTX 6000) (not optimized) | 1459.26 | 1637.28 | 850.00 | 82.43 |
 | [nvidia/Kimi-K2.5-NVFP4](./models/KimiK2.5/nvfp4/results/benchmarks_2node.yaml) | NVFP4 | 2 Nodes (16x RTX 6000) | 3237.46 | 3632.39 | 5535.00 | 137.89 |
 | [moonshotai/Kimi-K2.5](./models/KimiK2.5/results/benchmark_results.md) | INT4* | 2 Nodes (16x RTX 6000) | 3152.79 | 3537.39 | 4793.00 | 136.52 |
 | [lukealonso/GLM-5.1-NVFP4](./models/GLM5.1/nvfp4/results/benchmark_results_2node.md) | NVFP4 | 2 Nodes (16x RTX 6000) | 3075.85 | 3451.06 | 4606.00 | 141.36 |
