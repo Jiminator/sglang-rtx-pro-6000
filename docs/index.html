@@ -328,10 +328,10 @@ ul.plain li{margin-bottom:5px;max-width:66ch}
     <tbody>
       <tr><td>NCCL AllReduce · dual NIC</td><td>37.9 GB/s (~303 Gbps); 38.2 GB/s @ 2 GB payload</td><td><a href="#nw-results">results</a></td></tr>
       <tr><td>iperf3 · single NIC, 8 streams</td><td>190 / 190 Gbps full duplex</td><td><a href="#nw-results">results</a></td></tr>
-      <tr><td>Kimi-K2.6 long context · 64K → 8K</td><td>3380.8 total tok/s @ 80c (vLLM, 256K window)</td><td><a href="#lc-6488">results</a></td></tr>
-      <tr><td>Kimi-K2.6 long context · 8K → 64K</td><td>830.5 output tok/s @ 128c; best E2E at 64c</td><td><a href="#lc-8864">results</a></td></tr>
-      <tr><td>Qwen3.5-397B latency · 20K prompts</td><td>HiCache cuts P99 TTFT 14.05 s → 3.36 s</td><td><a href="#qw-results">results</a></td></tr>
-      <tr><td>Kimi-K2.6 NVFP4 · batch-512 throughput</td><td>14,016 tok/s prefill · 4,143 tok/s overall (2 nodes)</td><td><a href="#k26-batch">results</a></td></tr>
+      <tr><td>Kimi-K2.6 long context · 64K → 8K</td><td>3,019 tok/s prefill · 362 tok/s output @ 80c (vLLM, 256K window)</td><td><a href="#lc-6488">results</a></td></tr>
+      <tr><td>Kimi-K2.6 long context · 8K → 64K</td><td>830.5 output tok/s @ 128c; 64c best E2E at 813.8 tok/s</td><td><a href="#lc-8864">results</a></td></tr>
+      <tr><td>Qwen3.5-397B latency · 20K prompts</td><td>HiCache cuts P99 TTFT 4.2× — 14.05 s → 3.36 s</td><td><a href="#qw-results">results</a></td></tr>
+      <tr><td>Kimi-K2.6 NVFP4 · bench_one_batch (512)</td><td>3,808 tok/s output · 14,016 tok/s prefill (2 nodes)</td><td><a href="#k26-batch">results</a></td></tr>
       <tr><td>Kimi-K2.6 agentic trace replay</td><td>256 real sequences, up to 250 steps &amp; ~73K-tok prompts — 81.2% cache hit rate</td><td><a href="#ag-results">results</a></td></tr>
       <tr><td>Whisper-large-v3 · ASR, DP8</td><td>55.6 req/s, 0.32 s latency (transcriptions API)</td><td><a href="#wh-results">results</a></td></tr>
       <tr><td>Chandra-OCR-2 · vision, 1 GPU</td><td>5267 total tok/s, 32.5 ms TPOT</td><td><a href="#ocr-results">results</a></td></tr>
@@ -729,16 +729,24 @@ python3 -m sglang.bench_serving \
     </tbody>
   </table></div>
 
-  <h3 id="k26-batch">Batch-512 throughput — NVFP4, 2 nodes</h3>
-  <p>A single large batch (512 × 1024 in / 8192 out) measuring raw peak processing capability rather than serving behavior:</p>
+  <h3 id="k26-batch">bench_one_batch — peak throughput, NVFP4 · 2 nodes</h3>
+  <div class="meta"><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/KimiK2.6/nvfp4/beanch_one_batch.yaml" target="_blank" rel="noopener" style="text-decoration:none">client pod yaml ↗</a></span><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/KimiK2.6/nvfp4/results/batch_one_bench_results.md" target="_blank" rel="noopener" style="text-decoration:none">raw results ↗</a></span><span class="chip">sglang v0.5.10.post1</span></div>
+  <p>SGLang's offline <code class="inline">bench_one_batch_server</code> drives one batch of 512 sequences (1024 in / 8192 out) against the 2-node TP8 · PP2 server — measuring raw peak processing capability rather than serving behavior. The client runs as a dedicated pod pinned to the GPU node pool:</p>
+  <div class="codeblock"><div class="chead"><span>client pod command</span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.bench_one_batch_server \
+  --base-url http://sglang-serving-nvfp4-k26:8000 \
+  --model-path <span class="f">nvidia/Kimi-K2.6-NVFP4</span> \
+  --batch-size <span class="f">512</span> --input-len 1024 --output-len 8192 \
+  --skip-warmup --result-filename bench_one_batch_server_result.json</pre></div>
   <div class="tblwrap"><table>
     <tbody>
-      <tr><td>Input prefill throughput</td><td class="num"><span class="best">14,015.66 tok/s</span></td></tr>
-      <tr><td>Output decode throughput</td><td class="num">3,807.51 tok/s</td></tr>
+      <tr><td>Output (decode) throughput</td><td class="num"><span class="best">3,807.51 tok/s</span></td></tr>
+      <tr><td>Input (prefill) throughput</td><td class="num">14,015.66 tok/s</td></tr>
       <tr><td>Overall token throughput</td><td class="num">4,142.77 tok/s</td></tr>
       <tr><td>Average generation speed</td><td class="num">487.57 tok/s per rank</td></tr>
+      <tr><td>End-to-end batch latency</td><td class="num">1,138.99 s (512 × 8192 tok generated)</td></tr>
     </tbody>
   </table></div>
+  <p style="font-size:12.5px;color:var(--soft)">Output at 3,807 tok/s on one giant batch vs 3,261 tok/s under the 512-concurrency serving profile — the gap is the cost of real serving: continuous batching, scheduling, and per-request overheads.</p>
   <div class="pagenav"><a href="#benchmarking">← Benchmarking</a><a href="#qwen">Qwen3.5-397B →</a></div>
 </section>
 
