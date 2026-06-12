@@ -1,3 +1,9 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sglang-sa
+  namespace: default
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -16,7 +22,7 @@ spec:
         gke-gcsfuse/volumes: "true"
         gke-gcsfuse/cpu-limit: "2"
         gke-gcsfuse/memory-limit: "4Gi"
-        gke-gcsfuse/ephemeral-storage-limit: "50Gi"
+        gke-gcsfuse/ephemeral-storage-limit: "250Gi"
     spec:
       serviceAccountName: sglang-sa
       containers:
@@ -28,30 +34,28 @@ spec:
         - -c
         args:
         - |
-          nsys profile --trace-fork-before-exec=true \
-              --cuda-graph-trace=node \
-              --capture-range=cudaProfilerApi \
-              --capture-range-end=stop \
-              -o /gcs-profiles/kimi26-nvfp4-node${POD_INDEX} \
           python3 -m sglang.launch_server \
               --model-path nvidia/Kimi-K2.6-NVFP4 \
               --trust-remote-code \
               --quantization modelopt_fp4 \
               --disable-shared-experts-fusion \
               --mem-fraction-static 0.82 \
-              --schedule-policy fcfs \
-              --chunked-prefill-size 16384 \
+              --chunked-prefill-size 32768 \
+              --max-running-requests 1024 \
+              --cuda-graph-max-bs 256 \
               --nnodes 2 \
               --node-rank $POD_INDEX \
               --dist-init-addr sglang-master-pod-nvfp4-k26:5000 \
               --enable-dp-attention \
-              --reasoning-parser kimi_k2 \
-              --tool-call-parser kimi_k2 \
-              --kv-cache-dtype bfloat16 \
               --dp-size 8 \
               --enable-dp-lm-head \
               --enable-fused-moe-sum-all-reduce \
+              --reasoning-parser kimi_k2 \
+              --tool-call-parser kimi_k2 \
+              --kv-cache-dtype bfloat16 \
               --disable-radix-cache \
+              --tokenizer-worker-num 8 \
+              --enable-tokenizer-batch-encode \
               --fp4-gemm-backend flashinfer_cutlass \
               --attention-backend flashinfer \
               --moe-runner-backend flashinfer_cutlass \
@@ -59,8 +63,9 @@ spec:
               --disable-custom-all-reduce \
               --tp-size 8 \
               --pp-size 2 \
+              --context-length 16384 \
               --host 0.0.0.0 \
-              --port 8000
+              --port 8000 
 
         env:
         - name: POD_INDEX
@@ -82,6 +87,24 @@ spec:
           value: "8"
         - name: NCCL_MIN_NCHANNELS
           value: "8"
+        - name: NCCL_ALLOC_P2P_NET_LL_BUFFERS
+          value: "1"
+        - name: SGLANG_REQUEST_STATE_WAIT_TIMEOUT
+          value: "18000"
+        - name: SGLANG_ENABLE_SPEC_V2
+          value: "1"
+        - name: OMP_NUM_THREADS
+          value: "24"
+        - name: SGLANG_SET_CPU_AFFINITY
+          value: "1"
+        - name: SAFETENSORS_FAST_GPU
+          value: "1"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: "expandable_segments:True"
+        - name: SGLANG_ENABLE_DEEP_GEMM
+          value: "0"
+        - name: SGLANG_ENABLE_JIT_DEEPGEMM
+          value: "0"
         resources:
           limits:
             nvidia.com/gpu: "8"
@@ -92,10 +115,8 @@ spec:
             name: dshm
           - mountPath: /root/.cache/huggingface
             name: hf-cache
-          - mountPath: /gcs-profiles
-            name: profile-output
         securityContext:
-          privileged: true
+          privileged: true  
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       nodeSelector:
@@ -107,17 +128,12 @@ spec:
       volumes:
       - emptyDir:
           medium: Memory
-          sizeLimit: 10Gi
+          sizeLimit: 16Gi
         name: dshm
       - name: hf-cache
-        emptyDir: {}
-      - name: profile-output
-        csi:
-          driver: gcsfuse.csi.storage.gke.io
-          readOnly: false
-          volumeAttributes:
-            bucketName: shivaji-sglang-kimi-us-central1
-            mountOptions: "implicit-dirs,only-dir=nsys-profiles/kimi-k2.6-nvfp4"
+        hostPath:
+          path: /tmp/huggingface
+          type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
