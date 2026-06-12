@@ -80,6 +80,26 @@ Focuses on latency characteristics of an ultra-large MoE model, comparing perfor
 | **Median TPOT (ms)** | 101.18 | **90.41** |
 | **Mean TPOT (ms)** | 100.59 | **90.45** |
 
+## [nvidia/Kimi-K2.6-NVFP4](./models/KimiK2.6/nvfp4/results/batch_one_bench_results.md) Batch Throughput Benchmark
+[Detailed Configuration & Results](./models/KimiK2.6/nvfp4/)
+
+This benchmark measures the raw throughput of the **Kimi-K2.6 NVFP4** model using a single large batch to evaluate peak processing capabilities on a 2-node setup.
+
+### Benchmark Settings
+- **Configuration**:
+  - **Batch size**: 512
+  - **Input sequence length**: 1024 tokens
+  - **Output sequence length**: 8192 tokens
+  - **Setup**: 2 Nodes (16x RTX 6000)
+  - **Quantization**: FP4 (`modelopt_fp4`)
+
+| Metric | Value |
+| --- | --- |
+| **Input Prefill Throughput** | **14,015.66 tokens/s** |
+| **Output Decode Throughput** | **3,807.51 tokens/s** |
+| **Overall Token Throughput** | **4,142.77 tokens/s** |
+| **Average Generation Speed** | **487.57 tokens/s (per rank)** |
+
 ## Project Structure
 
 - `models/`: Model-specific SGLang job configurations and benchmarks.
