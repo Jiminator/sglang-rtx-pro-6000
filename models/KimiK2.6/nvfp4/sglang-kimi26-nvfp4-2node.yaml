@@ -54,8 +54,6 @@ spec:
               --tool-call-parser kimi_k2 \
               --kv-cache-dtype bfloat16 \
               --disable-radix-cache \
-              --tokenizer-worker-num 8 \
-              --enable-tokenizer-batch-encode \
               --fp4-gemm-backend flashinfer_cutlass \
               --attention-backend flashinfer \
               --moe-runner-backend flashinfer_cutlass \

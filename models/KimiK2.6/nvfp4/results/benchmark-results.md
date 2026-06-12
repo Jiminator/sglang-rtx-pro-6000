@@ -37,3 +37,20 @@ P99 ITL (ms):                            2206.86
 Max ITL (ms):                            29747.33  
 ==================================================
 ```
+
+## Batch serving benchmark (bench_one_batch_server)
+* **Configuration**:
+  * **Batch size**: 512
+  * **Input sequence length**: 1024 tokens
+  * **Output sequence length**: 8192 tokens
+  * **Quantization**: FP4 (`modelopt_fp4`)
+  * **Tokenizer**: In-process (zero tokenizer worker processes)
+
+| Metric | Value |
+| --- | --- |
+| Total latency | **1,138.99 s** (18.98 mins) |
+| Input prefill throughput | **14,015.66 tokens/s** |
+| Output decode throughput | **3,807.51 tokens/s** |
+| Overall token throughput | **4,142.77 tokens/s** |
+| Slowest request TTFT | **37.41 s** |
+| Average generation speed per rank | **487.57 tokens/s** |
