@@ -1,0 +1,36 @@
+# SOTA Open-Model Serving on Google Cloud G4 (NVIDIA RTX PRO 6000)
+
+> Production-validated SGLang and vLLM recipes and measured benchmarks for serving trillion-parameter-class open models on Google Cloud G4 instances (8× NVIDIA RTX PRO 6000 Blackwell SM120, 96 GB GDDR7, PCIe Gen 5, no NVLink, no GPU RDMA). Covers NVFP4/FP8/INT4 quantization, multi-node TP8·PP2 parallelism over plain TCP, HiCache KV-cache offload, real agentic trace-replay benchmarks, dual-NIC NCCL networking, and prefix-cache-aware routing with the GKE Inference Gateway (llm-d).
+
+Key measured results (standard profile 1024 in / 8192 out, 512 concurrency, unless noted):
+- Kimi-K2.6 NVFP4, 2 nodes: 3,261.28 output tok/s — repo best (bench_one_batch peak: 14,015.66 tok/s prefill)
+- Kimi-K2.5 NVFP4, 2 nodes: 3,237.46 output tok/s
+- DeepSeek-V3.2 NVFP4, 1 node: 334.4 output tok/s per GPU with EAGLE speculation
+- Agentic trace replay (12,542 real requests, up to 250 steps, ~73K-token prompts): 81.2% prefix-cache hit rate on a single node
+- HiCache on Qwen3.5-397B with 20K-token prompts: P99 TTFT 14.05 s → 3.36 s
+- NCCL AllReduce across two nodes on plain TCP via dual 200 Gbps NICs: ~38 GB/s (~303 Gbps)
+
+## Documentation
+
+- [Interactive docs site](https://shivajid.github.io/sglang-rtx-pro-6000/): full benchmark tables, per-model recipes, hardware/NUMA topology, networking results, and an interactive GKE Inference Gateway simulator
+- [Repository README](https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/README.md): summary benchmark table and key updates
+
+## Model recipes and results
+
+- [Kimi-K2.6](https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.6): EAGLE3 speculation + HiCache + GCS Fuse weights; NVFP4 2-node config (repo's best throughput) and bench_one_batch results
+- [Kimi-K2.5](https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.5): INT4 vs NVFP4 head-to-head on 16 GPUs with DP8 attention
+- [DeepSeek-V3.2](https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/DeepSeekV3.2): NSA attention, EAGLE speculation; 1-node NVFP4 vs 2-node FP8 trade-offs
+- [GLM-5.1](https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/GLM5.1): NEXTN speculation; super-linear 1→2 node scaling under saturation
+- [Qwen3.5-397B](https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/Qwen3.5): HiCache latency A/B with 20K-token prompts
+- [Whisper-large-v3](https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/Whisper): DP8 audio transcription, 55.6 req/s
+- [Chandra-OCR-2](https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/ChandraOCR): single-GPU vision OCR, fastest TPOT in the repo (32.5 ms)
+
+## GKE Inference Gateway (llm-d)
+
+- [Inference Gateway recipes](https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.6/gke-inference-gateway): prefix-cache-aware routing for SGLang and vLLM backends — Gateway API, InferencePool, Endpoint Picker (EPP); the EPP is a control-plane ext-proc that returns routing decisions and never carries traffic
+- [llm-d project](https://llm-d.ai): the upstream framework for cache-aware LLM routing on Kubernetes
+
+## Optional
+
+- [Agentic benchmark details](https://shivajid.github.io/sglang-rtx-pro-6000/#agentic): trace-replay methodology, HiCache + longest-prefix-match scheduling, single-node vs two-node latency findings
+- [Networking (DRANET dual-NIC)](https://shivajid.github.io/sglang-rtx-pro-6000/#network): iperf3 and NCCL results over jumbo-frame VPC

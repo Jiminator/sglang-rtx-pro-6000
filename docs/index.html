@@ -4,6 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SOTA Benchmarks on Google Cloud G4 — RTX PRO 6000 Recipes</title>
+<meta name="description" content="Measured SGLang and vLLM recipes for serving trillion-parameter open models (Kimi-K2.6, DeepSeek-V3.2, GLM-5.1, Qwen3.5) on Google Cloud G4 with NVIDIA RTX PRO 6000 GPUs — benchmarks, multi-node configs, KV-cache strategies, and the GKE Inference Gateway (llm-d).">
+<link rel="canonical" href="https://shivajid.github.io/sglang-rtx-pro-6000/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="SOTA Benchmarks on Google Cloud G4">
+<meta property="og:title" content="SOTA Benchmarks on Google Cloud G4 — RTX PRO 6000 Recipes">
+<meta property="og:description" content="Measured SGLang/vLLM recipes for trillion-parameter open models on RTX PRO 6000 GPUs without NVLink: 3,261 tok/s Kimi-K2.6, 81% prefix-cache hit rate on real agentic traces, prefix-cache-aware routing with the GKE Inference Gateway.">
+<meta property="og:url" content="https://shivajid.github.io/sglang-rtx-pro-6000/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SOTA Benchmarks on Google Cloud G4 — RTX PRO 6000 Recipes">
+<meta name="twitter:description" content="Measured SGLang/vLLM serving recipes for Kimi-K2.6, DeepSeek-V3.2, GLM-5.1 and more on GCP G4 (RTX PRO 6000), incl. the GKE Inference Gateway.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "SOTA Open-Model Serving Benchmarks on Google Cloud G4 (NVIDIA RTX PRO 6000)",
+  "description": "Production-validated SGLang and vLLM serving recipes and benchmarks for trillion-parameter-class open models (Kimi-K2.5/K2.6, DeepSeek-V3.2, GLM-5.1, Qwen3.5-397B, Whisper, Chandra-OCR) on Google Cloud G4 instances with NVIDIA RTX PRO 6000 Blackwell GPUs, covering NVFP4/FP8/INT4 quantization, multi-node TP/PP parallelism over TCP, HiCache KV offload, agentic trace-replay benchmarks, and prefix-cache-aware routing with the GKE Inference Gateway (llm-d).",
+  "author": {"@type": "Person", "name": "Shivaji Dutta", "url": "https://github.com/shivajid"},
+  "url": "https://shivajid.github.io/sglang-rtx-pro-6000/",
+  "dateModified": "2026-06-12",
+  "isAccessibleForFree": true,
+  "about": ["LLM inference", "SGLang", "vLLM", "GKE Inference Gateway", "llm-d", "NVIDIA RTX PRO 6000", "Google Cloud G4", "NVFP4 quantization", "KV cache"],
+  "isBasedOn": "https://github.com/shivajid/sglang-rtx-pro-6000"
+}
+</script>
 <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="%231F2937"/><g fill="%23E5E7EB"><rect x="6" y="8" width="4.6" height="4.6" rx="1"/><rect x="13.7" y="8" width="4.6" height="4.6" rx="1"/><rect x="21.4" y="8" width="4.6" height="4.6" rx="1"/><rect x="6" y="19.4" width="4.6" height="4.6" rx="1"/><rect x="13.7" y="19.4" width="4.6" height="4.6" rx="1"/></g><rect x="21.4" y="19.4" width="4.6" height="4.6" rx="1" fill="%233B82F6"/></svg>'>
 <style>
 :root{
