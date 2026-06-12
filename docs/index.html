@@ -200,6 +200,51 @@ ul.plain li{margin-bottom:5px;max-width:66ch}
   .igw-stats{margin-left:0;width:100%}
 }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style id="wb-css">
+/* ===== Whiteboard professor lesson (scoped under .wb-root) ===== */
+.wb-root{--wbink:#2b2d31;--wbblue:#2160b8;--wbred:#cf3a2b;--wbgreen:#1d8a4e;
+  font-family:'Patrick Hand',cursive;display:none;margin:6px 0 10px}
+.wb-root.visible{display:block}
+.wb-frame{background:#b9b2a4;border-radius:14px;padding:9px;
+  box-shadow:0 16px 36px -18px rgba(40,35,25,.45), inset 0 1px 0 #fff8}
+.wb-board{position:relative;border-radius:8px;overflow:hidden;
+  background:radial-gradient(1100px 460px at 30% 20%, #ffffff, #f7f8f6 70%, #eef0ee);
+  box-shadow:inset 0 0 50px rgba(120,130,140,.12), inset 0 0 6px rgba(0,0,0,.08)}
+.wb-board svg{display:block;width:100%;height:auto}
+.wb-tray{height:14px;margin:5px 22px 0;border-radius:0 0 10px 10px;
+  background:linear-gradient(180deg,#cfc9bd,#b6ad9d);display:flex;align-items:center;gap:9px;
+  padding:0 16px;box-shadow:0 6px 12px -8px rgba(0,0,0,.4)}
+.wb-marker{width:46px;height:6px;border-radius:4px}
+.wb-lectern{display:flex;gap:12px;align-items:flex-start;margin-top:12px}
+.wb-prof{flex:0 0 auto;width:46px;height:46px;border-radius:50%;background:#fff;
+  border:2px solid #d8d2c6;display:flex;align-items:center;justify-content:center;
+  font-size:25px;box-shadow:0 4px 10px -6px rgba(0,0,0,.3)}
+.wb-speech{position:relative;flex:1;background:#fffdf6;border:2px solid #e2dccd;border-radius:12px;
+  padding:8px 14px;min-height:58px;box-shadow:0 8px 16px -14px rgba(0,0,0,.3)}
+.wb-speech::before{content:"";position:absolute;left:-9px;top:17px;width:14px;height:14px;
+  background:#fffdf6;border-left:2px solid #e2dccd;border-bottom:2px solid #e2dccd;transform:rotate(45deg)}
+#wb-caption{font-family:'Caveat',cursive;font-size:20px;font-weight:600;line-height:1.25;color:#33363b}
+#wb-stepname{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9a937f}
+.wb-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:11px}
+.wb-root .wb-btn{font-family:'Patrick Hand',cursive;font-size:15px;color:#34373c;cursor:pointer;
+  background:#fffdf6;border:2px solid #cfc8b8;border-radius:9px;padding:5px 13px;
+  box-shadow:0 3px 0 #cfc8b8;transition:transform .06s, box-shadow .06s}
+.wb-root .wb-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #cfc8b8}
+.wb-root .wb-btn:disabled{opacity:.45;cursor:default}
+.wb-root .wb-btn.wb-primary{background:#2160b8;border-color:#194e96;box-shadow:0 3px 0 #194e96;color:#fff}
+.wb-spd{display:flex;align-items:center;gap:7px;font-size:13px;color:#6b6657}
+.wb-spd input{accent-color:#2160b8;width:110px}
+.wb-dots{display:flex;gap:5px;margin-left:4px;flex-wrap:wrap}
+.wb-dot{width:9px;height:9px;border-radius:50%;background:#d6d0c2;transition:.2s}
+.wb-dot.wb-done{background:#9fb98a}
+.wb-dot.wb-cur{background:#2160b8;transform:scale(1.25)}
+/* gateway page mode tabs */
+.gwtabs{display:flex;gap:8px;margin:14px 0 10px}
+.gwtab{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--soft);
+  background:var(--codebg);border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer}
+.gwtab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+</style>
 </head>
 <body>
 <button class="menubtn" id="menubtn" aria-label="Toggle navigation">Menu</button>
@@ -264,8 +309,9 @@ ul.plain li{margin-bottom:5px;max-width:66ch}
     <thead><tr><th>Model</th><th>Setup</th><th class="num">Output tok/s</th><th class="num">/ GPU</th><th style="min-width:110px">Per-GPU</th><th class="num">TPOT ms</th></tr></thead>
     <tbody>
       <tr><td><a href="#k25-int4">Kimi-K2.5</a><span class="q a">INT4</span></td><td>2n · 16 GPU<div class="rd">Jan 2026</div></td><td class="num">3152.79</td><td class="num">197.0</td><td><div class="bar" style="width:59%"></div></td><td class="num">136.52</td></tr>
-      <tr><td><a href="#kimi25">Kimi-K2.5</a><span class="q">NVFP4</span></td><td>2n · 16 GPU</td><td class="num"><span class="best">3237.46</span></td><td class="num">202.3</td><td><div class="bar" style="width:61%"></div></td><td class="num">137.89</td></tr>
-      <tr><td><a href="#k26-1node">Kimi-K2.6</a><span class="q a">INT4</span></td><td>1n · 8 GPU<div class="rd">Apr 2026</div></td><td class="num">1459.26</td><td class="num">182.4</td><td><div class="bar" style="width:55%"></div></td><td class="num">82.43</td></tr>
+      <tr><td><a href="#kimi25">Kimi-K2.5</a><span class="q">NVFP4</span></td><td>2n · 16 GPU</td><td class="num">3237.46</td><td class="num">202.3</td><td><div class="bar" style="width:61%"></div></td><td class="num">137.89</td></tr>
+      <tr><td><a href="#k26-1node">Kimi-K2.6</a><span class="q a">INT4</span></td><td>1n · 8 GPU<div class="rd">Apr 2026 · wip</div></td><td class="num">1459.26</td><td class="num">182.4</td><td><div class="bar" style="width:55%"></div></td><td class="num">82.43</td></tr>
+      <tr><td><a href="#k26-nvfp4">Kimi-K2.6</a><span class="q">NVFP4</span></td><td>2n · 16 GPU<div class="rd">Jun 2026</div></td><td class="num"><span class="best">3261.28</span></td><td class="num">203.8</td><td><div class="bar" style="width:61%"></div></td><td class="num">138.54</td></tr>
       <tr><td><a href="#ds-fp8">DeepSeek-V3.2</a><span class="q b">FP8</span></td><td>2n · 16 GPU<div class="rd">Dec 2025</div></td><td class="num">2962.79</td><td class="num">185.2</td><td><div class="bar" style="width:55%"></div></td><td class="num">149.29</td></tr>
       <tr><td><a href="#ds-nvfp4">DeepSeek-V3.2</a><span class="q">NVFP4</span>†</td><td>1n · 8 GPU</td><td class="num">2675.33</td><td class="num"><span class="best">334.4</span></td><td><div class="bar" style="width:100%"></div></td><td class="num">106.03</td></tr>
       <tr><td><a href="#glm-fp8">GLM-5.1</a><span class="q b">FP8</span></td><td>2n · 16 GPU<div class="rd">Apr 2026</div></td><td class="num">2785.55</td><td class="num">174.1</td><td><div class="bar" style="width:52%"></div></td><td class="num">155.26</td></tr>
@@ -274,7 +320,7 @@ ul.plain li{margin-bottom:5px;max-width:66ch}
       <tr><td><a href="#ocr">Chandra-OCR-2</a><span class="q a">VLM</span></td><td>1 GPU</td><td class="num">2600.67</td><td class="num">—</td><td style="color:var(--faint);font-size:11.5px">image workload</td><td class="num"><span class="best">32.47</span></td></tr>
     </tbody>
   </table></div>
-  <p style="font-size:12.5px;color:var(--soft)">† 512 prompts (others 1536) with EAGLE speculation — flatters per-GPU; its median TTFT is 18.7 s vs 0.33 s for FP8 2-node. Scaling can be super-linear under saturation: GLM NVFP4 goes 1490 → 3076 tok/s from 1 → 2 nodes. Kimi-K2.5 INT4 rerun with an optimized DP8 config. Refreshed Jun 10, 2026.</p>
+  <p style="font-size:12.5px;color:var(--soft)">† 512 prompts (others 1536) with EAGLE speculation — flatters per-GPU; its median TTFT is 18.7 s vs 0.33 s for FP8 2-node. Scaling can be super-linear under saturation: GLM NVFP4 goes 1490 → 3076 tok/s from 1 → 2 nodes. Kimi-K2.5 INT4 rerun with an optimized DP8 config; the Kimi-K2.6 INT4 1-node config is work-in-progress, not yet optimized. Refreshed Jun 11, 2026.</p>
 
   <h3 id="ov-more">Other benchmarks</h3>
   <div class="tblwrap"><table>
@@ -285,6 +331,7 @@ ul.plain li{margin-bottom:5px;max-width:66ch}
       <tr><td>Kimi-K2.6 long context · 64K → 8K</td><td>3380.8 total tok/s @ 80c (vLLM, 256K window)</td><td><a href="#lc-6488">results</a></td></tr>
       <tr><td>Kimi-K2.6 long context · 8K → 64K</td><td>830.5 output tok/s @ 128c; best E2E at 64c</td><td><a href="#lc-8864">results</a></td></tr>
       <tr><td>Qwen3.5-397B latency · 20K prompts</td><td>HiCache cuts P99 TTFT 14.05 s → 3.36 s</td><td><a href="#qw-results">results</a></td></tr>
+      <tr><td>Kimi-K2.6 NVFP4 · batch-512 throughput</td><td>14,016 tok/s prefill · 4,143 tok/s overall (2 nodes)</td><td><a href="#k26-batch">results</a></td></tr>
       <tr><td>Kimi-K2.6 agentic trace replay</td><td>256 real sequences, up to 250 steps &amp; ~73K-tok prompts — 81.2% cache hit rate</td><td><a href="#ag-results">results</a></td></tr>
       <tr><td>Whisper-large-v3 · ASR, DP8</td><td>55.6 req/s, 0.32 s latency (transcriptions API)</td><td><a href="#wh-results">results</a></td></tr>
       <tr><td>Chandra-OCR-2 · vision, 1 GPU</td><td>5267 total tok/s, 32.5 ms TPOT</td><td><a href="#ocr-results">results</a></td></tr>
@@ -293,8 +340,8 @@ ul.plain li{margin-bottom:5px;max-width:66ch}
 
   <h3 id="ov-jump">Recipes</h3>
   <div class="idx">
-    <a href="#kimi25"><span class="it">Kimi-K2.5 <span style="color:var(--faint);font-weight:400;font-size:12px">Jan 2026</span></span><span class="id">INT4 vs NVFP4 — repo's best throughput; NVFP4 build at 959K HF downloads/mo</span></a>
-    <a href="#kimi26"><span class="it">Kimi-K2.6 <span style="color:var(--faint);font-weight:400;font-size:12px">Apr 2026</span></span><span class="id">EAGLE3 + HiCache + GCS Fuse, plus 2-node</span></a>
+    <a href="#kimi25"><span class="it">Kimi-K2.5 <span style="color:var(--faint);font-weight:400;font-size:12px">Jan 2026</span></span><span class="id">INT4 vs NVFP4 head-to-head at 3,237 tok/s; NVFP4 build at 959K HF downloads/mo</span></a>
+    <a href="#kimi26"><span class="it">Kimi-K2.6 <span style="color:var(--faint);font-weight:400;font-size:12px">Jun 2026</span></span><span class="id">EAGLE3 + HiCache + GCS Fuse — NVFP4 2-node is the repo's best at 3,261 tok/s</span></a>
     <a href="#deepseek"><span class="it">DeepSeek-V3.2 <span style="color:var(--faint);font-weight:400;font-size:12px">Dec 2025</span></span><span class="id">FP8 distributed · NVFP4 single node — most-downloaded model here (3.7M HF downloads/mo)</span></a>
     <a href="#glm"><span class="it">GLM-5.1 <span style="color:var(--faint);font-weight:400;font-size:12px">Apr 2026</span></span><span class="id">FP8 + NVFP4, 1- and 2-node, NEXTN speculation</span></a>
     <a href="#qwen"><span class="it">Qwen3.5-397B <span style="color:var(--faint);font-weight:400;font-size:12px">Feb 2026</span></span><span class="id">HiCache latency A/B at 20K-token prompts</span></a>
@@ -606,7 +653,7 @@ python3 -m sglang.bench_serving \
 <!-- KIMI 2.5 -->
 <section class="page" id="page-kimi25">
   <h1 class="pagetitle">Kimi-K2.5</h1>
-  <p class="lede">Native INT4 vs NVFP4 head-to-head on 16 GPUs. NVFP4 holds the repo's best standard-profile throughput.</p>
+  <p class="lede">Native INT4 vs NVFP4 head-to-head on 16 GPUs — NVFP4 at 3,237 tok/s, since edged out by Kimi-K2.6 NVFP4.</p>
 
   <h3 id="k25-int4">Native INT4 · 2 nodes</h3>
   <div class="meta"><span class="chip">moonshotai/Kimi-K2.5</span><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.5" target="_blank" rel="noopener" style="text-decoration:none">files on GitHub ↗</a></span><span class="chip"><b>16× GPU</b></span><span class="chip">TP8 · PP2 · DP8</span><span class="chip">kv fp8_e5m2</span><span class="chip">sglang:v0.5.10.post1</span></div>
@@ -641,9 +688,9 @@ python3 -m sglang.bench_serving \
 <!-- KIMI 2.6 -->
 <section class="page" id="page-kimi26">
   <h1 class="pagetitle">Kimi-K2.6</h1>
-  <p class="lede">The most feature-rich recipe: EAGLE3 speculation, HiCache, GCS Fuse weights — plus a 2-node variant.</p>
+  <p class="lede">The most feature-rich recipe: EAGLE3 speculation, HiCache, GCS Fuse weights — and the 2-node NVFP4 build now holds the repo's best throughput at 3,261 tok/s.</p>
 
-  <h3 id="k26-1node">Single node · EAGLE3 + HiCache</h3>
+  <h3 id="k26-1node">Single node · EAGLE3 + HiCache <span style="color:var(--faint);font-weight:400;font-size:13px">wip — not yet optimized</span></h3>
   <div class="meta"><span class="chip">moonshotai/Kimi-K2.6</span><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.6" target="_blank" rel="noopener" style="text-decoration:none">files on GitHub ↗</a></span><span class="chip"><b>8× GPU</b></span><span class="chip">EAGLE3 · k2.5-eagle3</span><span class="chip">HiCache 2.0</span><span class="chip">kv fp8_e4m3</span><span class="chip">GCS Fuse</span></div>
   <div class="codeblock"><div class="chead"><span><a href="https://github.com/shivajid/sglang-rtx-pro-6000/blob/main/models/KimiK2.6/sglang-kimi-26-1node.yaml" target="_blank" rel="noopener">models/KimiK2.6/sglang-kimi-26-1node.yaml</a></span><button class="copybtn">Copy</button></div><pre>python3 -m sglang.launch_server \
   --model-path /models \  <span class="c"># GCS Fuse CSI mount, parallel-download tuned</span>
@@ -670,7 +717,29 @@ python3 -m sglang.bench_serving \
     </tbody>
   </table></div>
   <div class="callout"><p>For realistic traffic, see the <a href="#agentic">agentic benchmark</a>: same HiCache setup, 16 s P50 latency, 81% cache hit rate.</p></div>
-  <div class="pagenav"><a href="#benchmarking">← Benchmarking</a><a href="#kimi26">Kimi-K2.6 →</a></div>
+
+  <h3 id="k26-nvfp4">NVFP4 · 2 nodes — standard profile <span style="color:var(--faint);font-weight:400;font-size:13px">Jun 2026</span></h3>
+  <div class="meta"><span class="chip">nvidia/Kimi-K2.6-NVFP4</span><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.6/nvfp4" target="_blank" rel="noopener" style="text-decoration:none">models/KimiK2.6/nvfp4/ on GitHub ↗</a></span><span class="chip"><b>16× GPU</b></span><span class="chip">modelopt_fp4</span></div>
+  <p>Native NVFP4 quantization makes this the repo's best standard-profile result — 3,261 output tok/s on the 2-node setup, edging out Kimi-K2.5 NVFP4 (3,237), and a large jump over the work-in-progress 1-node INT4 run above.</p>
+  <div class="tblwrap"><table>
+    <tbody>
+      <tr><td>Output / total tok/s</td><td class="num"><span class="best">3261.28 / 3662.79</span></td></tr>
+      <tr><td>Peak throughput</td><td class="num">4725 tok/s</td></tr>
+      <tr><td>Mean TPOT</td><td class="num">138.54 ms</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="k26-batch">Batch-512 throughput — NVFP4, 2 nodes</h3>
+  <p>A single large batch (512 × 1024 in / 8192 out) measuring raw peak processing capability rather than serving behavior:</p>
+  <div class="tblwrap"><table>
+    <tbody>
+      <tr><td>Input prefill throughput</td><td class="num"><span class="best">14,015.66 tok/s</span></td></tr>
+      <tr><td>Output decode throughput</td><td class="num">3,807.51 tok/s</td></tr>
+      <tr><td>Overall token throughput</td><td class="num">4,142.77 tok/s</td></tr>
+      <tr><td>Average generation speed</td><td class="num">487.57 tok/s per rank</td></tr>
+    </tbody>
+  </table></div>
+  <div class="pagenav"><a href="#benchmarking">← Benchmarking</a><a href="#qwen">Qwen3.5-397B →</a></div>
 </section>
 
 <!-- QWEN -->
@@ -854,7 +923,7 @@ smg launch --worker-urls http://&lt;N1&gt;:30000 http://&lt;N2&gt;:30000 \
   <div class="meta"><span class="chip"><a href="https://github.com/shivajid/sglang-rtx-pro-6000/tree/main/models/KimiK2.6/gke-inference-gateway" target="_blank" rel="noopener" style="text-decoration:none">models/KimiK2.6/gke-inference-gateway/ on GitHub ↗</a></span></div>
   <p class="lede">Prefix-cache-aware routing: requests sharing a prompt prefix land on the replica that already holds it in KV cache — maximizing reuse, minimizing TTFT. Shipped for both SGLang and vLLM backends.</p>
 
-<div class="igw" id="igw">
+<div class="gwtabs"><button class="gwtab active" id="tab-sim">Live simulator</button><button class="gwtab" id="tab-wb">Whiteboard lesson</button></div><div class="igw" id="igw">
   <div class="igw-stage" id="igw-stage">
     <div class="igw-grid"></div>
     <canvas id="igw-wires"></canvas>
@@ -924,7 +993,37 @@ smg launch --worker-urls http://&lt;N1&gt;:30000 http://&lt;N2&gt;:30000 \
     <span class="igw-it"><span class="igw-chipc" style="background:#ff8a5c"></span>cold prefill</span>
   </div>
 </div>
-<div class="figcap">Live simulation — request flow across two G4 nodes (StatefulSet ×2, anti-affinity). The packet holds at the gateway while a consult pulse round-trips to the EPP; traffic then flows gateway → replica directly, and tokens stream back without touching the EPP. Toggle round-robin to watch the KV caches thrash and the hit rate collapse.</div>
+<div class="figcap" id="igw-figcap">Live simulation — request flow across two G4 nodes (StatefulSet ×2, anti-affinity). The packet holds at the gateway while a consult pulse round-trips to the EPP; traffic then flows gateway → replica directly, and tokens stream back without touching the EPP. Toggle round-robin to watch the KV caches thrash and the hit rate collapse.</div>
+<div class="wb-root" id="wb-root">
+  <div class="wb-frame">
+    <div class="wb-board">
+      <svg id="wb-svg" viewBox="0 0 1000 580" xmlns="http://www.w3.org/2000/svg" aria-label="Whiteboard drawing"></svg>
+    </div>
+    <div class="wb-tray">
+      <div class="wb-marker" style="background:#2b2d31"></div>
+      <div class="wb-marker" style="background:#2160b8"></div>
+      <div class="wb-marker" style="background:#cf3a2b"></div>
+      <div class="wb-marker" style="background:#1d8a4e"></div>
+    </div>
+  </div>
+  <div class="wb-lectern">
+    <div class="wb-prof">🧑‍🏫</div>
+    <div class="wb-speech">
+      <div id="wb-stepname">step 0</div>
+      <div id="wb-caption"></div>
+    </div>
+  </div>
+  <div class="wb-controls">
+    <button class="wb-btn" id="wb-back">◀ Back</button>
+    <button class="wb-btn wb-primary" id="wb-play">⏸ Pause</button>
+    <button class="wb-btn" id="wb-next">Next ▶</button>
+    <button class="wb-btn" id="wb-restart">↺ Start over</button>
+    <div class="wb-spd"><span>pace</span><input id="wb-speed" type="range" min="0.5" max="2.2" step="0.1" value="1"></div>
+    <div class="wb-dots" id="wb-dots"></div>
+  </div>
+  <div class="figcap">Whiteboard lesson — a professor draws the components first, then walks two prefixes from cold start to steady state (19 steps, redrawn slightly differently on every restart).</div>
+</div>
+
 
   <h3 id="gw-setup">Setup</h3>
   <ol class="steps">
@@ -1310,6 +1409,504 @@ kubectl apply -f chiv01-nccl-bench.yaml && ./run_bench_10x.sh        <span class
   resize();renderStats();
   if(reduce)els.play.textContent='Play';
   requestAnimationFrame(loop);
+})();
+</script>
+<script>
+(() => {
+"use strict";
+const SVG = document.getElementById("wb-svg");
+const NS = "http://www.w3.org/2000/svg";
+const COLORS = { ink:"#2b2d31", blue:"#2160b8", red:"#cf3a2b", green:"#1d8a4e" };
+
+/* ---------- seeded randomness: every replay draws a little differently ---------- */
+let seed = Math.floor(Math.random()*1e9);
+function mulberry(a){ return function(){ a|=0; a=a+0x6D2B79F5|0;
+  let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t;
+  return ((t^t>>>14)>>>0)/4294967296; } }
+let rand = mulberry(seed);
+const R  = (a,b)=>a+rand()*(b-a);
+
+/* ---------- hand-drawn geometry ---------- */
+// wobbly polyline: subdivide, offset perpendicular with smoothed noise
+function wobble(pts, amp=2.4, step=14){
+  const out=[];
+  for(let i=0;i<pts.length-1;i++){
+    const [x1,y1]=pts[i],[x2,y2]=pts[i+1];
+    const dx=x2-x1, dy=y2-y1, len=Math.hypot(dx,dy)||1;
+    const n=Math.max(2,Math.round(len/step));
+    const px=-dy/len, py=dx/len;
+    // smooth noise control values
+    const ctl=[]; for(let k=0;k<=n;k++) ctl.push(R(-amp,amp));
+    for(let k=(i===0?0:1);k<=n;k++){
+      const t=k/n;
+      // cosine-smooth between ctl points + slight drift
+      const c = ctl[k]*0.6 + (ctl[Math.max(0,k-1)]+ctl[Math.min(n,k+1)])*0.2;
+      const ease = Math.sin(t*Math.PI); // pin endpoints
+      out.push([x1+dx*t+px*c*ease, y1+dy*t+py*c*ease]);
+    }
+  }
+  return out;
+}
+function toPath(pts){
+  let d=`M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for(let i=1;i<pts.length;i++){
+    const [x,y]=pts[i], [px,py]=pts[i-1];
+    d+=` Q${px.toFixed(1)} ${py.toFixed(1)} ${((px+x)/2).toFixed(1)} ${((py+y)/2).toFixed(1)}`;
+  }
+  return d;
+}
+// human rectangle: one continuous stroke, corners overshoot a touch
+function handRect(x,y,w,h){
+  const o=()=>R(-3,5); // overshoot
+  return [[x+R(-2,2),y+R(-2,2)],[x+w+o(),y+R(-2,2)],[x+w+R(-2,2),y+h+o()],
+          [x+R(-3,1),y+h+R(-2,2)],[x+R(-2,2),y-R(0,4)]];
+}
+function handEllipse(cx,cy,rx,ry){
+  const pts=[]; const n=26; const a0=R(0.4,1.4);
+  for(let i=0;i<=n+3;i++){ // overlap past full circle like a real circled note
+    const a=a0+(i/n)*Math.PI*2;
+    pts.push([cx+Math.cos(a)*(rx+R(-2.5,2.5)), cy+Math.sin(a)*(ry+R(-2.5,2.5))]);
+  }
+  return pts;
+}
+
+/* ---------- drawable factory ---------- */
+let layerStatic, layerLive, markerDot;
+function el(name, attrs, parent){
+  const e=document.createElementNS(NS,name);
+  for(const k in attrs) e.setAttribute(k,attrs[k]);
+  (parent||layerLive).appendChild(e); return e;
+}
+function strokeItem(pts,{color="ink",width=3.2,amp=2.4,dash=null,dur=700}={}){
+  return { kind:"stroke", color, width, dash, dur, make(){
+    const p=el("path",{d:toPath(wobble(pts,amp)),fill:"none",
+      stroke:COLORS[color],"stroke-width":width,"stroke-linecap":"round","stroke-linejoin":"round"});
+    if(dash) p.setAttribute("data-dash",dash); // applied after draw
+    return p;
+  }};
+}
+function arrowItem(pts,opt={}){
+  // main line + head; head drawn quickly after
+  const o={color:"blue",width:3.4,dur:650,...opt};
+  const main=strokeItem(pts,o);
+  const [x2,y2]=pts[pts.length-1], [x1,y1]=pts[pts.length-2];
+  const ang=Math.atan2(y2-y1,x2-x1);
+  const head=(a)=>[[x2,y2],[x2-14*Math.cos(ang-a),y2-14*Math.sin(ang-a)]];
+  return [ main,
+    strokeItem(head(0.5),{color:o.color,width:o.width,dur:130,amp:1.2}),
+    strokeItem(head(-0.5),{color:o.color,width:o.width,dur:130,amp:1.2}) ];
+}
+function textItem(x,y,str,{size=22,color="ink",dur=null,font="Caveat",weight=600,anchor="start"}={}){
+  return { kind:"text", dur: dur ?? Math.max(300,str.length*45), make(){
+    const rot=[...str].map(()=>R(-4,4).toFixed(1)).join(" ");
+    const t=el("text",{x,y,"font-family":font+", cursive","font-size":size,
+      "font-weight":weight,fill:COLORS[color],"text-anchor":anchor,rotate:rot});
+    t.dataset.full=str; t.textContent="";
+    return t;
+  }};
+}
+function pause(ms){ return {kind:"pause",dur:ms,make(){return null;}}; }
+
+/* ---------- layout ---------- */
+const L = {
+  client:{x:52,y:236,w:160,h:96},
+  gw:{x:356,y:120,w:208,h:104},
+  epp:{x:344,y:380,w:250,h:112},
+  r0:{x:712,y:84,w:236,h:128},
+  r1:{x:712,y:300,w:236,h:128},
+};
+function kvSlots(b){ // two small slots inside a replica box
+  const sx=b.x+108, sy=b.y+62, w=52, h=30, gap=12;
+  return [{x:sx,y:sy,w,h},{x:sx+w+gap,y:sy,w,h}];
+}
+
+const L2 = {
+  client:{x:40,y:240,w:150,h:84},
+  gw:{x:280,y:214,w:190,h:116},
+  epp:{x:292,y:388,w:184,h:74},
+  r0:{x:700,y:104,w:244,h:132},
+  r1:{x:700,y:348,w:244,h:132},
+};
+
+/* ---------- the lesson ---------- */
+function buildSteps(){
+// circled hand-drawn step number
+function num(cx,cy,n,color="blue"){
+  return [
+    strokeItem(handEllipse(cx,cy,14,14),{color,width:2.6,dur:300,amp:1.4}),
+    textItem(cx,cy+8,String(n),{size:21,color,weight:700,anchor:"middle",dur:220}),
+  ];
+}
+return [
+/* ---------------- ACT 1 — draw the components ---------------- */
+{ name:"the setup",
+  say:"Alright — today: the GKE Inference Gateway. Before we trace anything, let me draw all the players on the board first.",
+  items:[
+    textItem(500,46,"GKE  Inference  Gateway",{size:34,weight:700,anchor:"middle"}),
+    strokeItem([[330,58],[672,62]],{width:3.6,amp:3.2,dur:450,color:"blue"}),
+  ]},
+{ name:"player 1 — the client",
+  say:"Player one: a client pod. Just an ordinary app speaking the OpenAI API. It only ever knows ONE address — the Gateway IP.",
+  items:[
+    strokeItem(handRect(L.client.x,L.client.y,L.client.w,L.client.h),{dur:850}),
+    textItem(L.client.x+18,L.client.y+38,"client pod",{size:24}),
+    textItem(L.client.x+18,L.client.y+66,"(OpenAI SDK)",{size:17,weight:500}),
+    textItem(L.client.x+18,L.client.y+88,"→ http://GW-IP",{size:16,weight:500}),
+  ]},
+{ name:"player 2 — the gateway",
+  say:"Player two: the Inference Gateway — an Envoy proxy, the internal L7 load balancer. Underline this in your notes: it is the DATA plane. Every byte will flow through it.",
+  items:[
+    strokeItem(handRect(L.gw.x,L.gw.y,L.gw.w,L.gw.h),{dur:850}),
+    textItem(L.gw.x+20,L.gw.y+38,"Inference GW",{size:25}),
+    textItem(L.gw.x+20,L.gw.y+64,"(Envoy · gke-l7-rilb)",{size:16,weight:500}),
+    textItem(L.gw.x+20,L.gw.y+90,"data plane!",{size:18,color:"blue"}),
+    strokeItem([[L.gw.x+18,L.gw.y+96],[L.gw.x+118,L.gw.y+98]],{color:"blue",width:2.4,dur:220,amp:1.6}),
+  ]},
+{ name:"player 3 — the EPP",
+  say:"Player three, in red because it's special: the Endpoint Picker — the EPP. The CONTROL plane. It will never carry traffic; it only thinks. It talks to the gateway over a side channel called ext-proc — I'll dash that in when we use it.",
+  items:[
+    strokeItem(handRect(L.epp.x,L.epp.y,L.epp.w,L.epp.h),{color:"red",dur:850,amp:2.8}),
+    textItem(L.epp.x+18,L.epp.y+34,"EPP — endpoint picker",{size:22,color:"red"}),
+    textItem(L.epp.x+18,L.epp.y+60,"control plane (ext-proc)",{size:16,color:"red",weight:500}),
+    textItem(L.epp.x+18,L.epp.y+88,"scores: cache? load? queue?",{size:17,weight:500}),
+  ]},
+{ name:"players 4 & 5 — the replicas",
+  say:"And finally the workers: two model-server replicas — SGLang or vLLM, eight GPUs each, one per G4 node. See those little boxes? Each replica has its own KV cache. Empty… for now.",
+  items:[
+    strokeItem(handRect(L.r0.x,L.r0.y,L.r0.w,L.r0.h),{dur:800}),
+    textItem(L.r0.x+16,L.r0.y+30,"replica-0  (G4 node A)",{size:20}),
+    textItem(L.r0.x+16,L.r0.y+54,"SGLang/vLLM · TP8",{size:15,weight:500}),
+    textItem(L.r0.x+16,L.r0.y+86,"KV:",{size:18}),
+    ...kvSlots(L.r0).map(sl=>strokeItem(handRect(sl.x,sl.y,sl.w,sl.h),{width:2.4,dur:320,amp:1.6})),
+    strokeItem(handRect(L.r1.x,L.r1.y,L.r1.w,L.r1.h),{dur:800}),
+    textItem(L.r1.x+16,L.r1.y+30,"replica-1  (G4 node B)",{size:20}),
+    textItem(L.r1.x+16,L.r1.y+54,"SGLang/vLLM · TP8",{size:15,weight:500}),
+    textItem(L.r1.x+16,L.r1.y+86,"KV:",{size:18}),
+    ...kvSlots(L.r1).map(sl=>strokeItem(handRect(sl.x,sl.y,sl.w,sl.h),{width:2.4,dur:320,amp:1.6})),
+  ]},
+/* ---------------- ACT 2 — walk the request through ---------------- */
+{ name:"step ① — the request arrives",
+  say:"Cast complete! Now — a request walks in. Step one: the client sends a prompt that starts with prefix 'A' to the Gateway IP.",
+  items:[
+    ...num(252,202,1),
+    ...arrowItem([[L.client.x+L.client.w+6,L.client.y+40],[L.gw.x-10,L.gw.y+62]],{color:"blue",dur:520}),
+    textItem(L.gw.x+L.gw.w+8,L.gw.y-12,'req: prefix "A"',{size:18,color:"blue"}),
+  ]},
+{ name:"step ② — the gateway asks",
+  say:"Step two — and this is the clever part. The gateway does NOT pick a backend itself. It holds the request and asks the EPP over ext-proc. Dashed line: a question, not traffic.",
+  items:[
+    ...num(404,290,2,"red"),
+    strokeItem([[455,L.gw.y+L.gw.h+6],[450,L.epp.y-8]],{color:"red",width:3,dash:"9 8",dur:420}),
+    ...arrowItem([[450,L.epp.y-26],[450,L.epp.y-8]],{color:"red",width:3,dur:140}),
+    textItem(300,330,'"who should take',{size:18,color:"red"}),
+    textItem(306,352,'prefix A ?"',{size:18,color:"red"}),
+  ]},
+{ name:"step ③ — the EPP decides",
+  say:"Step three: the EPP scores both replicas — who already holds this prefix? who's loaded? — and answers with one tiny thing: a decision. 'Replica-0.' No bytes, just the pick.",
+  items:[
+    strokeItem([[L.epp.x+222,L.epp.y+74],[L.epp.x+232,L.epp.y+66],[L.epp.x+224,L.epp.y+58],[L.epp.x+236,L.epp.y+52]],{color:"red",width:2.4,dur:260,amp:1.6}),
+    ...num(560,286,3,"red"),
+    strokeItem([[505,L.epp.y-6],[512,L.gw.y+L.gw.h+8]],{color:"red",width:3,dash:"9 8",dur:420}),
+    ...arrowItem([[510,L.gw.y+L.gw.h+26],[512,L.gw.y+L.gw.h+8]],{color:"red",width:3,dur:140}),
+    textItem(528,318,'"replica-0 !"',{size:19,color:"red"}),
+  ]},
+{ name:"step ④ — the gateway forwards",
+  say:"Step four: NOW the gateway forwards the request — itself, directly, to replica-0. Look at the board: the request never touches the EPP. The hands move the bytes.",
+  items:[
+    ...num(646,182,4),
+    ...arrowItem([[L.gw.x+L.gw.w+6,L.gw.y+48],[L.r0.x-12,L.r0.y+66]],{color:"blue",width:4,dur:560}),
+    textItem(626,132,"forward",{size:18,color:"blue"}),
+    pause(150),
+    textItem(kvSlots(L.r0)[0].x+18,kvSlots(L.r0)[0].y+23,"A",{size:24,color:"blue",weight:700}),
+  ]},
+{ name:"the payoff — warm cache",
+  say:"And see what just happened: prefix A now LIVES in replica-0's KV cache. The next request with prefix A gets routed straight back here — warm cache, fast first token.",
+  items:[
+    strokeItem(handEllipse(kvSlots(L.r0)[0].x+26,kvSlots(L.r0)[0].y+17,40,23),{color:"green",width:3,dur:600,amp:2}),
+    textItem(742,258,'"A" lives here now',{size:18,color:"green"}),
+  ]},
+{ name:"step ⑤ — tokens stream home",
+  say:"Step five: generated tokens stream back — replica, gateway, client. Solid lines carried bytes today; the dashed lines only ever carried a decision.",
+  items:[
+    ...num(548,236,5,"green"),
+    ...arrowItem([[L.r0.x-10,L.r0.y+110],[L.gw.x+L.gw.w+8,L.gw.y+96]],{color:"green",width:3,dur:500}),
+    ...arrowItem([[L.gw.x-8,L.gw.y+96],[L.client.x+L.client.w+6,L.client.y+76]],{color:"green",width:3,dur:450}),
+    textItem(588,252,"tokens ~~~",{size:18,color:"green"}),
+  ]},
+/* ---------------- ACT 3 — round 2 on a clean board ---------------- */
+{ name:"erase — round 2", erase:true,
+  say:"That was ONE request's journey. Now let me erase… and run a cleaner experiment: two different prefixes, A and B, from cold start to steady state. Fresh board — fresh, empty caches!",
+  items:[
+    textItem(500,46,"round 2 — two prefixes, two homes",{size:30,weight:700,anchor:"middle"}),
+    strokeItem([[296,58],[706,62]],{width:3.4,amp:3,dur:380,color:"blue"}),
+    strokeItem(handRect(L2.client.x,L2.client.y,L2.client.w,L2.client.h),{dur:600}),
+    textItem(L2.client.x+18,L2.client.y+38,"client",{size:22}),
+    textItem(L2.client.x+18,L2.client.y+64,"→ GW-IP",{size:15,weight:500}),
+    strokeItem(handRect(L2.gw.x,L2.gw.y,L2.gw.w,L2.gw.h),{dur:700}),
+    textItem(L2.gw.x+18,L2.gw.y+40,"Inference GW",{size:23}),
+    textItem(L2.gw.x+18,L2.gw.y+68,"data plane",{size:15,color:"blue",weight:500}),
+    ...arrowItem([[L2.client.x+L2.client.w+6,L2.client.y+40],[L2.gw.x-10,L2.gw.y+58]],{color:"ink",width:2.6,dur:300}),
+    strokeItem([[372,L2.gw.y+L2.gw.h+4],[370,L2.epp.y-6]],{color:"red",width:2.6,dash:"8 7",dur:260}),
+    strokeItem(handRect(L2.epp.x,L2.epp.y,L2.epp.w,L2.epp.h),{color:"red",dur:600,amp:2.6}),
+    textItem(L2.epp.x+16,L2.epp.y+30,"EPP",{size:21,color:"red"}),
+    textItem(L2.epp.x+16,L2.epp.y+56,"the brain — picks the replica",{size:13,color:"red",weight:500}),
+  ]},
+{ name:"the workers return",
+  say:"Our two workers again — replica-0 up top, replica-1 down below. Look at those KV slots: empty. And note my color code: BLUE arrow means a first visit — cold. GREEN arrow means a repeat visit — warm.",
+  items:[
+    strokeItem(handRect(L2.r0.x,L2.r0.y,L2.r0.w,L2.r0.h),{dur:650}),
+    textItem(L2.r0.x+16,L2.r0.y+30,"replica-0",{size:21}),
+    textItem(L2.r0.x+16,L2.r0.y+54,"G4 node A · TP8",{size:14,weight:500}),
+    textItem(L2.r0.x+16,L2.r0.y+86,"KV:",{size:18}),
+    ...kvSlots(L2.r0).map(sl=>strokeItem(handRect(sl.x,sl.y,sl.w,sl.h),{width:2.4,dur:280,amp:1.6})),
+    strokeItem(handRect(L2.r1.x,L2.r1.y,L2.r1.w,L2.r1.h),{dur:650}),
+    textItem(L2.r1.x+16,L2.r1.y+30,"replica-1",{size:21}),
+    textItem(L2.r1.x+16,L2.r1.y+54,"G4 node B · TP8",{size:14,weight:500}),
+    textItem(L2.r1.x+16,L2.r1.y+86,"KV:",{size:18}),
+    ...kvSlots(L2.r1).map(sl=>strokeItem(handRect(sl.x,sl.y,sl.w,sl.h),{width:2.4,dur:280,amp:1.6})),
+    textItem(54,522,"blue arrow  = first visit (cold)",{size:17,color:"blue"}),
+    textItem(54,550,"green arrow = repeat visit (warm)",{size:17,color:"green"}),
+  ]},
+{ name:"① A — first visit (cold)",
+  say:"Request one: prefix A, never seen before. The gateway asks the EPP — nobody has A, so it picks the emptier replica: replica-0. A pays its one-time cold prefill, and gets WRITTEN into the cache.",
+  items:[
+    strokeItem([[372,L2.gw.y+L2.gw.h+4],[370,L2.epp.y-6]],{color:"red",width:2.6,dash:"8 7",dur:200}),
+    ...num(560,172,1),
+    ...arrowItem([[474,246],[692,158]],{color:"blue",width:3.6,dur:550}),
+    pause(120),
+    textItem(kvSlots(L2.r0)[0].x+18,kvSlots(L2.r0)[0].y+23,"A",{size:24,color:"blue",weight:700}),
+    textItem(L2.r0.x,94,"① cold prefill — slow first token",{size:17,color:"red"}),
+  ]},
+{ name:"② A — comes back (HIT!)",
+  say:"A returns! The EPP checks its map — 'A? replica-0 has it!' — and routes it right back. Green arrow, parallel to the first: same destination, but this time the cache is WARM. No prefill. Fast first token.",
+  items:[
+    strokeItem([[372,L2.gw.y+L2.gw.h+4],[370,L2.epp.y-6]],{color:"red",width:2.6,dash:"8 7",dur:200}),
+    ...num(560,282,2,"green"),
+    ...arrowItem([[474,272],[692,196]],{color:"green",width:3.6,dur:550}),
+    strokeItem(handEllipse(kvSlots(L2.r0)[0].x+26,kvSlots(L2.r0)[0].y+17,40,23),{color:"green",width:3,dur:550,amp:2}),
+    textItem(L2.r0.x,262,"② warm HIT ✓  TTFT ~200 ms",{size:17,color:"green"}),
+  ]},
+{ name:"③ B — first visit → replica-1",
+  say:"Now a NEW prefix: B. The EPP looks — replica-0 doesn't have B, and it's busy keeping A warm. Balance the load: B goes to replica-1. Cold prefill once… and B is written into ITS cache.",
+  items:[
+    strokeItem([[372,L2.gw.y+L2.gw.h+4],[370,L2.epp.y-6]],{color:"red",width:2.6,dash:"8 7",dur:200}),
+    ...num(560,314,3),
+    ...arrowItem([[474,300],[692,402]],{color:"blue",width:3.6,dur:550}),
+    pause(120),
+    textItem(kvSlots(L2.r1)[0].x+18,kvSlots(L2.r1)[0].y+23,"B",{size:24,color:"blue",weight:700}),
+    textItem(L2.r1.x,338,"③ cold prefill (first visit)",{size:17,color:"red"}),
+  ]},
+{ name:"④ B — comes back (HIT!)",
+  say:"And when B returns? Straight back to replica-1 — green arrow, warm cache. Look at the pattern now: A's pair of arrows up top, B's pair down below. Every prefix has found its home.",
+  items:[
+    strokeItem([[372,L2.gw.y+L2.gw.h+4],[370,L2.epp.y-6]],{color:"red",width:2.6,dash:"8 7",dur:200}),
+    ...num(560,408,4,"green"),
+    ...arrowItem([[474,326],[692,440]],{color:"green",width:3.6,dur:550}),
+    strokeItem(handEllipse(kvSlots(L2.r1)[0].x+26,kvSlots(L2.r1)[0].y+17,40,23),{color:"green",width:3,dur:550,amp:2}),
+    textItem(L2.r1.x,506,"④ warm HIT ✓ — B's home now",{size:17,color:"green"}),
+  ]},
+{ name:"steady state",
+  say:"There it is — steady state. First visits are blue and cold; every visit after is green and warm. A lives on replica-0, B lives on replica-1, and nobody pays prefill twice.",
+  items:[
+    strokeItem(handEllipse(592,300,102,152),{color:"ink",width:2.6,dur:650,amp:3}),
+    textItem(436,516,"↑ the whole trick, right here",{size:19,weight:600}),
+  ]},
+{ name:"what to remember", erase:true,
+  say:"And that's the lesson! Let me wipe the board one last time and leave you with just three things. One: the gateway is the HANDS. Two: the EPP is the BRAIN. Three: same prefix, same replica — warm cache, fast first token. THAT is prefix-cache-aware routing. Class dismissed!",
+  items:[
+    textItem(500,54,"what to remember",{size:34,weight:700,anchor:"middle"}),
+    strokeItem([[348,68],[656,72]],{width:3.4,amp:3,dur:380,color:"blue"}),
+    ...num(112,142,1),
+    textItem(152,152,"the Gateway = the HANDS",{size:27,color:"blue"}),
+    textItem(152,186,"every byte flows through it — client → GW → replica (data plane)",{size:18,weight:500}),
+    ...num(112,242,2,"red"),
+    textItem(152,252,"the EPP = the BRAIN",{size:27,color:"red"}),
+    textItem(152,286,"returns a decision over ext-proc — never carries traffic (control plane)",{size:18,weight:500}),
+    ...num(112,342,3,"green"),
+    textItem(152,352,"same prefix → same replica",{size:27,color:"green"}),
+    textItem(152,386,"warm KV cache survives → no repeat prefill → fast first token",{size:18,weight:500}),
+    pause(250),
+    textItem(500,488,"that's prefix-cache-aware routing ✓",{size:28,color:"green",weight:700,anchor:"middle"}),
+    strokeItem(handRect(228,448,544,62),{width:3.2,dur:700,amp:2.8}),
+  ]},
+];
+}
+
+/* ---------- animation engine ---------- */
+let steps, stepIdx=0, playing=true, speed=1, animating=false, abortToken=0;
+
+function resetBoard(){
+  SVG.innerHTML="";
+  layerStatic=el("g",{},SVG); layerLive=el("g",{},SVG);
+  markerDot=el("circle",{r:5,fill:"#2b2d31",opacity:0},SVG);
+}
+const capEl=document.getElementById("wb-caption"), nameEl=document.getElementById("wb-stepname");
+const dotsEl=document.getElementById("wb-dots");
+function renderDots(){
+  dotsEl.innerHTML="";
+  steps.forEach((_,i)=>{ const d=document.createElement("div");
+    d.className="wb-dot"+(i<stepIdx?" wb-done":i===stepIdx?" wb-cur":""); dotsEl.appendChild(d); });
+}
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+async function drawStroke(item, token){
+  const p=item.make();
+  const len=p.getTotalLength();
+  p.style.strokeDasharray=len; p.style.strokeDashoffset=len;
+  markerDot.setAttribute("fill",COLORS[item.color]); markerDot.setAttribute("opacity",.9);
+  const dur=item.dur/speed;
+  const t0=performance.now();
+  await new Promise(res=>{
+    function f(now){
+      if(token!==abortToken){res();return;}
+      let t=Math.min(1,(now-t0)/dur);
+      // human pacing: ease in-out with tiny tremor
+      const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+      p.style.strokeDashoffset=len*(1-e);
+      const pt=p.getPointAtLength(len*e);
+      markerDot.setAttribute("cx",pt.x); markerDot.setAttribute("cy",pt.y);
+      if(t<1) requestAnimationFrame(f); else res();
+    }
+    requestAnimationFrame(f);
+  });
+  p.style.strokeDasharray = p.getAttribute("data-dash") || "none";
+  p.style.strokeDashoffset=0;
+  markerDot.setAttribute("opacity",0);
+}
+async function drawText(item, token){
+  const t=item.make(); const full=t.dataset.full;
+  const per=(item.dur/speed)/full.length;
+  for(let i=1;i<=full.length;i++){
+    if(token!==abortToken) break;
+    t.textContent=full.slice(0,i);
+    const ext=t.getExtentOfChar ? null : null;
+    await sleep(per);
+  }
+  t.textContent=full;
+}
+async function speak(str, token){
+  nameEl.textContent="step "+(stepIdx+1)+" / "+steps.length+" — "+steps[stepIdx].name;
+  capEl.textContent="";
+  const per=14/speed;
+  for(let i=1;i<=str.length;i++){
+    if(token!==abortToken){capEl.textContent=str;return;}
+    capEl.textContent=str.slice(0,i);
+    await sleep(per);
+  }
+}
+async function eraseAnim(token){
+  const er=el("g",{},SVG);
+  el("rect",{x:0,y:0,width:118,height:56,rx:10,fill:"#d8d2c6",stroke:"#b3aa99","stroke-width":2},er);
+  el("rect",{x:8,y:40,width:102,height:13,rx:6,fill:"#f4f1ea"},er);
+  const dur=1700/speed; const t0=performance.now();
+  await new Promise(res=>{ function f(now){
+    if(token!==abortToken){res();return;}
+    const t=Math.min(1,(now-t0)/dur);
+    const rows=3, pr=t*rows, row=Math.min(rows-1,Math.floor(pr)), u=pr-row;
+    const x=(row%2===0?u:1-u)*880, y=30+row*168;
+    er.setAttribute("transform","translate("+x+","+y+") rotate("+(Math.sin(t*22)*5)+")");
+    layerLive.style.opacity=String(Math.max(0.03,1-t*0.97));
+    if(t<1) requestAnimationFrame(f); else res(); }
+    requestAnimationFrame(f); });
+  er.remove(); layerLive.innerHTML=""; layerLive.style.opacity="1";
+}
+async function runStep(i, token){
+  animating=true; updateButtons();
+  const st=steps[i];
+  speak(st.say, token); // narration runs concurrently with drawing
+  if(st.erase) await eraseAnim(token);
+  for(const item of st.items){
+    if(token!==abortToken) break;
+    if(item.kind==="stroke") await drawStroke(item, token);
+    else if(item.kind==="text") await drawText(item, token);
+    else if(item.kind==="pause") await sleep(item.dur/speed);
+    await sleep(90/speed);
+  }
+  animating=false; updateButtons();
+}
+function drawStepInstant(i){
+  const st=steps[i];
+  if(st.erase){ layerLive.innerHTML=""; layerLive.style.opacity="1"; }
+  for(const item of st.items){
+    if(item.kind==="pause") continue;
+    const n=item.make();
+    if(item.kind==="text") n.textContent=n.dataset.full;
+    else { n.style.strokeDasharray=n.getAttribute("data-dash")||"none"; }
+  }
+}
+async function gotoStep(i,{instantUpTo=true}={}){
+  abortToken++;
+  const token=abortToken;
+  await sleep(20);
+  resetBoard();
+  stepIdx=Math.max(0,Math.min(steps.length-1,i));
+  for(let k=0;k<stepIdx;k++) drawStepInstant(k);
+  renderDots();
+  await runStep(stepIdx, token);
+  if(token===abortToken) maybeAutoAdvance(token);
+}
+async function maybeAutoAdvance(token){
+  if(!playing) return;
+  await sleep(1700/speed);
+  if(token!==abortToken || !playing) return;
+  if(stepIdx<steps.length-1){
+    stepIdx++; renderDots();
+    await runStep(stepIdx, token);
+    if(token===abortToken) maybeAutoAdvance(token);
+  } else {
+    playing=false; updateButtons();
+  }
+}
+
+/* ---------- controls ---------- */
+const btnPlay=document.getElementById("wb-play"), btnNext=document.getElementById("wb-next"),
+      btnBack=document.getElementById("wb-back"), btnRestart=document.getElementById("wb-restart");
+function updateButtons(){
+  btnPlay.textContent=playing?"⏸ Pause":"▶ Play";
+  btnBack.disabled = stepIdx===0 && !animating;
+  btnNext.disabled = stepIdx>=steps.length-1 && !animating;
+}
+btnPlay.onclick=()=>{ playing=!playing; updateButtons();
+  if(playing && !animating) maybeAutoAdvance(abortToken); };
+btnNext.onclick=()=>{ playing=false; gotoStep(stepIdx + (animating?0:1)); };
+btnBack.onclick=()=>{ playing=false; gotoStep(animating?stepIdx-0:stepIdx-1); };
+btnRestart.onclick=()=>{ seed=Math.floor(Math.random()*1e9); rand=mulberry(seed);
+  steps=buildSteps(); playing=true; gotoStep(0); };
+document.getElementById("wb-speed").oninput=e=>{ speed=parseFloat(e.target.value); };
+
+
+/* ---------- boot ---------- */
+steps=buildSteps();
+resetBoard(); renderDots(); updateButtons();
+let wbStarted=false;
+function wbTryStart(){
+  if(wbStarted) return;
+  const root=document.getElementById("wb-root");
+  if(root && root.offsetParent!==null){ wbStarted=true; gotoStep(0); }
+}
+window.wbTryStart=wbTryStart;
+document.fonts.ready.then(()=>setTimeout(wbTryStart,80));
+})();
+</script>
+
+<script>
+/* ===== gateway page: simulator / whiteboard tabs ===== */
+(function(){
+  var tSim=document.getElementById('tab-sim'), tWb=document.getElementById('tab-wb');
+  if(!tSim) return;
+  var sim=document.getElementById('igw'), simCap=document.getElementById('igw-figcap'),
+      wbr=document.getElementById('wb-root');
+  function show(which){
+    var simOn=(which==='sim');
+    sim.style.display=simOn?'':'none';
+    simCap.style.display=simOn?'':'none';
+    wbr.classList.toggle('visible',!simOn);
+    tSim.classList.toggle('active',simOn);
+    tWb.classList.toggle('active',!simOn);
+    if(!simOn && window.wbTryStart) setTimeout(window.wbTryStart,60);
+  }
+  tSim.onclick=function(){show('sim');};
+  tWb.onclick=function(){show('wb');};
 })();
 </script>
 </body>
