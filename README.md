@@ -22,11 +22,12 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 | [moonshotai/Kimi-K2.5](./models/KimiK2.5/results/benchmark_results.md) | INT4* | 2 Nodes (16x RTX 6000) | 3152.79 | 3537.39 | 4793.00 | 136.52 |
 | [nvidia/Kimi-K2.5-NVFP4](./models/KimiK2.5/nvfp4/results/benchmarks_2node.yaml) | NVFP4 | 2 Nodes (16x RTX 6000) | 3237.46 | 3632.39 | 5535.00 | 137.89 |
 | [moonshotai/Kimi-K2.6](./models/KimiK2.6/results/benchmark_results.md) | INT4* | 1 Node (8x RTX 6000) | 1459.26 | 1637.28 | 850.00 | 82.43 |
+| [nvidia/Kimi-K2.6-NVFP4](./models/KimiK2.6/nvfp4/results/benchmark-results.md) | NVFP4 | 2 Nodes (16x RTX 6000) | 3088.95 | 3465.76 | 4654.00 | 138.61 |
 | [datalab-to/chandra-ocr-2](./models/datalab2-ocr/benchmark_results.md)** | BF16| 1 Node (1x RTX 6000)| 2600.67 | 5267.08 | 4603.00| 32.47 |
 
 **[openai/whisper-large-v3](./models/whisper-v3-large/results/benchmark_results.md)** - Since this is ASR model, we did not apply the standard ISL/OSL of 1K/8K and concurrancy of 512.
 
-*Table last updated: May 22, 2026*
+*Table last updated: June 11, 2026*
  
 *Benchmarks conducted using `inf` request rate and 512 max concurrency. Tests utilized a random dataset with 1024 input tokens and 8192 output tokens (1536 total prompts). The load generator was isolated on a dedicated CPU-only node pool to ensure zero interference with GPU performance.*
 
@@ -92,7 +93,8 @@ Focuses on latency characteristics of an ultra-large MoE model, comparing perfor
   - `agentic_benchmark/`: Scripts for simulating agentic workloads.
 - `gcp_g4_specs.md`: Detailed hardware and infrastructure specifications.
 
-## Key Updates (May 2026)
+## Key Updates (June 2026)
+- **Native FP4 Support for Kimi K2.6**: Successfully optimized and benchmarked Kimi-K2.6 using native NVFP4 quantization on a 2-node (16x GPU) setup, achieving over 3000 tok/s output throughput.
 - **Qwen3.5-397B Validation**: Successfully benchmarked the 397B MoE model on a single node using FP8 and HiCache, showing massive TTFT improvements.
 - **Agentic Benchmarking**: Introduced agentic trace simulation for Kimi K2.6, achieving over 80% cache hit rate with HiCache.
 - **Kimi-K2.5 NVFP4 Validation**: Successfully optimized and benchmarked Kimi-K2.5 using native NVFP4 quantization on a 2-node (16x GPU) setup.
@@ -119,6 +121,7 @@ Detailed performance logs, including TTFT/TPOT latency distributions and through
 - [moonshotai/Kimi-K2.5 (INT4): models/KimiK2.5/results/benchmark_results.md](./models/KimiK2.5/results/benchmark_results.md)
 - [nvidia/Kimi-K2.5-NVFP4 (NVFP4): models/KimiK2.5/nvfp4/results/benchmarks_2node.yaml](./models/KimiK2.5/nvfp4/results/benchmarks_2node.yaml)
 - [moonshotai/Kimi-K2.6 (Standard): models/KimiK2.6/results/benchmark_results.md](./models/KimiK2.6/results/benchmark_results.md)
+- [nvidia/Kimi-K2.6-NVFP4 (NVFP4): models/KimiK2.6/nvfp4/results/benchmark-results.md](./models/KimiK2.6/nvfp4/results/benchmark-results.md)
 - [datalab-to/chandra-ocr-2: models/datalab2-ocr/benchmark_results.md](./models/datalab2-ocr/benchmark_results.md)
 - [openai/whisper-large-v3: models/whisper-v3-large/results/benchmark_results.md](./models/whisper-v3-large/results/benchmark_results.md)
 
