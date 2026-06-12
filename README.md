@@ -15,14 +15,15 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 | Model | Quantization | Setup | Output Throughput (tok/s) | Total Throughput (tok/s) | Peak Throughput (tok/s) | TPOT (ms) |
 |-------|--------------|-------|---------------------------|--------------------------|-------------------------|-----------|
 | [nvidia/Kimi-K2.6-NVFP4](./models/KimiK2.6/nvfp4/results/benchmark-results.md) | NVFP4 | 2 Nodes (16x RTX 6000) | 3088.95 | 3465.76 | 4654.00 | 138.61 |
-| [nvidia/Kimi-K2.5-NVFP4](./models/KimiK2.5/nvfp4/results/benchmarks_2node.yaml) | NVFP4 | 2 Nodes (16x RTX 6000) | 3237.46 | 3632.39 | 5535.00 | 137.89 |
 | [moonshotai/Kimi-K2.6](./models/KimiK2.6/results/benchmark_results.md) | INT4* | 1 Node (8x RTX 6000) (not optimized) | 1459.26 | 1637.28 | 850.00 | 82.43 |
+| [nvidia/Kimi-K2.5-NVFP4](./models/KimiK2.5/nvfp4/results/benchmarks_2node.yaml) | NVFP4 | 2 Nodes (16x RTX 6000) | 3237.46 | 3632.39 | 5535.00 | 137.89 |
 | [moonshotai/Kimi-K2.5](./models/KimiK2.5/results/benchmark_results.md) | INT4* | 2 Nodes (16x RTX 6000) | 3152.79 | 3537.39 | 4793.00 | 136.52 |
 | [lukealonso/GLM-5.1-NVFP4](./models/GLM5.1/nvfp4/results/benchmark_results_2node.md) | NVFP4 | 2 Nodes (16x RTX 6000) | 3075.85 | 3451.06 | 4606.00 | 141.36 |
 | [lukealonso/GLM-5.1-NVFP4](./models/GLM5.1/nvfp4/results/benchmark_results_1node.md) | NVFP4 | 1 Node (8x RTX 6000) | 1490.31 | 1672.11 | 734.00 | 73.82 |
-| [nvidia/DeepSeek-V3.2-NVFP4](./models/DeepSeekv3-2/nvp4/results/benchmark_results.md) | NVFP4 | 1 Node (8x RTX 6000) | 2675.33 | 3012.42 | 2046.00 | 106.03 |
 | [zai-org/GLM-5.1-FP8](./models/GLM5.1/results/benchmark-results.md) | FP8 | 2 Nodes (16x RTX 6000) | 2785.55 | 3125.35 | 4092.00 | 155.26 |
+| [nvidia/DeepSeek-V3.2-NVFP4](./models/DeepSeekv3-2/nvp4/results/benchmark_results.md) | NVFP4 | 1 Node (8x RTX 6000) | 2675.33 | 3012.42 | 2046.00 | 106.03 |
 | [deepseek-ai/DeepSeek-V3.2](./models/DeepSeekv3-2/fp8/results/benchmark_results.md) | FP8 | 2 Nodes (16x RTX 6000) | 2962.79 | 3324.21 | 4951.00 | 149.29 |
+| [Qwen/Qwen3.5-397B-A17B-FP8](./models/Qwen3.5-397B-A17B-FP8/results/hicache/benchmark_results.md) | FP8 | 1 Node (8x RTX 6000) | 390.65 | 8202.16 | 1120.00 | 100.59 |
 | [datalab-to/chandra-ocr-2](./models/datalab2-ocr/benchmark_results.md)** | BF16| 1 Node (1x RTX 6000)| 2600.67 | 5267.08 | 4603.00| 32.47 |
 
 **[openai/whisper-large-v3](./models/whisper-v3-large/results/benchmark_results.md)** - Since this is ASR model, we did not apply the standard ISL/OSL of 1K/8K and concurrancy of 512.
