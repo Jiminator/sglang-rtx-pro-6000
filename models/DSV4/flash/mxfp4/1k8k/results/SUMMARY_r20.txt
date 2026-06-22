@@ -1,0 +1,8 @@
+EXP=bsv2_r20 MODEL=deepseek-ai/DeepSeek-V4-Flash MFS=0.9 RATIO=0.2 EXTRA=''
+pool=2133504 submit_batch=1792 per_rank_target=224 cap=256
+--- decode curve (running-req/rank : gen_tps/rank : AGG x8) ---
+   224 :   61.49 :    491.92
+---
+MAX_AGGREGATE_GEN_TPS = 491.92  @ running-req/rank = 224 (total decode batch 1792)
+PER_GPU = 61.49
+STATUS = OK_DECODE_PLATEAU

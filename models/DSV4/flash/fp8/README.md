@@ -27,4 +27,6 @@ its own pool (8× the batch ceiling).
 `dp_size` must equal `tp_size`). KV auto-locks fp8_e4m3.
 
 **FP4 loses on both** — the mxfp4 MoE GEMV (no fast SM120 kernel) becomes compute-bound at batch
-(1K/8K FP4-DPA ≈ 497 tok/s, 6.9× below FP8). See [`../nvfp4/`](../nvfp4/).
+(1K/8K MXFP4+DPA = 497 tok/s, 6.9× below FP8; batch-scaling saturated). See
+[`../mxfp4/1k8k/`](../mxfp4/1k8k/) for the MXFP4 checkpoint result and [`../nvfp4/`](../nvfp4/) for the
+nvidia NVFP4 checkpoint (no working SM120 MoE backend).
