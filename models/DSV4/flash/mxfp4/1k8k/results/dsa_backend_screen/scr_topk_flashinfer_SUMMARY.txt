@@ -1,0 +1,4 @@
+EXP=scr_topk_flashinfer EXTRA='--dsa-topk-backend flashinfer' gsm8k_acc=0.950
+matched_batch=64/rank  peak_decode_rr/rank=5
+STEADY per_rank_gen_tps=25.77  AGGREGATE=206.16
+STATUS=OK

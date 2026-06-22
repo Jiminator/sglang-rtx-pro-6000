@@ -1,0 +1,4 @@
+EXP=scr_ctrl EXTRA='' gsm8k_acc=0.950
+matched_batch=64/rank  peak_decode_rr/rank=5
+STEADY per_rank_gen_tps=29.53  AGGREGATE=236.24
+STATUS=OK

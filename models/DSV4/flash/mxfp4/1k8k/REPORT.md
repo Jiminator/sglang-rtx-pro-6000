@@ -65,6 +65,17 @@ change only KV memory layout, not compute — so the gate covers it.
 - `results/get_server_info_r15.json`, `srv_decode_excerpt_r15.txt`, `gpu_mem_r15.txt` — server state.
 - `results/correctness_gsm8k.txt` — the rule-11 gate.
 
-> Status: intermediate ship. Remaining runtime-space levers still to test (no source edits):
-> `--enable-deepseek-v4-fp4-indexer`, Blackwell MLA backends (`tokenspeed_mla`/`trtllm_mla`). Each is
-> correctness-gated. None is expected to move the MoE-bound ceiling materially.
+## Runtime-space exhausted (all no-source-edit levers closed)
+
+| Lever | Verdict |
+|---|---|
+| Batch-scaling (enlarge SWA pool via `--swa-full-tokens-ratio` → 256/rank hard cap) | **saturated** at ~497 (flat 491–498 across 180→224/rank) |
+| `--enable-deepseek-v4-fp4-indexer` | **dead** — source-gated to SM100 (`server_args.py:4166`), rejected on SM120 |
+| DeepGemm MegaMoE FP4 (`SGLANG_OPT_USE_DEEPGEMM_MEGA_MOE` …) | **dead** — deep_gemm hard-disabled at `sm_version==120` |
+| #25569 fused-MoE Triton autotune | **no-op** — tunes the generic fused_moe, not the sm120 MXFP4 slot kernel |
+| `--dsa-decode-backend tilelang` (vs auto) | **−38%** at matched batch (Blackwell+fp8-KV dequant tax) — gsm8k 0.95 |
+| `--dsa-topk-backend flashinfer` (vs sgl-kernel) | **−13%** at matched batch — gsm8k 0.95 |
+
+The auto-resolved DSA backend is already optimal. **497.6 tok/s is the launch/runtime-space ceiling for
+the MXFP4 checkpoint on 1K/8K.** The only remaining lever is a source-code MXFP4 grouped-GEMM kernel
+(out of scope). Ship FP8 for production at 1K/8K.
