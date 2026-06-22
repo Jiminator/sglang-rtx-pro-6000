@@ -18,6 +18,7 @@ to the KV pool for every config. Ship config: **TP=8 + DP-attention**, triton Mo
 | FP8 + DPA, swa-ratio 0.20 | 1160 | 3336.7 | 417.1 | 2.88 | past the knee — slight drop |
 | FP8 2× TP=4 replicas | 72 | 678.1 | 84.8 | 9.41 | small-TP is fast/req but pool-starved |
 | FP8 TP=8 pure | 146 | 481.4 | 60.2 | 3.30 | single SWA pool caps batch |
+| FP8 DPA + EAGLE/MTP spec | 624 | ~250* | ~31 | 0.40 | **13.6× net loss** — draft+verify overhead at batch; *log-derived |
 | FP4 DP-attention (marlin) | ~1336 | ~497* | ~62 | 0.37 | MoE-compute-saturated; *log-derived (bench >100min) |
 | FP4 TP=8 (marlin) | 185 | 266.7 | 33.3 | 1.44 | mxfp4 MoE tax + single pool |
 
@@ -79,13 +80,13 @@ neutral-to-negative; **ship the default ratio (0.1).**
 | **FP4 DP-attention** | ~497 (62/GPU) — DPA lifts FP4's batch to ~1336 but the mxfp4 MoE GEMV becomes **compute-bound** (per-req collapses to 0.37). **6.9× below FP8 DPA** → FP4 conclusively loses at 1K/8K. |
 | FP4 2×TP=4 / 4×TP=2 | skipped — fewer SWA pools than FP4-DPA **and** the same MoE tax → strictly worse than the 497 above. |
 | `swa_full_tokens_ratio` 0.16 / 0.20 | neutral-to-negative; decode saturated at batch ~1016. |
-| EAGLE/MTP spec (FP8 DPA) | *in progress — appended below when complete.* DSV4 supports only `--speculative-algorithm EAGLE`; spec shrinks the pool (2.62M→1.6M) so it starts batch-handicapped. |
+| EAGLE/MTP spec (FP8 DPA) | **13.6× net loss** (~250 vs 3413). Spec shrinks the pool (2.62M→1.6M → batch 624) **and** the draft+verify forwards add huge per-step cost at batch — per-req rate collapses to 0.40 despite 2-token acceptance. Spec is a latency lever, not throughput; consistent with the 8K/64K finding. (DSV4 supports only `--speculative-algorithm EAGLE`.) |
 
 ## Open / interesting lead
 
 C's per-request rate (9.41) is ~2.8× TP=8's — the no-NVLink **PCIe all-reduce cost of TP=8** is real.
 A topology with both small TP domains *and* many large SWA pools could in principle beat DPA, but FP8
 doesn't fit at TP=2 and FP4 carries the MoE tax. Worth a profiling pass to confirm the BW-bound /
-AR-cost split.
+AR-cost split — the one remaining lever that could push past 3413.
 
-*FP4-DPA and EAGLE/MTP-spec runs are still completing; this table will be appended.*
+All planned configs are complete; the sweep is closed.
