@@ -17,12 +17,15 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 | [GLM-5.1](https://huggingface.co/lukealonso/GLM-5.1-NVFP4) | NVFP4 | 1 Node (8x RTX 6000) | 1462.73 | 1641.16 | 950.00 | 107.02 |
 | [Kimi-K2.5](https://huggingface.co/moonshotai/Kimi-K2.5) | INT4* | 2 Nodes (16x RTX 6000) | 3069.15 | 3443.55 | 6889.00 | 147.45 |
 | [Qwen3.5-397B-A17B](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) | FP8 | 2 Nodes (16x RTX 6000)† | 654.45 | 14182.22 | 1500.00 | 56.46 |
+| [DeepSeek-V4-Flash](https://huggingface.co/sgl-project/DeepSeek-V4-Flash-FP8) | FP8 | 1 Node (8x RTX 6000)‡ | 551.92 | 608.47 | n/a | ~60 |
 
 *Benchmarks conducted using `inf` request rate and 512 max concurrency. Tests utilized a random dataset with 1024 input tokens and 8192 output tokens (1536 total prompts). The load generator was isolated on a dedicated CPU-only node pool to ensure zero interference with GPU performance.*
 
 *\*Kimi-K2.5 uses native INT4 quantization for model weights and FP8 for the KV cache to optimize memory efficiency and inference speed.*
 
 *†Qwen3.5 was tuned for **TTFT** rather than steady-state throughput, using a different workload (200 prompts × max-concurrency 40 × ISL target 20K / OSL target 1K, random-range-ratio 0.0 → variable lengths). Result: **median TTFT 1180 ms, mean TTFT 2256 ms**. Throughput numbers in this row reflect that workload and are not directly comparable to the other entries' steady-state numbers. Topology is 2× single-node TP=8 replicas behind an `sglang-router` (SMG fan-out), not cross-node PP. See [`models/Qwen3.5/fp8/TUNING_REPORT.md`](./models/Qwen3.5/fp8/TUNING_REPORT.md).*
+
+*‡DeepSeek-V4-Flash was tuned for a **long-context** workload (ISL 8192 / OSL 65536) and measured with **offline** `bench_one_batch_server` at the KV-pool-capped batch (33), single node. Numbers are not directly comparable to the other rows' online 1K/8K results. The win is **DP-attention** (`--dp-size 8 --enable-dp-attention`), **2.45× over pure TP=8** — DeepSeek-V4-Flash decode is DSA-sparse-attention-bound (83% of decode), and DP-attention runs that kernel as 8 independent per-worker streams. "Total" is overall (in+out) throughput; offline runs have no peak/TPOT (≈60 ms ITL). See [`models/DSV4/flash/fp8/TUNING_REPORT.md`](./models/DSV4/flash/fp8/TUNING_REPORT.md).*
 
 ## Project Structure
 
@@ -36,6 +39,10 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
   - `KimiK2.5/`: Configurations for Kimi-K2.5.
   - `Qwen3.5/`: TTFT-focused tuning for Qwen3.5-397B-A17B.
     - `fp8/`: 2× SMG TP=8 with fused QK-norm-RoPE and fused MoE-sum-allreduce; NCCL_NCHANNELS=16. Mean TTFT 2.26 s.
+  - `DSV4/`: DeepSeek-V4 single-node (8K/64K long-context), `flash`/`pro` × `fp8`/`nvfp4`.
+    - `flash/fp8/`: **shipped** — TP=8 + DP-attention, 551.9 tok/s @ B=33 (2.45× over pure TP).
+    - `flash/nvfp4/`: runs but slower than FP8 on SM120 (no fast FP4 MoE kernel) — notes only.
+    - `pro/`: not yet benchmarked on this cluster.
 - `gkecluster/`: Infrastructure-as-Code for GKE provisioning.
   - `createCluster_template.sh`: Automated script to provision VPC, networking, and GKE clusters optimized for Blackwell G4.
   - `createCluster_README.md`: Detailed setup and usage instructions for the GKE template.
@@ -68,6 +75,7 @@ Detailed performance logs, including TTFT/TPOT latency distributions and through
 - [GLM-5.1 (NVFP4): models/GLM5.1/nvfp4/results/benchmark_results.md](./models/GLM5.1/nvfp4/results/benchmark_results.md)
 - [Kimi-K2.5 (FP8): models/KimiK2.5/results/benchmark_results.md](./models/KimiK2.5/results/benchmark_results.md)
 - [Qwen3.5-397B-A17B (FP8, TTFT-focused): models/Qwen3.5/fp8/results/benchmark_results.md](./models/Qwen3.5/fp8/results/benchmark_results.md)
+- [DeepSeek-V4-Flash (FP8, 8K/64K): models/DSV4/flash/fp8/results/benchmark_results.md](./models/DSV4/flash/fp8/results/benchmark_results.md)
 
 ## Usage
 
