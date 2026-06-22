@@ -15,17 +15,19 @@ DSV4/
     └── nvfp4/    (not yet benchmarked on this cluster)
 ```
 
-## Shipped result — Flash / FP8
+## Shipped results — Flash / FP8
 
-| Variant / precision | Workload (ISL/OSL) | Output throughput | /GPU | Config |
-|---|---|---:|---:|---|
-| **Flash / FP8** | 8192 / 65536 | **551.9 tok/s** @ batch 33 | **69.0** | TP=8 + **DP-attention**, triton MoE |
+| Workload (ISL/OSL) | Ship config | Output throughput | /GPU | vs pure TP=8 | dir |
+|---|---|---:|---:|---:|---|
+| **1024 / 8192** | TP=8 + **DP-attention** | **3412.9 tok/s** @ B=1016 | 426.6 | **7.1×** | [`flash/fp8/1k8k/`](flash/fp8/1k8k/) |
+| **8192 / 65536** | TP=8 + **DP-attention** | **551.9 tok/s** @ B=33 | 69.0 | **2.45×** | [`flash/fp8/8k64k/`](flash/fp8/8k64k/) |
 
-**DP-attention is the lever: 2.45× over pure TP=8** (225.5 tok/s, 28/GPU) at the true 8K/64K
-workload. DeepSeek-V4-Flash decode is **DSA-attention-bound** (the sparse-attention decode kernel is
-83% of decode GPU time on SM120); DP-attention runs that kernel as 8 independent per-worker streams
-instead of awkwardly TP-sharding the single MLA KV head. See
-[`flash/fp8/TUNING_REPORT.md`](flash/fp8/TUNING_REPORT.md).
+**DP-attention is the lever on both workloads**, because DeepSeek-V4-Flash is a **hybrid-attention**
+model whose small **SWA/DSA-sparse KV pool** (~10% of memory) caps the batch — DP-attention gives each
+of the 8 GPUs its own pool (8× the batch ceiling). At 8K/64K decode is DSA-sparse-attention-bound (83%
+of decode); at 1K/8K it's memory-bandwidth-bound (throughput ∝ batch, and per-request rate is identical
+to pure-TP — the 7.1× is pure batch-scaling). **FP4 loses on both** (mxfp4 MoE GEMV is compute-bound at
+batch). See [`flash/fp8/README.md`](flash/fp8/README.md).
 
 ## SM120 constraints (apply to every DSV4 config here)
 
