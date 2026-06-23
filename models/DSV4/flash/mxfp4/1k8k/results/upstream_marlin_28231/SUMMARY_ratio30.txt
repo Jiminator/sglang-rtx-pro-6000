@@ -1,0 +1,8 @@
+moe_runner_backend= marlin attn= dsv4 kv= fp8_e4m3
+EXP=marlin_push IMAGE=lmsysorg/sglang:dev-cu13 PATH=upstream_marlin_sm120_#28231 (gsm8k 1.000 prior run)
+pool=1462272 submit=2048 per_rank_target=230
+--- decode curve (rr/rank : gen/rank : AGG x8) ---
+   128 :  446.66 :   3573.28
+---
+PLATEAU (highest rr=128) AGG=3573.28 /GPU=446.66   [GEMV 497.6 | triton-grouped 2492]
+STATUS=INCOMPLETE_rr<150

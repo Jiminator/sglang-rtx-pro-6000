@@ -9,7 +9,7 @@ DeepSeek-V4 ships in two variants and two precisions. This directory is organize
 DSV4/
 ├── flash/        DeepSeek-V4-Flash (DSA — DeepSeek Sparse Attention)
 │   ├── fp8/      sgl-project/DeepSeek-V4-Flash-FP8   ← SHIPPED (winning config)
-│   ├── mxfp4/    deepseek-ai/DeepSeek-V4-Flash       (MXFP4 experts; runs, MoE-bound — 497 tok/s @ 1K/8K)
+│   ├── mxfp4/    deepseek-ai/DeepSeek-V4-Flash       (MXFP4; ~3573 tok/s @ 1K/8K on a #28231 image; 497 on v0.5.13.post1)
 │   └── nvfp4/    nvidia/DeepSeek-V4-Flash-NVFP4      (no working SM120 MoE backend)
 └── pro/          DeepSeek-V4-Pro
     ├── fp8/      (not yet benchmarked on this cluster)

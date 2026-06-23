@@ -1,9 +1,29 @@
-# DeepSeek-V4-Flash (MXFP4) — 1K/8K offline, batch-scaled max (intermediate)
+# DeepSeek-V4-Flash (MXFP4) — 1K/8K offline
 
 **Checkpoint:** `deepseek-ai/DeepSeek-V4-Flash` — routed experts **MXFP4** (E2M1 + E8M0 group-32);
-attention / shared-experts / MTP in FP8. **HW:** 1× g4, 8× RTX PRO 6000 (SM120). **Image:**
-`lmsysorg/sglang:v0.5.13.post1-cu130`. **Workload (fixed):** ISL 1024 / OSL 8192, offline,
-`bench_one_batch_server`, batch maxed. **Constraint:** NO source-code changes.
+attention / shared-experts / MTP in FP8. **HW:** 1× g4, 8× RTX PRO 6000 (SM120). **Workload (fixed):**
+ISL 1024 / OSL 8192, offline, `bench_one_batch_server`, batch maxed.
+
+> ## ⭐ TL;DR — UPGRADE THE IMAGE (2026-06-22)
+> The "497 tok/s ceiling" below was specific to the **pinned `v0.5.13.post1`** image, whose only working
+> SM120 MXFP4 MoE path is a slow per-slot triton GEMV. **Upstream commit #28231 "Use Marlin for SM120
+> MXFP4 MoE" (merged ~2026-06-19) fixes this**: it routes SM120 MXFP4 through the Marlin kernel. Measured
+> on a fresh `lmsysorg/sglang:dev-cu13` (commit g6779ca8d7, contains #28231) on our RTX PRO 6000:
+>
+> | path | image | aggregate | /GPU | gsm8k | vs GEMV |
+> |---|---|---|---|---|---|
+> | per-slot GEMV | v0.5.13.post1 | 497.6 | 62 | 0.90 | 1× |
+> | grouped-triton GEMM (our experiment, reverted) | v0.5.13.post1 +patch | 2491.9 | 311 | 0.95 | 5.0× |
+> | **Marlin (upstream #28231)** | **dev-cu13** | **~3573** | **447** | **1.000** | **7.2×** |
+>
+> Marlin saturates at 128 req/rank (flat ~3543–3573 across ratio 0.15→0.30; raising the SWA pool doesn't
+> help). **It edges past the FP8 checkpoint's 3413 — MXFP4 is no longer the loser.** **Recommendation:
+> serve DSV4-Flash MXFP4 on a #28231 image** (`dev-cu13` or newer). No source patch needed. Evidence:
+> `results/upstream_marlin_28231/`. The rest of this report documents the pinned-image launch-space study.
+
+---
+
+**Pinned-image study below — `lmsysorg/sglang:v0.5.13.post1-cu130`, NO source-code changes.**
 
 ## Result
 
