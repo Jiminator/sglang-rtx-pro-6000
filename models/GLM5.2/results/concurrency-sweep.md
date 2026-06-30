@@ -69,14 +69,32 @@ EAGLE on the cache workload **peaks at cc≈32 (157 tok/s/GPU) then declines** a
 
 > Note: the zipfian throughput values are `bench_serving` whole-run averages on the small per-cc prompt counts (ramp/drain included) and run at mfs0.92, so they sit below the headline max-batch/steady-state SOTA numbers (194.6 / 300) — they characterize *scaling shape and the cache effect*, not the peak.
 
-### 2d. Zipfian Pareto
+### 2c. EAGLE + L2 HiCache (the 4th curve)
 
-y = tok/s/GPU, x = per-user tok/s. The non-spec radix-L1 (squares) and +HiCache (triangles) curves nearly coincide — the ~3% L2 gain is barely visible. EAGLE (circles) is up-and-right at low-to-mid cc, then folds back down-left past cc≈32 as TTFT/queue degrade:
+| cc | tok/s/GPU | cache hit% | accept-len | ITL ms | TTFT ms |
+|---:|---:|---:|---:|---:|---:|
+| 1   | 7.97   | 0.0  | 3.98 | 15.6 | 960 |
+| 2   | 15.91  | 14.0 | 3.99 | 15.6 | 925 |
+| 4   | 27.16  | 28.0 | 3.97 | 16.5 | 978 |
+| 8   | 56.09  | 27.9 | 3.82 | 17.0 | 1,360 |
+| 16  | 99.57  | 31.5 | 3.95 | 19.1 | 2,186 |
+| 32  | 132.18 | 42.2 | 3.82 | 25.3 | 2,808 |
+| 64  | **141.06** | 43.1 | 3.89 | 41.1 | 63,752 |
+| 128 | 137.86 | 42.6 | 3.91 | 67.5 | 234,544 |
+| 256 | 125.50 | **55.7** | 3.92 | 123.7 | 256,655 |
+| 512 | 127.33 | **54.8** | 3.91 | 134.5 | 206,035 |
 
-![Zipfian Pareto — radix vs +HiCache vs EAGLE](pareto_zipfian_1k8k.png)
+### 2d. Zipfian Pareto + cache hit-rate (all 4 curves)
 
-### 2c. EAGLE + HiCache — NOT RUN
-The 4th curve (EAGLE + L2 HiCache, zipfian) did not execute — the node-4 sequential A→B handoff didn't fire after the non-spec+HiCache sweep. Launch scripts are staged at `node-4:~/glm52_runs/zipfsweepv2_eagle_HC/`; re-run to complete the 2×2. Given (2a) showed L2 adds ~3% on non-spec, the expected EAGLE+HiCache delta over EAGLE+radix-L1 is similarly small.
+y = tok/s/GPU, x = per-user tok/s; solid = radix L1, dashed = + L2 HiCache. Within each config the radix-L1 and +HiCache curves nearly coincide — **HiCache barely shifts throughput** (this 8192-output workload is decode-bound, not prefill-bound). EAGLE peaks mid-cc then folds back as TTFT/queue degrade.
+
+![Zipfian Pareto — 4 curves](pareto_zipfian_1k8k.png)
+
+**Where L2 HiCache actually earns its keep is the hit-rate**, not throughput. As concurrency rises, the active decode KV evicts prefixes from the GPU radix tree (L1); the L2 host tier retains them:
+
+![Zipfian cache hit-rate vs concurrency](hitrate_zipfian_1k8k.png)
+
+L1 and L2 track together up to cc≈64 (the working set fits L1). Past cc=128 the radix-L1-only curves plateau (~36% EAGLE, ~46→60% non-spec) while the +HiCache curves climb — **L2 lifts EAGLE's hit rate from ~36% to ~55% at cc256/512 (+19 pts)** (EAGLE's smaller draft+verify pool evicts L1 sooner, so it benefits most). Non-spec sees a smaller +6 pts. The hit-rate gain does **not** translate to a large throughput win here (EAGLE+HiCache ~1,003–1,019 vs EAGLE-radix ~970–1,007 agg at cc256/512) because the bottleneck at OSL=8192 is decode-generated KV, which caching cannot dedup.
 
 ---
 

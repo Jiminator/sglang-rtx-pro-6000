@@ -34,7 +34,7 @@ Throughput per GPU vs per-user token rate (y = tok/s/GPU, x = tok/s/user = 1000/
 ![GLM-5.2 throughput/latency Pareto — EAGLE vs non-spec (random 1k/8k)](results/pareto_random_1k8k.png)
 
 - **Random 1k/8k (no cache):** EAGLE Pareto-dominates non-spec at *every* concurrency — higher tok/s/GPU and lower ITL simultaneously (cc 1→128).
-- **Zipfian shared-prefix (radix vs +HiCache):** with shared prefixes the **GPU radix cache (L1) already captures most of the reuse**; adding the **L2 HiCache host tier is only ~+3%** on top (166 → 171 tok/s/GPU at cc=512), confirming L2 is largely redundant for this 1k/8k shape — the cache benefit is a prefill/TTFT win, and it can't dedup the decode-generated KV that bounds high-concurrency throughput.
+- **Zipfian shared-prefix (full 2×2 — {non-spec, EAGLE} × {radix-L1, +L2 HiCache}):** the GPU radix cache (L1) already captures the prefix reuse, so **L2 HiCache barely shifts throughput** (~+3% non-spec; EAGLE ~flat). Its real effect is **hit-rate**: past cc=128 the active decode KV evicts L1 prefixes, and the L2 host tier retains them — **L2 lifts EAGLE's hit-rate from ~36% to ~55% at cc256/512 (+19 pts)** (EAGLE's smaller pool evicts L1 sooner). But the higher hit-rate doesn't convert to throughput at OSL=8192 — the bottleneck is decode-generated KV, which caching can't dedup. **Takeaway: radix L1 is sufficient for 1k/8k; enable L2 HiCache only if your distinct-prefix working set overflows the GPU radix tree.**
 
 ## Correctness (gsm8k, the working recipes)
 | Config | gsm8k | note |
