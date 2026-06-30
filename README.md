@@ -15,6 +15,7 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 | [DeepSeek-V3.2](https://huggingface.co/nvidia/DeepSeek-V3.2-NVFP4) | NVFP4 | 1 Node (8x RTX 6000) | 2675.33 | 3012.42 | 2046.00 | 106.03 |
 | [GLM-5.1](https://huggingface.co/zai-org/GLM-5.1-FP8) | FP8 | 2 Nodes (16x RTX 6000) | 2785.55 | 3125.35 | 4092.00 | 155.26 |
 | [GLM-5.1](https://huggingface.co/lukealonso/GLM-5.1-NVFP4) | NVFP4 | 1 Node (8x RTX 6000) | 1462.73 | 1641.16 | 950.00 | 107.02 |
+| [GLM-5.2](https://huggingface.co/nvidia/GLM-5.2-NVFP4) | NVFP4 | 1 Node (8x RTX 6000)‖ | 2145.76 | 2413.98 | n/a | 43.15 |
 | [Kimi-K2.5](https://huggingface.co/moonshotai/Kimi-K2.5) | INT4* | 2 Nodes (16x RTX 6000) | 3069.15 | 3443.55 | 6889.00 | 147.45 |
 | [Qwen3.5-397B-A17B](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) | FP8 | 2 Nodes (16x RTX 6000)† | 654.45 | 14182.22 | 1500.00 | 56.46 |
 | [DeepSeek-V4-Flash](https://huggingface.co/sgl-project/DeepSeek-V4-Flash-FP8) | FP8 | 1 Node (8x RTX 6000)‡ | 551.92 | 608.47 | n/a | ~60 |
@@ -29,6 +30,8 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 *‡DeepSeek-V4-Flash was tuned for a **long-context** workload (ISL 8192 / OSL 65536) and measured with **offline** `bench_one_batch_server` at the KV-pool-capped batch (33), single node. Numbers are not directly comparable to the other rows' online 1K/8K results. The win is **DP-attention** (`--dp-size 8 --enable-dp-attention`), **2.45× over pure TP=8** — DeepSeek-V4-Flash decode is DSA-sparse-attention-bound (83% of decode), and DP-attention runs that kernel as 8 independent per-worker streams. "Total" is overall (in+out) throughput; offline runs have no peak/TPOT (≈60 ms ITL). See [`models/DSV4/flash/fp8/8k64k/TUNING_REPORT.md`](./models/DSV4/flash/fp8/8k64k/TUNING_REPORT.md).*
 
 *§DeepSeek-V4-Flash on a **1024 / 8192** workload, **offline** `bench_one_batch_server`, batch maxed to the KV pool (1016), single node. Not comparable to the online rows. The win is again **DP-attention**, **7.1× over pure TP=8** (481 tok/s): decode is memory-bandwidth-bound so throughput scales with batch, and DP-attention's 8 per-worker SWA pools lift the batch ceiling from 146 (single pool) to 1016 — per-request rate is identical, so the gain is pure batch-scaling. FP4 loses (mxfp4 MoE compute-bound at batch). See [`models/DSV4/flash/fp8/1k8k/TUNING_REPORT.md`](./models/DSV4/flash/fp8/1k8k/TUNING_REPORT.md).*
+
+*‖GLM-5.2-NVFP4, single node, **EAGLE 3-step speculative decoding** (the throughput SOTA) on the SGLang `glm-opt` branch — fp8 KV + DP-attention, 1K/8K, `bench_serving` sustained at max-concurrency 100 (its KV-pool knee). accept-length ≈ 3.9, gsm8k 0.94. Output 2145.76 tok/s ≈ **268 tok/s/GPU** whole-run (≈300/GPU at the steady-state saturation window). EAGLE Pareto-dominates the non-spec config across all concurrency; non-spec fp8 max-batch one-shot = 194.6 tok/s/GPU, stock bf16-dense baseline = 147. See [`models/GLM5.2/README.md`](./models/GLM5.2/README.md).*
 
 ## Project Structure
 
@@ -77,6 +80,7 @@ Detailed performance logs, including TTFT/TPOT latency distributions and through
 - [DeepSeek-V3.2 (NVFP4): models/DeepSeekv3-2/nvp4/results/benchmark_results.md](./models/DeepSeekv3-2/nvp4/results/benchmark_results.md)
 - [GLM-5.1 (FP8): models/GLM5.1/results/benchmark-results.md](./models/GLM5.1/results/benchmark-results.md)
 - [GLM-5.1 (NVFP4): models/GLM5.1/nvfp4/results/benchmark_results.md](./models/GLM5.1/nvfp4/results/benchmark_results.md)
+- [GLM-5.2 (NVFP4, EAGLE spec + Pareto curves): models/GLM5.2/results/concurrency-sweep.md](./models/GLM5.2/results/concurrency-sweep.md)
 - [Kimi-K2.5 (FP8): models/KimiK2.5/results/benchmark_results.md](./models/KimiK2.5/results/benchmark_results.md)
 - [Qwen3.5-397B-A17B (FP8, TTFT-focused): models/Qwen3.5/fp8/results/benchmark_results.md](./models/Qwen3.5/fp8/results/benchmark_results.md)
 - [DeepSeek-V4-Flash (FP8, 1K/8K): models/DSV4/flash/fp8/1k8k/results/benchmark_results.md](./models/DSV4/flash/fp8/1k8k/results/benchmark_results.md)
