@@ -1,56 +1,71 @@
-# GLM-5.2-NVFP4 on GCP G4 (RTX PRO 6000 / SM120)
+# GLM-5.2-NVFP4 on RTX PRO 6000 (SM120) — serving recipe + throughput (latest main, 2026-07-05)
 
-Optimized SGLang serving configs and benchmarks for [`nvidia/GLM-5.2-NVFP4`](https://huggingface.co/nvidia/GLM-5.2-NVFP4) on a single `g4-standard-384` node (8× RTX PRO 6000 Blackwell, SM120, PCIe, no NVLink).
+Single node, 8× RTX PRO 6000 Blackwell (SM120, PCIe, no NVLink), **TP=8 + DP-attention (dp8)**. Measured
+with `sglang.bench_serving` (loadgen, `--random-range-ratio 1.0`, no zipfian) → steady-state decode plateau
+read from server logs (aggregate = per-rank gen-throughput × dp_size 8; /GPU = ÷8). Checkpoint:
+[`nvidia/GLM-5.2-NVFP4`](https://huggingface.co/nvidia/GLM-5.2-NVFP4) (`GlmMoeDsa` DSA arch), snapshot
+`b0b2b68`. Image: **stock latest-main `lmsysorg/sglang:dev-cu13`** (sglang `0.0.0.dev1+gb28bc1060`,
+transformers 5.12.1). No source patch, no custom branch.
 
-## Model Overview
-GLM-5.2 is a DeepSeek-Sparse-Attention (DSA) MoE (`GlmMoeDsaForCausalLM`): 78 layers, 256 routed experts top-8, `kv_lora_rank` 512, MTP/NEXTN layer 78. The `nvidia/GLM-5.2-NVFP4` release is **expert-only NVFP4** — only the routed experts are quantized; attention, shared experts, dense layers 0–2 and the MTP layer stay bf16. gsm8k 0.920 (base). Pin the complete snapshot `b0b2b68d4be5ee00e95ae013ea0949fe5c0b5a56` (the `refs/main` tag drifted to a weightless partial).
+## Headline: fp8_e4m3 KV DSA decode now works on STOCK latest main
 
-## TL;DR — what to ship
-**Max throughput + lowest latency: EAGLE speculative decoding** (3 steps / 4 draft tokens). It is the throughput SOTA *and* it Pareto-dominates the non-speculative config across the entire concurrency range — ~2× the throughput per GPU at matched load and ~3× lower inter-token latency at low load (accept-length ≈ 3.9 on this model's well-trained MTP head). Recipe + launch script: [`nvfp4/launch-eagle-spec.sh`](./nvfp4/launch-eagle-spec.sh).
+The prior campaign's fp8 SOTA was **glm-opt-branch-only** — on stock dev-cu13 the fp8 DSA decode path
+crashed (no SM120 DSA decode kernel: `TllmGenFmhaRunner` SM100-only, etc.). **On latest main that crash is
+gone** — the trtllm DSA decode path itself now runs on SM120, so fp8 KV works on the stock image with a
+single env var. fp8's ~1.8–2.5× larger KV pool lifts the concurrent-sequence ceiling at saturation, which
+is what raises the decode plateau. bf16 is now a conservative fallback, not the ceiling.
 
-| Config | Metric | tok/s/GPU | Notes |
-|---|---|---|---|
-| **EAGLE 3-step (SOTA)** | sustained, steady-state | **~300** | gsm8k 0.94 · accept-len 3.9 · also the latency winner |
-| non-spec fp8 (max-batch) | one-shot, b191 | 194.6 | gsm8k 0.97 · simplest high-throughput config |
-| stock bf16 dense (baseline) | one-shot, b88 | 147.0 | runs on stock dev-cu13, no special branch |
+**The only env var needed for fp8 is `SGLANG_DISABLE_DSA_INDEXER_FUSION=1`** (ablation A1a: gsm8k 0.940).
+The DSV4 vars (`SGLANG_SM120_FLASHMLA_BACKEND`, `SGLANG_OPT_FLASHMLA_SPARSE_PREFILL`) are **inert** for GLM —
+GLM DSA uses a different dispatch. Also pass `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` for boot and
+the load-bearing NCCL/GLOO block for perf.
 
-Headline progression: **stock 147 → fp8-KV + memory levers 194.6 (+32%) → EAGLE spec ~300 (+104% over stock)**, all at ISL 1,024 / OSL 8,192, single node.
+## Throughput (aggregate output tok/s; /GPU = ÷8)
 
-## Hardware & Stack
-- **Setup:** 1× `g4-standard-384` — 8× RTX PRO 6000 Blackwell (95.6 GiB/GPU), PCIe (no NVLink/RDMA).
-- **Image:** `sglang-glmopt:tf512` = `lmsysorg/sglang:nightly-dev-cu13-20260623` + transformers 5.12, with the **`glm-opt` branch** (commit `8a57f86c3`) installed editable. The glm-opt branch is **required** for the two big unlocks below; on stock dev-cu13 the SOTA caps at the 147 bf16-dense config.
-- **Boot env (mandatory on glm-opt):** `SGLANG_DISABLE_DSA_INDEXER_FUSION=1` + `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` (without them the #27705 indexer rope buffer OOMs at construction under DP-attention), plus the load-bearing NCCL/GLOO env block.
+| Config | KV | mfs | pool/rank | **1K/8K** (1024/8192) | **8K/64K** (8192/65536) | gsm8k |
+|---|---|---:|---:|---:|---:|---:|
+| bf16 baseline | bfloat16 | 0.94 | 91.5K | ~1264 (158/GPU) | ~984 (123/GPU) | 0.920 |
+| **non-spec fp8** 🥇 | fp8_e4m3 | 0.975 | 229.7K | **~2680 (335/GPU)** | **~1081 (135/GPU)** | 0.900 |
+| **spec+fp8 (EAGLE-3)** | fp8_e4m3 | 0.97 | 128K | ~2645 (330/GPU) | — | **0.940** |
 
-## The optimization story (what actually moved the number)
-1. **bf16 KV + flashinfer attention is the only stock-viable path** on SM120 (fp8 KV / the `dsa` backend crash — no SM120 DSA decode kernel on stock). DP-attention + the `cuda-graph-max-bs = batch` trick → **147 tok/s/GPU** (stock SOTA, no code patch).
-2. **fp8_e4m3 KV works on the glm-opt branch** (gsm8k 0.96) and ~1.6×'s the KV pool. Three *stacking memory levers* — fp8 KV + minimal per-worker cuda-graph buckets (`--cuda-graph-bs "8 16 24 32"`) + chunked-prefill shrink — each unlock a higher `mem-fraction-static` notch → **194.6 tok/s/GPU** (best non-spec, +32%).
-3. **EAGLE speculative decoding is the real win** → **~300 tok/s/GPU sustained** (+104% over stock). The official MTP head accepts ~3.9 of 4 draft tokens, so each forward emits ~4 tokens; even though the draft+verify pool halves the batch ceiling, the per-request speedup more than pays for it. **3-step beats 4-step** (ties on steady-state throughput but wins whole-run, ITL, and gsm8k). `EAGLE topk>1` (tree spec) is hard-blocked on SM120 (flashinfer-MLA is topk=1 only).
+**Winner: fp8 KV, both workloads.** 1K/8K non-spec (335/GPU) ≈ spec (330/GPU) — **tied within noise** (both
+pool-bound at mfs~0.97–0.975); spec carries the correctness (0.940 vs 0.920) and latency (accept-len 4.0)
+edge. fp8 is **+108% over the bf16 plateau (158→335/GPU)** at 1K/8K and **+10%** at 8K/64K (via the
+concurrency-ceiling lift: 16 running-req/rank vs bf16's 9). Bundles: [`nvfp4/1k8k/`](nvfp4/1k8k/),
+[`nvfp4/8k64k/`](nvfp4/8k64k/). The zai-org full-FP8 checkpoint is [`fp8/`](fp8/) (**2-node BLOCKED**).
 
-See [`results/sota-summary.md`](./results/sota-summary.md) for the full lever-by-lever sweep and the closed/dead dimensions.
+> Prior glm-opt-branch bundle (superseded): offline `bench_one_batch_server` one-shot 194.6 tok/s/GPU
+> (non-spec) / ~300 sustained (EAGLE), 1K/8K only. Different harness — **not comparable** to these
+> `bench_serving` plateau numbers. Old Pareto pngs kept under [`results/`](results/) as history.
 
-## Pareto curves (concurrency sweeps)
-Throughput per GPU vs per-user token rate (y = tok/s/GPU, x = tok/s/user = 1000/ITL), measured with `bench_serving` on the identical workload — up-and-to-the-right is better. Full data + the zipfian/HiCache plot in [`results/concurrency-sweep.md`](./results/concurrency-sweep.md).
+## Fixed facts
 
-![GLM-5.2 throughput/latency Pareto — EAGLE vs non-spec (random 1k/8k)](results/pareto_random_1k8k.png)
+- **MoE runner = `flashinfer_cutlass`** for NVFP4 (cutedsl/trtllm have no SM120 build; marlin gives gsm8k
+  0.02 = garbage). This is the only viable NVFP4 MoE runner on SM120.
+- **Required flags:** `--attention-backend flashinfer` + `--kv-cache-dtype fp8_e4m3` +
+  `--disable-shared-experts-fusion` (loader crashes without it) + `--moe-a2a-backend none --ep-size 1`.
+- **`dp_size` must equal `tp_size`** (=8). DP-attention gives each GPU its own KV pool.
+- **Pool is the lever.** Decode is KV-pool-bound: each memory-freeing lever (fp8 KV, minimal per-worker
+  cuda-graph buckets, chunked-prefill shrink) buys a higher `--mem-fraction-static` notch → bigger pool →
+  more concurrent seqs → higher plateau. **mfs 0.975 is the ceiling** (0.98 OOMs at boot).
+- **Spec = EAGLE topk-1 only.** `--speculative-eagle-topk >1` (tree spec) is hard-blocked on SM120
+  (flashinfer-MLA is topk=1 only). Pin `--speculative-moe-runner-backend flashinfer_cutlass
+  --speculative-moe-a2a-backend none` to dodge the dead deep_gemm/deepep auto-route.
 
-- **Random 1k/8k (no cache):** EAGLE Pareto-dominates non-spec at *every* concurrency — higher tok/s/GPU and lower ITL simultaneously (cc 1→128).
-- **Zipfian shared-prefix (full 2×2 — {non-spec, EAGLE} × {radix-L1, +L2 HiCache}):** the GPU radix cache (L1) already captures the prefix reuse, so **L2 HiCache barely shifts throughput** (~+3% non-spec; EAGLE ~flat). Its real effect is **hit-rate**: past cc=128 the active decode KV evicts L1 prefixes, and the L2 host tier retains them — **L2 lifts EAGLE's hit-rate from ~36% to ~55% at cc256/512 (+19 pts)** (EAGLE's smaller pool evicts L1 sooner). But the higher hit-rate doesn't convert to throughput at OSL=8192 — the bottleneck is decode-generated KV, which caching can't dedup. **Takeaway: radix L1 is sufficient for 1k/8k; enable L2 HiCache only if your distinct-prefix working set overflows the GPU radix tree.**
+## FP8 checkpoint (zai-org/GLM-5.2-FP8) — 2-node BLOCKED
 
-## Correctness (gsm8k, the working recipes)
-| Config | gsm8k | note |
-|---|---|---|
-| EAGLE 3-step (fp8 KV) | 0.94 | accept-len 3.9, invalid 0.000 |
-| non-spec fp8 (b191) | 0.97 (200q) | |
-| stock bf16 dense | 0.92 | base reference |
+The full-FP8 704 GB checkpoint needs 2 nodes at TP=16. **Blocked on latest main by a cross-node warmup
+deadlock.** Distributed init + weight load succeed (~83.7 GB/GPU), then the first warmup forward hangs
+permanently at `multimem all-gather disabled (Failed to send fd: No such file or directory)` — sglang's
+CUDA symm-mem multimem collective does a CUDA-IPC fd exchange over a Unix socket that cannot work across two
+nodes with no shared FS; it disables multimem then deadlocks on the next collective (the 2400s watchdog
+never fires — ranks spin). 5 launch configs all identical. No-code path exhausted. See [`fp8/README.md`](fp8/README.md)
+for the correct recipe (for when the substrate is fixed) and the remaining source-patch / PP-across-nodes options.
 
-## Usage
-```bash
-# Best config — EAGLE speculative decoding (throughput SOTA + latency winner)
-bash nvfp4/launch-eagle-spec.sh
+## Full campaign data
 
-# Alternative — non-spec fp8 (simpler, max-batch one-shot)
-bash nvfp4/launch-nonspec.sh
-```
-Both target a single 8-GPU node on the `sglang-glmopt:tf512` image. For continuous serving at concurrency *above* the pool ceiling, drop `--mem-fraction-static` to 0.92 and `--chunked-prefill-size` to 1024 to keep over-subscription queueing gracefully instead of hitting the prefill-activation OOM.
+`runs/20260705_glm5.2_sota_humanize/` in the gcp-kimi repo (hill-climb ledger, ablations, correctness gates,
+per-config server logs). Per-workload stories: [`nvfp4/1k8k/TUNING_REPORT.md`](nvfp4/1k8k/TUNING_REPORT.md),
+[`nvfp4/8k64k/TUNING_REPORT.md`](nvfp4/8k64k/TUNING_REPORT.md).
 
 **Attribution:** GLM-5.2-NVFP4 SM120 tuning campaign — RadixArk serving team.
