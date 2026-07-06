@@ -59,8 +59,10 @@ deadlock.** Distributed init + weight load succeed (~83.7 GB/GPU), then the firs
 permanently at `multimem all-gather disabled (Failed to send fd: No such file or directory)` — sglang's
 CUDA symm-mem multimem collective does a CUDA-IPC fd exchange over a Unix socket that cannot work across two
 nodes with no shared FS; it disables multimem then deadlocks on the next collective (the 2400s watchdog
-never fires — ranks spin). 5 launch configs all identical. No-code path exhausted. See [`fp8/README.md`](fp8/README.md)
-for the correct recipe (for when the substrate is fixed) and the remaining source-patch / PP-across-nodes options.
+never fires — ranks spin). 5 launch configs all identical. No-code path exhausted; every remaining unblock
+path needs a source change (out of scope — no patches), so the FP8 checkpoint is not deployable here with
+config alone — use NVFP4. See [`fp8/README.md`](fp8/README.md) for the details + the correct recipe for when
+the substrate is fixed upstream.
 
 ## Full campaign data
 

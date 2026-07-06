@@ -32,14 +32,21 @@ than block, so there is no timeout to trip.
 
 No-code path is **exhausted**.
 
-## Remaining options (not attempted — both need more than a launch flag)
+## Why it stays blocked here — no source patches
 
-- **PP-across-nodes** — pipeline parallel uses point-to-point sends, avoiding the multimem collective
-  entirely. But it needs image **`v0.5.12.post1-cu130`** (latest dev-cu13 has a PP=2 stage-1 forward
-  regression), **plus** the GLM DSA topk-boundary patch, which historically loses (~76 tok/s/GPU). Not a
-  throughput win even if it boots.
-- **Source patch** gating the post-multimem-disable collective (skip the fallback collective, or route it
-  through NCCL instead of symm-mem) so warmup can complete cross-node.
+Every remaining unblock path requires **source changes to sglang**, which are **out of scope** for this
+project (launch/runtime configuration only — no patches). For the record, the two known paths both need a
+patch and neither is pursued:
+
+- **PP-across-nodes** would sidestep the multimem collective (pipeline parallel uses point-to-point sends),
+  but latest dev-cu13 has a PP=2 stage-1 forward regression → it needs image `v0.5.12.post1-cu130` **and**
+  the GLM DSA topk-boundary source patch (which historically loses, ~76 tok/s/GPU — not a throughput win
+  even if it booted).
+- Gating the post-multimem-disable collective (route it through NCCL / skip the symm-mem fallback) is a
+  source change.
+
+The fix belongs upstream (or needs an NVLink / shared-FS substrate). ⇒ **The FP8 checkpoint is not
+deployable on this cluster with config alone; use NVFP4.**
 
 ## The recipe that IS correct (for when the substrate is fixed)
 
