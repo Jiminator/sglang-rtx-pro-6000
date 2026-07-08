@@ -1,0 +1,45 @@
+============ Serving Benchmark Result ============
+Backend:                                 sglang    
+Traffic request rate:                    inf       
+Max request concurrency:                 512       
+Successful requests:                     1536      
+Benchmark duration (s):                  3763.88   
+Total input tokens:                      789869    
+Total input text tokens:                 789869    
+Total generated tokens:                  6192385   
+Total generated tokens (retokenized):    6183319   
+Request throughput (req/s):              0.41      
+Input token throughput (tok/s):          209.85    
+Output token throughput (tok/s):         1645.21   
+Peak output token throughput (tok/s):    2608.00   
+Peak concurrent requests:                516       
+Total token throughput (tok/s):          1855.07   
+Concurrency:                             392.56    
+----------------End-to-End Latency----------------
+Mean E2E Latency (ms):                   961944.59 
+Median E2E Latency (ms):                 953790.42 
+P90 E2E Latency (ms):                    1730669.58
+P95 E2E Latency (ms):                    1830142.27
+P99 E2E Latency (ms):                    1957571.90
+---------------Time to First Token----------------
+Mean TTFT (ms):                          8164.84   
+Median TTFT (ms):                        440.06    
+P90 TTFT (ms):                           30004.90  
+P95 TTFT (ms):                           34290.75  
+P99 TTFT (ms):                           37180.59  
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          239.68    
+Median TPOT (ms):                        240.43    
+P90 TPOT (ms):                           248.12    
+P95 TPOT (ms):                           248.90    
+P99 TPOT (ms):                           274.20    
+---------------Inter-Token Latency----------------
+Mean ITL (ms):                           236.64    
+Median ITL (ms):                         227.51    
+P90 ITL (ms):                            283.80    
+P95 ITL (ms):                            325.80    
+P99 ITL (ms):                            405.22    
+Max ITL (ms):                            29078.30  
+==================================================
+```
+
