@@ -16,6 +16,7 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 | [GLM-5.1](https://huggingface.co/zai-org/GLM-5.1-FP8) | FP8 | 2 Nodes (16x RTX 6000) | 2785.55 | 3125.35 | 4092.00 | 155.26 |
 | [GLM-5.1](https://huggingface.co/lukealonso/GLM-5.1-NVFP4) | NVFP4 | 1 Node (8x RTX 6000) | 1462.73 | 1641.16 | 950.00 | 107.02 |
 | [GLM-5.2](https://huggingface.co/nvidia/GLM-5.2-NVFP4) | NVFP4 | 1 Node (8x RTX 6000)‖ | 2145.76 | 2413.98 | n/a | 43.15 |
+| [GLM-5.2](https://huggingface.co/zai-org/GLM-5.2-FP8) | FP8 | 2 Nodes (16x RTX 6000)¶ | 2190 | 2464 | n/a | ~215 |
 | [Kimi-K2.5](https://huggingface.co/moonshotai/Kimi-K2.5) | INT4* | 2 Nodes (16x RTX 6000) | 3069.15 | 3443.55 | 6889.00 | 147.45 |
 | [Qwen3.5-397B-A17B](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) | FP8 | 2 Nodes (16x RTX 6000)† | 654.45 | 14182.22 | 1500.00 | 56.46 |
 | [DeepSeek-V4-Flash](https://huggingface.co/sgl-project/DeepSeek-V4-Flash-FP8) | FP8 | 1 Node (8x RTX 6000)‡ | 551.92 | 608.47 | n/a | ~60 |
@@ -32,6 +33,8 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 *§DeepSeek-V4-Flash on a **1024 / 8192** workload, **offline** `bench_one_batch_server`, batch maxed to the KV pool (1016), single node. Not comparable to the online rows. The win is again **DP-attention**, **7.1× over pure TP=8** (481 tok/s): decode is memory-bandwidth-bound so throughput scales with batch, and DP-attention's 8 per-worker SWA pools lift the batch ceiling from 146 (single pool) to 1016 — per-request rate is identical, so the gain is pure batch-scaling. FP4 loses (mxfp4 MoE compute-bound at batch). See [`models/DSV4/flash/fp8/1k8k/TUNING_REPORT.md`](./models/DSV4/flash/fp8/1k8k/TUNING_REPORT.md).*
 
 *‖GLM-5.2-NVFP4, single node, **EAGLE 3-step speculative decoding** (the throughput SOTA) on the SGLang `glm-opt` branch — fp8 KV + DP-attention, 1K/8K, `bench_serving` sustained at max-concurrency 100 (its KV-pool knee). accept-length ≈ 3.9, gsm8k 0.94. Output 2145.76 tok/s ≈ **268 tok/s/GPU** whole-run (≈300/GPU at the steady-state saturation window). EAGLE Pareto-dominates the non-spec config across all concurrency; non-spec fp8 max-batch one-shot = 194.6 tok/s/GPU, stock bf16-dense baseline = 147. See [`models/GLM5.2/README.md`](./models/GLM5.2/README.md).*
+
+*¶GLM-5.2-**FP8** (zai-org full-FP8, 704 GB) — the checkpoint for customers who require **FP8 weights**. Needs **2 nodes**: TP=8 × **PP=2** + DP-attention, stock `dev-cu13` (v0.5.15), **no source patch** (the PP boundary is fixed by `SGLANG_PP_LAYER_PARTITION=38,40`). 1K/8K `bench_serving` steady-state plateau = **137 tok/s/GPU** (2,190 output tok/s; per-DP-rank decode pinned at 273 tok/s × 8 ÷ 16); total/TPOT derived from the ≈215 ms steady-state ITL, no peak. **Throughput-inferior to the GLM-5.2-NVFP4 row above** — on SM120 it's forced onto dense MLA (DSA sparse decode is SM100-only) and cannot use speculative decoding (3 independent SM120 walls: PP-assert / flashinfer-draft-`topk_indices` / DSA-logits-SM100-only). 8K/64K = 24.85 tok/s/GPU. Use full-FP8 only when FP8 weights are mandated. See [`models/GLM5.2/fp8/README.md`](./models/GLM5.2/fp8/README.md).*
 
 ## Project Structure
 
@@ -81,6 +84,7 @@ Detailed performance logs, including TTFT/TPOT latency distributions and through
 - [GLM-5.1 (FP8): models/GLM5.1/results/benchmark-results.md](./models/GLM5.1/results/benchmark-results.md)
 - [GLM-5.1 (NVFP4): models/GLM5.1/nvfp4/results/benchmark_results.md](./models/GLM5.1/nvfp4/results/benchmark_results.md)
 - [GLM-5.2 (NVFP4, EAGLE spec + Pareto curves): models/GLM5.2/results/concurrency-sweep.md](./models/GLM5.2/results/concurrency-sweep.md)
+- [GLM-5.2 (FP8, 2-node PP=2 — full-FP8 checkpoint): models/GLM5.2/fp8/README.md](./models/GLM5.2/fp8/README.md)
 - [Kimi-K2.5 (FP8): models/KimiK2.5/results/benchmark_results.md](./models/KimiK2.5/results/benchmark_results.md)
 - [Qwen3.5-397B-A17B (FP8, TTFT-focused): models/Qwen3.5/fp8/results/benchmark_results.md](./models/Qwen3.5/fp8/results/benchmark_results.md)
 - [DeepSeek-V4-Flash (FP8, 1K/8K): models/DSV4/flash/fp8/1k8k/results/benchmark_results.md](./models/DSV4/flash/fp8/1k8k/results/benchmark_results.md)
