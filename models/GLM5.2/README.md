@@ -38,6 +38,13 @@ concurrency-ceiling lift: 16 running-req/rank vs bf16's 9). Bundles: [`nvfp4/1k8
 > (non-spec) / ~300 sustained (EAGLE), 1K/8K only. Different harness — **not comparable** to these
 > `bench_serving` plateau numbers. Old Pareto pngs kept under [`results/`](results/) as history.
 
+**Agentic multi-turn (80K ISL / 220 OSL, 92% cache hit):** a different regime with a different winner —
+**L2 HiCache is worth up to 3.56×** (radix hit decays 93→72% under concurrency while L2 holds ~92% flat),
+and radix-only fails to complete the workload past cc=8. This does *not* contradict the 1K/8K finding that
+L2 is worth ~+3%: that workload is decode-bound with short prefixes, this one is prefill-dominant with 80K
+prefixes. ⚠️ Requires a **cache-aware `--dp-aware` router** — plain DP-attention scatters a conversation's
+turns across ranks and measures 0% hit. See [`results/agentic-multiturn-cache-sweep.md`](results/agentic-multiturn-cache-sweep.md).
+
 ## Fixed facts
 
 - **MoE runner = `flashinfer_cutlass`** for NVFP4 (cutedsl/trtllm have no SM120 build; marlin gives gsm8k

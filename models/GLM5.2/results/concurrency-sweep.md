@@ -100,5 +100,5 @@ L1 and L2 track together up to cc≈64 (the working set fits L1). Past cc=128 th
 
 ## Takeaways
 1. **EAGLE 3-step is the deployment pick** — Pareto-dominant on no-cache random across all concurrency, and the latency winner.
-2. **L2 HiCache is optional for 1k/8k** — radix L1 captures the shared-prefix benefit; L2 adds only a few % at the very high end. Enable it only if your working set of distinct prefixes genuinely overflows the GPU radix tree.
+2. **L2 HiCache is optional *for this workload*** — radix L1 captures the shared-prefix benefit at 1k/8k; L2 adds only a few % at the very high end. Enable it only if your working set of distinct prefixes genuinely overflows the GPU radix tree. ⚠️ **This does not generalise:** on an 80K-ISL agentic multi-turn workload L2 HiCache is worth up to **3.56×**, because there the re-sent prefix *is* the cost rather than decode-generated KV. See [`agentic-multiturn-cache-sweep.md`](./agentic-multiturn-cache-sweep.md).
 3. **High-concurrency throughput is decode-KV-bound, not prefill-bound** — neither caching nor spec changes the fundamental pool ceiling at OSL=8192; both win by being more efficient *per request*, which matters most at low-to-mid load.
