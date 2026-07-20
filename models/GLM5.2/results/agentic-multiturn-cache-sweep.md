@@ -72,6 +72,47 @@ multi-turn the re-sent prefix *is* the cost. **"L2 HiCache is optional" is workl
 
 ---
 
+## 5. ⛔ Speculative decoding — blocked on SM120 by an upstream regression (#29787)
+
+A third arm (HiCache + EAGLE, blog flags `--speculative-num-steps 5 --speculative-num-draft-tokens 6
+--speculative-eagle-topk 1`) **could not be run.** Every EAGLE config dies at draft cuda-graph capture:
+
+```
+TypeError: FlashInferMLAAttnBackend.forward_decode() got an unexpected keyword argument 'topk_indices'
+```
+
+**Root cause:** [`16372b4c5f` "[Spec] Anchor GLM-5.2 MTP IndexShare topk on the draft-extend step"
+(#29787)](https://github.com/sgl-project/sglang/pull/29787), merged 2026-07-06 — after `b28bc1060`
+(07-04) and before `v0.5.15` (07-09). It threads `dsa_topk_indices` through the EAGLE draft path, but
+`flashinfer_mla_backend` implements no such kwarg (**0 refs** at b28bc1060, v0.5.15, post1 *and* main;
+only `dsa_backend` has it, 57 refs). On SM100 the draft uses the deep_gemm-backed DSA path which accepts
+it; **SM120 has no deep_gemm build**, so it falls back to `flashinfer_mla` and dies. Forcing
+`--speculative-draft-attention-backend dsa` hits the other jaw: `deepgemm/csrc/apis/attention.hpp:227
+Unsupported architecture`.
+
+⇒ **IndexShare, the blog's headline spec optimization, is exactly what breaks spec decode on SM120.**
+
+**This is a regression, not a limitation** — the same feature worked on this hardware and checkpoint
+before v0.5.15: EAGLE 3-step **300 tok/s/GPU** (06-29, accept_len 3.93) and EAGLE-3 + fp8 **330 tok/s/GPU**
+(07-05 on `dev-cu13` @ `b28bc1060`, accept_len 4.0). `b28bc1060` is a verified ancestor of `v0.5.15`.
+
+Ruled out as causes: the blog env vars, HiCache, the image (v0.5.15 vs post1), and step depth (3/4 fails
+identically to 5/6). Newer images cannot help — main has 0 refs too. Fix is source-only, so work stopped.
+
+**Practical guidance:** do **not** pin `release/v0.5.15` for GLM-5.2 on SM120 if spec decode is required;
+the regression is in the release. Pre-#29787 builds are known-good. On a current build, **NEXTN** still
+boots (it avoids the IndexShare path) but spec buffers cut the KV pool **−68 %** (129,216 → 41,344/rank at
+matched mfs), below the 90,112 context length; mfs 0.96 + chunked-prefill 8192 recovers it to 113,472,
+which fits **one** conversation per rank — so a NEXTN sweep is viable only at **cc ≤ 8**.
+
+**Would spec have helped?** Probably not for throughput. Aggregate throughput here is prefill-bound —
+solving `duration = prefill_work/R + decode_time` across the two cc=8 arms yields decode_time ≈ 0, i.e.
+continuous batching already hides decode behind other requests' prefill. Spec accelerates decode (already
+free in aggregate) while spending the KV pool that produces the 3.56× win. It remains a **latency** lever:
+decode is 39–66 % of per-request E2E. Full detail: `_raw/glm5.2/agentic_spec_bootfail/BOOT_FAILURE.md`.
+
+---
+
 ## Config
 
 ```
