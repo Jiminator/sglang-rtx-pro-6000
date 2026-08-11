@@ -1,11 +1,21 @@
-# GLM-5.2-NVFP4 on RTX PRO 6000 (SM120) — serving recipe + throughput (latest main, 2026-07-05)
+# GLM-5.2-NVFP4 on RTX PRO 6000 (SM120) — serving recipe + throughput (latest main, 1K/8K re-verified 2026-08-11)
 
 Single node, 8× RTX PRO 6000 Blackwell (SM120, PCIe, no NVLink), **TP=8 + DP-attention (dp8)**. Measured
 with `sglang.bench_serving` (loadgen, `--random-range-ratio 1.0`, no zipfian) → steady-state decode plateau
 read from server logs (aggregate = per-rank gen-throughput × dp_size 8; /GPU = ÷8). Checkpoint:
 [`nvidia/GLM-5.2-NVFP4`](https://huggingface.co/nvidia/GLM-5.2-NVFP4) (`GlmMoeDsa` DSA arch), snapshot
-`b0b2b68`. Image: **stock latest-main `lmsysorg/sglang:dev-cu13`** (sglang `0.0.0.dev1+gb28bc1060`,
-transformers 5.12.1). No source patch, no custom branch.
+`aec724e8` (the older `b0b2b68` pin is stale — HF `refs/main` has moved). Image: **stock latest-main
+`lmsysorg/sglang:dev-cu13`**, transformers 5.12.1. No source patch, no custom branch.
+
+> ### ⚠️ Read before deploying on latest main
+> The 2026-07-05 launch scripts **do not run on current `dev-cu13`** (`0.0.0.dev1+gd59c1ddf7`). Three
+> independent config-only blockers: a **quoted `--cuda-graph-bs`** that argparse rejects outright (the
+> usual cause of an unexplained CrashLoopBackOff on GKE — on Kubernetes each int must be its own `args:`
+> element); a **prefill-CUDA-graph `AttributeError`** that kills all 8 schedulers, fixed by
+> `--disable-piecewise-cuda-graph`; and — most dangerous — the auto-selected **`flashinfer_sparse_mla`
+> DSA backend silently returning garbage** (boots clean, full speed, **gsm8k 0.000 / Invalid 1.000**),
+> fixed by `--dsa-prefill-backend trtllm --dsa-decode-backend trtllm`. **Always run the gsm8k gate before
+> trusting a throughput number.** Details: [`nvfp4/1k8k/TUNING_REPORT.md`](nvfp4/1k8k/TUNING_REPORT.md).
 
 ## Headline: fp8_e4m3 KV DSA decode now works on STOCK latest main
 
@@ -22,17 +32,24 @@ the load-bearing NCCL/GLOO block for perf.
 
 ## Throughput (aggregate output tok/s; /GPU = ÷8)
 
-| Config | KV | mfs | pool/rank | **1K/8K** (1024/8192) | **8K/64K** (8192/65536) | gsm8k |
-|---|---|---:|---:|---:|---:|---:|
-| bf16 baseline | bfloat16 | 0.94 | 91.5K | ~1264 (158/GPU) | ~984 (123/GPU) | 0.920 |
-| **non-spec fp8** 🥇 | fp8_e4m3 | 0.975 | 229.7K | **~2680 (335/GPU)** | **~1081 (135/GPU)** | 0.900 |
-| **spec+fp8 (EAGLE-3)** | fp8_e4m3 | 0.97 | 128K | ~2645 (330/GPU) | — | **0.940** |
+| Config | KV | mfs | pool/rank | **1K/8K** (1024/8192) | **8K/64K** (8192/65536) | gsm8k | pin |
+|---|---|---:|---:|---:|---:|---:|---|
+| bf16 baseline | bfloat16 | 0.94 | 91.5K | ~1264 (158/GPU) | ~984 (123/GPU) | 0.920 | `gb28bc1060` |
+| **non-spec fp8** 🥇 | fp8_e4m3 | 0.975 | **228.4K** | **~3379 (422/GPU)** | ~1081 (135/GPU) † | 0.900 | **`gd59c1ddf7`** |
+| non-spec fp8 (prior anchor) | fp8_e4m3 | 0.975 | 229.7K | ~2680 (335/GPU) | ~1081 (135/GPU) | 0.900 | `gb28bc1060` |
+| spec+fp8 (EAGLE-3) ⚠️ | fp8_e4m3 | 0.97 | 128K | ~2645 (330/GPU) | — | **0.940** | `gb28bc1060` |
 
-**Winner: fp8 KV, both workloads.** 1K/8K non-spec (335/GPU) ≈ spec (330/GPU) — **tied within noise** (both
-pool-bound at mfs~0.97–0.975); spec carries the correctness (0.940 vs 0.920) and latency (accept-len 4.0)
-edge. fp8 is **+108% over the bf16 plateau (158→335/GPU)** at 1K/8K and **+10%** at 8K/64K (via the
-concurrency-ceiling lift: 16 running-req/rank vs bf16's 9). Bundles: [`nvfp4/1k8k/`](nvfp4/1k8k/),
-[`nvfp4/8k64k/`](nvfp4/8k64k/). The zai-org full-FP8 checkpoint is [`fp8/`](fp8/) (**2-node BLOCKED**).
+**Winner: fp8 KV, both workloads.** The 1K/8K figure is now **~422/GPU** — **+26% over the 07-05 anchor of
+335/GPU** on the identical recipe, workload and harness, once the three blockers above are fixed. The gain
+is the newer build itself, not a config change. Quote **~420 sustained / ~400 floor** (the plateau climbs to
+~444 then decays to ~403 as sequences lengthen). fp8 remains **+108% over the bf16 plateau** at 1K/8K and
+**+10%** at 8K/64K (concurrency-ceiling lift: 16 running-req/rank vs bf16's 9). Bundles:
+[`nvfp4/1k8k/`](nvfp4/1k8k/), [`nvfp4/8k64k/`](nvfp4/8k64k/). The zai-org full-FP8 checkpoint is
+[`fp8/`](fp8/) (**2-node BLOCKED**).
+
+† **Only 1K/8K was re-measured on `gd59c1ddf7`.** The 8K/64K and EAGLE-3 rows stand on the `gb28bc1060`
+pin and have not been re-verified against the three blockers. ⚠️ EAGLE spec decode on SM120 is additionally
+reported blocked by upstream regression #29787 from v0.5.15 — see below.
 
 > Prior glm-opt-branch bundle (superseded): offline `bench_one_batch_server` one-shot 194.6 tok/s/GPU
 > (non-spec) / ~300 sustained (EAGLE), 1K/8K only. Different harness — **not comparable** to these
