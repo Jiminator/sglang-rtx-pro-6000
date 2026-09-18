@@ -36,9 +36,23 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 
 *¶GLM-5.2-**FP8** (zai-org full-FP8, 704 GB) — the checkpoint for customers who require **FP8 weights**. Needs **2 nodes**: TP=8 × **PP=2** + DP-attention, stock `dev-cu13` (v0.5.15), **no source patch** (the PP boundary is fixed by `SGLANG_PP_LAYER_PARTITION=38,40`). 1K/8K `bench_serving` steady-state plateau = **137 tok/s/GPU** (2,190 output tok/s; per-DP-rank decode pinned at 273 tok/s × 8 ÷ 16); total/TPOT derived from the ≈215 ms steady-state ITL, no peak. **Throughput-inferior to the GLM-5.2-NVFP4 row above** — on SM120 it's forced onto dense MLA (DSA sparse decode is SM100-only) and cannot use speculative decoding (3 independent SM120 walls: PP-assert / flashinfer-draft-`topk_indices` / DSA-logits-SM100-only). 8K/64K = 24.85 tok/s/GPU. Use full-FP8 only when FP8 weights are mandated. See [`models/GLM5.2/fp8/README.md`](./models/GLM5.2/fp8/README.md).*
 
+## Gemma 4 latency configurations
+
+[Gemma 4 26B-A4B BF16 configurations and results](./models/Gemma4/README.md)
+cover 10K/300 and 10K/500 at client concurrency32. Independent TP1 replicas
+use SMG round-robin, stock pinned SGLang v0.5.19, BF16 weights/KV and no radix
+reuse. These latency workloads are separate from the throughput table above.
+
+The16-replica, two-node **forced-acceptance simulation** reached3.866–3.886s
+median E2E at10K/300; mean was3.966–4.002s. This is **not a real-traffic SLA or
+lossless-generation result**. The 10K/500 natural-acceptance configuration met
+the 7s median target on six GPUs (6.651–6.719s). Server commands, benchmark
+commands and results for both targets are documented in the model directory.
+
 ## Project Structure
 
 - `models/`: Model-specific SGLang job configurations and benchmarks.
+  - `Gemma4/`: BF16 latency configs, natural-acceptance baselines, and labeled draft-depth simulations.
   - `DeepSeekv3-2/`: Configs for DeepSeek-V3 and V2.5.
     - `fp8/`: Optimized 2-node FP8 serving setup.
     - `nvp4/`: Native FP4 serving using `modelopt_fp4` with EAGLE speculative decoding.
