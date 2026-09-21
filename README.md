@@ -21,6 +21,7 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 | [Qwen3.5-397B-A17B](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) | FP8 | 2 Nodes (16x RTX 6000)† | 654.45 | 14182.22 | 1500.00 | 56.46 |
 | [DeepSeek-V4-Flash](https://huggingface.co/sgl-project/DeepSeek-V4-Flash-FP8) | FP8 | 1 Node (8x RTX 6000)‡ | 551.92 | 608.47 | n/a | ~60 |
 | [DeepSeek-V4-Flash](https://huggingface.co/sgl-project/DeepSeek-V4-Flash-FP8) | FP8 | 1 Node (8x RTX 6000)§ | 3412.91 | 3482.25 | n/a | n/a |
+| [DeepSeek-V4.1-Flash](https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash) | MXFP4 + FP8 | 1 Node (8x RTX 6000)†† | 511.59 | 4604.29 | 1920.00 | 154.57 |
 
 *Benchmarks conducted using `inf` request rate and 512 max concurrency. Tests utilized a random dataset with 1024 input tokens and 8192 output tokens (1536 total prompts). The load generator was isolated on a dedicated CPU-only node pool to ensure zero interference with GPU performance.*
 
@@ -35,6 +36,8 @@ Optimized GKE configurations and benchmarks for serving LLMs on GCP G4 instances
 *‖GLM-5.2-NVFP4, single node, **EAGLE 3-step speculative decoding** (the throughput SOTA) on the SGLang `glm-opt` branch — fp8 KV + DP-attention, 1K/8K, `bench_serving` sustained at max-concurrency 100 (its KV-pool knee). accept-length ≈ 3.9, gsm8k 0.94. Output 2145.76 tok/s ≈ **268 tok/s/GPU** whole-run (≈300/GPU at the steady-state saturation window). EAGLE Pareto-dominates the non-spec config across all concurrency; non-spec fp8 max-batch one-shot = 194.6 tok/s/GPU, stock bf16-dense baseline = 147. See [`models/GLM5.2/README.md`](./models/GLM5.2/README.md).*
 
 *¶GLM-5.2-**FP8** (zai-org full-FP8, 704 GB) — the checkpoint for customers who require **FP8 weights**. Needs **2 nodes**: TP=8 × **PP=2** + DP-attention, stock `dev-cu13` (v0.5.15), **no source patch** (the PP boundary is fixed by `SGLANG_PP_LAYER_PARTITION=38,40`). 1K/8K `bench_serving` steady-state plateau = **137 tok/s/GPU** (2,190 output tok/s; per-DP-rank decode pinned at 273 tok/s × 8 ÷ 16); total/TPOT derived from the ≈215 ms steady-state ITL, no peak. **Throughput-inferior to the GLM-5.2-NVFP4 row above** — on SM120 it's forced onto dense MLA (DSA sparse decode is SM100-only) and cannot use speculative decoding (3 independent SM120 walls: PP-assert / flashinfer-draft-`topk_indices` / DSA-logits-SM100-only). 8K/64K = 24.85 tok/s/GPU. Use full-FP8 only when FP8 weights are mandated. See [`models/GLM5.2/fp8/README.md`](./models/GLM5.2/fp8/README.md).*
+
+*††DeepSeek-V4.1-Flash, official checkpoint, on an 8192 / 1024 workload: online `bench_serving`, 256 prompts, max concurrency 128, `--random-range-ratio 1.0`, prefix cache flushed (0% hits). Four flag changes on top of the upstream recipe give +15.8% with unchanged GSM8K. See [`models/DSV4.1/flash/8k1k/README.md`](./models/DSV4.1/flash/8k1k/README.md).*
 
 ## Gemma 4 latency configurations
 
@@ -67,6 +70,8 @@ commands and results for both targets are documented in the model directory.
     - `flash/fp8/8k64k/`: **shipped** — TP=8 + DP-attention, 551.9 tok/s @ B=33 (2.45× over pure TP).
     - `flash/nvfp4/`: FP4 runs but loses on SM120 (mxfp4 MoE compute-bound) — notes only.
     - `pro/`: not yet benchmarked on this cluster.
+  - `DSV4.1/`: DeepSeek-V4.1-Flash, official checkpoint.
+    - `flash/8k1k/`: TP=8 + EP=8, 511.6 tok/s at concurrency 128 (+15.8% over the upstream recipe).
 - `gkecluster/`: Infrastructure-as-Code for GKE provisioning.
   - `createCluster_template.sh`: Automated script to provision VPC, networking, and GKE clusters optimized for Blackwell G4.
   - `createCluster_README.md`: Detailed setup and usage instructions for the GKE template.
@@ -103,6 +108,7 @@ Detailed performance logs, including TTFT/TPOT latency distributions and through
 - [Qwen3.5-397B-A17B (FP8, TTFT-focused): models/Qwen3.5/fp8/results/benchmark_results.md](./models/Qwen3.5/fp8/results/benchmark_results.md)
 - [DeepSeek-V4-Flash (FP8, 1K/8K): models/DSV4/flash/fp8/1k8k/results/benchmark_results.md](./models/DSV4/flash/fp8/1k8k/results/benchmark_results.md)
 - [DeepSeek-V4-Flash (FP8, 8K/64K): models/DSV4/flash/fp8/8k64k/results/benchmark_results.md](./models/DSV4/flash/fp8/8k64k/results/benchmark_results.md)
+- [DeepSeek-V4.1-Flash (8K/1K): models/DSV4.1/flash/8k1k/README.md](./models/DSV4.1/flash/8k1k/README.md)
 
 ## Usage
 
